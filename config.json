@@ -1,0 +1,15 @@
+{
+
+    "env_dir" : "~/code/pollution/env",
+    "raw_down_dir" : "~/code/pollution/env/raw_files/",
+    "download_module" : {
+        "base_url": "https://archive.luftdaten.info/",
+        "start_date" : "2017-01-01",
+        "end_date" : "2017-12-31"
+
+    }
+    
+
+
+
+}
