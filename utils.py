@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import json
 import os
 import sys
@@ -5,6 +7,7 @@ import sys
 
 
 def get_config_data(config_file_name):
+    
     with open(config_file_name, "r") as config_file:
         config_data = json.load(config_file)
         return config_data
@@ -25,3 +28,8 @@ def sanity_cahecks(config):
         sys.exit("Exiting with error")
     if not os.path.isdir(os.path.expanduser(config["raw_down_dir"])):
         os.makedirs(os.path.expanduser(config["raw_down_dir"]))
+
+
+if __name__ == '__main__':
+    print("This file is not to be executed from the command line")
+            

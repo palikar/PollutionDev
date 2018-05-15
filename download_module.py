@@ -7,37 +7,105 @@ import sys
 import json
 import numpy as np
 from bs4 import BeautifulSoup
-import urllib
+import requests
 import re
+import os
 
 
 base_url =  None
-start_date = None
+download_dir = None
+start_date = None 
 end_date = None
+sensor_type = None
+files_list_file_name = None
 
 
-def main():
+
+
+def _read_config(config_data):
+
+    global base_url, download_dir, start_date, end_date, sensor_type, files_list_file_name
+    
+    #Reading config
+    base_url = config_data["download_module"]["base_url"]
+    print("The base URL set is: " + base_url)
+    start_date = config_data["download_module"]["start_date"]
+    end_date = config_data["download_module"]["end_date"]
+    print("Period to download: " + start_date + "," + end_date)
+    sensor_type = config_data["download_module"]["sensor_type"]
+    download_dir = os.path.expanduser(config_data["raw_down_dir"])
+
+    files_list_file_name = config_data["download_module"]["files_list_file"]
+    files_list_file_name = os.path.expanduser(files_list_file_name)
+
+    
+
+
+
+def _download_files():
+
+    print("Donwloading")
+    
+    save_list = False
+    if not files_list_file_name is None:
+        files_list_file = open(files_list_file_name, "w") 
+        save_list = True
+        
+    
+    dates = np.arange(np.datetime64(start_date), np.datetime64(end_date))
+    print(str(dates.size) + " dates found")
+    for date in np.nditer(dates):
+        day_link =  base_url + "/" + str(date)
+        print("Processing directory: " + day_link)
+
+        html_on_page = requests.get(day_link).text
+        links_on_page = BeautifulSoup(html_on_page, "lxml").findAll("a")
+        
+        links_strings = map(
+            lambda el: el.get("href"),
+            links_on_page)
+        links_strings = list(filter(
+            lambda el: re.match(".*" + sensor_type + ".*" + ".*.csv", el),
+            links_strings))
+
+        size = str(len(links_strings))
+        print(size + " files found")
+
+        for idx,link in enumerate(links_strings):
+            if save_list:
+                files_list_file.write(day_link + "/" + link + "," + download_dir + "/" + link + "\n")
+
+                
+            if idx%10 == 0:
+                print(str(idx) + "/" + size +" processed")
+                
+            req = requests.get(day_link + "/" + link, stream=True)
+            with open(download_dir + "/" + link, 'w') as f:  
+                f.write(str(req.content))
+
+    if save_list:
+        files_list_file.close()
+
+
+    
+def execute(config_data):
+    print("Excuting downlaod module")
+    ut.sanity_cahecks(config_data)
+    _read_config(config_data)    
+    _download_files()
+
+    
+
+def _main():
+    #Basic Setup
     print("Starting downlaod module from command line")
     config_data = ut.get_config_data(sys.argv[1]) 
     print("Configuration file loaded")
     ut.sanity_cahecks(config_data)
-    base_url = config_data["download_module"]["base_url"]#
-    print(base_url)
+    _read_config(config_data)
+    _download_files()
 
-    html = urllib.request.urlopen("https://archive.luftdaten.info/2017-01-01/").read()
-    soup = BeautifulSoup(html, "lxml")
 
-    
-    for link in soup.findAll("a"):
-        if re.match(".*.csv", link.get("href")):
-            print( link.get("href"))
-            
 
-        
-    
-    dates = np.arange(np.datetime64('2017-01-01'), np.datetime64('2017-12-31'))
-    # print(dates)
-    
-    
 if __name__ == '__main__':
-    main()
+    _main()

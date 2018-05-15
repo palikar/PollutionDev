@@ -5,8 +5,11 @@
     "download_module" : {
         "base_url": "https://archive.luftdaten.info/",
         "start_date" : "2017-01-01",
-        "end_date" : "2017-12-31"
-
+        "end_date" : "2017-01-02",
+        "sensor_type" : "sds011",
+        "files_list_file": "~/code/pollution/env/downloaded_files.txt"
+        
+        
     }
     
 
