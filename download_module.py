@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import os
+import wget
 
 
 base_url =  None
@@ -75,13 +76,18 @@ def _download_files():
             if save_list:
                 files_list_file.write(day_link + "/" + link + "," + download_dir + "/" + link + "\n")
 
+
+
                 
-            if idx%10 == 0:
+            if idx % 10 == 0:
                 print(str(idx) + "/" + size +" processed")
-                
-            req = requests.get(day_link + "/" + link, stream=True)
-            with open(download_dir + "/" + link, 'w') as f:  
-                f.write(str(req.content))
+
+            wget.download(day_link + "/" + link, out=download_dir)
+            print("\n")
+            
+            # req = requests.get(day_link + "/" + link,)
+            # with open(download_dir + "/" + link, 'w') as f:  
+            #     f.write(str(req.content))
 
     if save_list:
         files_list_file.close()
