@@ -73,22 +73,16 @@ def _download_files():
         print(size + " files found")
 
         for idx,link in enumerate(links_strings):
+
             if save_list:
                 files_list_file.write(day_link + "/" + link + "," + download_dir + "/" + link + "\n")
 
-
-
-                
             if idx % 10 == 0:
                 print(str(idx) + "/" + size +" processed")
 
             wget.download(day_link + "/" + link, out=download_dir)
             print("\n")
             
-            # req = requests.get(day_link + "/" + link,)
-            # with open(download_dir + "/" + link, 'w') as f:  
-            #     f.write(str(req.content))
-
     if save_list:
         files_list_file.close()
 

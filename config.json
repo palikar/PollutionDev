@@ -5,13 +5,16 @@
     "data_files_dir": "~/code/pollution/env/data_files/",
     "download_module" : {
         "base_url": "https://archive.luftdaten.info/",
-        "start_date" : "2017-01-01",
-        "end_date" : "2017-01-02",
+        "start_date" : "2017-05-07",
+        "end_date" : "2017-12-31",
         "sensor_type" : "sds011",
         "files_list_file": "~/code/pollution/env/downloaded_files.txt"        
     },
     "preprocess_module":{
         "keep_columns": ["sensor_id","lon","lat","P1","P2", "timestamp"],
-        "time_column" : "timestamp"
+        "time_column" : "timestamp",
+        "duplicates_resolution" : "MEDIAN",
+        "min_sensor_cnt" : 350
     }
 }
+
