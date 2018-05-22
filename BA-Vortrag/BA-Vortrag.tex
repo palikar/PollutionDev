@@ -10,7 +10,7 @@
 \titlelogo{myimage}
 
 
-\title[Short title]{Models and evalutions}
+\title[Short title]{Genaues Thema der Bachelor-Arbeit}
 \subtitle{Bachelor Arbeit, Vortrag}
 \author{Stanislav Arnaudov}
 
@@ -37,10 +37,10 @@
     \begin{column}{0.4\textwidth}
       Betrachtete Probleme:
       \begin{itemize}
-      \item Verbesserung die Vorhesagemöglichkeiten von Modellen duch Hinzunehmen unsicherer Sensoren
-      \item Die Qualität von verwendeten Sensoren bestimmen (relative Qualität zwischen den Sensoren)
+      \item Verbesserung die Vorhersagemöglichkeiten von Modellen duch Hinzunehmen unsicherer Sensoren
+      \item Die Qualität von den verwendeten Sensoren bestimmen (nur relativ Qualität zwischen den Sensoren)
       \end{itemize}
-      Im Endeffekt möchten wir gern die Unsicherheit bei Messen reduzieren.9
+      Im Endeffekt möchten wir gern die Unsicherheit bei Messen reduzieren.
     \end{column}
     \begin{column}{0.6\textwidth}
       \begin{center}
@@ -56,7 +56,7 @@
   Untersucht wird ein heterogenes Netzwerk von Sensoren, die den Feinstaub in Stuttgart herum messen.\\
   Daten aus:
   \begin{itemize}
-  \item LU-BW (Landesanstalt für Umwelt, Messungen und Naturschutz Baden-Württemberg) - \textbf{3 Sensoren} hocher Qualität. Kann man als Ground-Truth annehmen.
+  \item LU-BW (Landesanstalt für Umwelt, Messungen und Naturschutz Baden-Württemberg) - \textbf{3 Sensoren} hocher Qualität. Man kann diese als Ground-Truth annehmen.
   \item luftdate.info - Daten von einer großen Menge unsicherer Sensoren von niedriger Qualität.
   \end{itemize}
   Zeitraum: 2017.
@@ -68,19 +68,19 @@
   \begin{itemize}
   \item Bayesian Neural Networks
     \includegraphics[scale=0.35]{images/bnn}
-  \item Mixtures of Gaussian Process Expert
+  \item Mixtures of Gaussian Process Experts
   \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Scoring Rules}
+  \frametitle{Evaluierung von den aufgebauten Modellen}
   Eigenschaften von den untersuchten Modellen
   \begin{itemize}
   \item Wahrscheinlichkeitsverteilung und nicht Punktschätzung
-    \includegraphics[scale=0.3]{images/graph_1}
-    \includegraphics[scale=0.3]{images/graph_2}
+    \includegraphics[scale=0.2]{images/graph_1}
+    \includegraphics[scale=0.4]{images/graph_2}
   \end{itemize}
-  Proper Scoring Rules - Evaluierung von den vorhergesagten Verteilungen
+  Proper Scoring Rules - Evaluierung von den vorhergesagten Verteilungen.
 \end{frame}
 
 \end{document}
