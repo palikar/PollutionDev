@@ -5,6 +5,7 @@
 import sys, os
 import utils as ut
 import pandas as pd
+import numpy as np
 from matplotlib import pyplot as plt
 import re
 
@@ -15,12 +16,14 @@ keep_columns = None
 time_column = None
 duplicates_resolution = None
 min_sensor_cnt = None
-
+files_list_file = None
+good_sensors_list_file = None
+all_sensors_list_file = None
 
 sensors_on_date = {}
 
 def _read_config(config_data):
-    global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt
+    global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt, files_list_file, all_sensors_list_file, good_sensors_list_file
     print("Reading config data")
 
     files_dir = os.path.expanduser(config_data["data_files_dir"])
@@ -28,8 +31,11 @@ def _read_config(config_data):
     keep_columns = config_data["preprocess_module"]["keep_columns"]
     time_column = config_data["preprocess_module"]["time_column"]
     duplicates_resolution = config_data["preprocess_module"]["duplicates_resolution"]
-    min_sensor_cnt = config_data["prepocess_module"]["min_sensor_cnt"]
-
+    min_sensor_cnt = config_data["preprocess_module"]["min_sensor_cnt"]
+    files_list_file = os.path.expanduser(config_data["preprocess_module"]["files_list_file"])
+    good_sensors_list_file = os.path.expanduser(config_data["preprocess_module"]["good_sensors_list_file"])
+    all_sensors_list_file = os.path.expanduser(config_data["preprocess_module"]["all_sensors_list_file"])
+    
 def _main():
     print("Starting the proprocess module from the command line")
     config_data = ut.get_config_data(sys.argv[1]) 
@@ -56,7 +62,8 @@ sensors = {}
 def _check_days_for_sensors (raw_files):
     global sensors
     print("Reading days and sensors")
-    for f in raw_files:
+    file_list = open(files_list_file,"r")
+    for f in file_list.readlines():
         sensor_id = re.search('sensor_(\d+)\.csv', f, re.IGNORECASE)
         if not sensor_id:
             continue
@@ -66,12 +73,20 @@ def _check_days_for_sensors (raw_files):
         if not sensor_id in sensors:
             sensors[sensor_id] = list()
         sensors[sensor_id].append(date)
-
+        
     print("Done reading days and sensors")
+    good_sensors = np.array([])
+    all_sensors = np.array([])
     for sensor, dates in sensors.items():
-        print("Sensor: " + str(sensor) + " - " + str(len(dates)) + " dates")
+        all_sensors = np.append(all_sensors, sensor)
+        if len(dates) >= min_sensor_cnt:        
+            print(str(sensor) + " - " + str(len(dates)))
+            good_sensors = np.append(good_sensors, str(sensor))
 
-    
+    np.savetxt(str(good_sensors_list_file), good_sensors,fmt='%s')
+    np.savetxt(str(all_sensors_list_file), all_sensors,fmt='%s')
+    print("Count: " + str(len(good_sensors)))
+    file_list.close()
     
 
 

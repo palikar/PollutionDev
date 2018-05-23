@@ -10,7 +10,7 @@
 \titlelogo{myimage}
 
 
-\title[Short title]{Genaues Thema der Bachelor-Arbeit}
+\title[Short title]{Erstellung und Evaluierung stochastischer Regressionsmodelle auf Basis heterogener Messnetzwerke.}
 \subtitle{Bachelor Arbeit, Vortrag}
 \author{Stanislav Arnaudov}
 
@@ -25,7 +25,6 @@
 \selectlanguage{ngerman}
 
 
-
 \begin{frame}
  \titlepage
 \end{frame}
@@ -37,10 +36,11 @@
     \begin{column}{0.4\textwidth}
       Betrachtete Probleme:
       \begin{itemize}
-      \item Verbesserung die Vorhersagemöglichkeiten von Modellen duch Hinzunehmen unsicherer Sensoren
-      \item Die Qualität von den verwendeten Sensoren bestimmen (nur relativ Qualität zwischen den Sensoren)
+      \item Verbesserung die Vorhersagemöglichkeiten von Modellen durch Hinzunahme unsicherer Sensoren.
+      \item Die Qualität von den verwendeten Sensoren bestimmen.
+      \item Die Genauigkeit bei Messen durch Berücksichtigung der Unsicherheit erhöhen.
       \end{itemize}
-      Im Endeffekt möchten wir gern die Unsicherheit bei Messen reduzieren.
+      
     \end{column}
     \begin{column}{0.6\textwidth}
       \begin{center}
@@ -63,13 +63,23 @@
   
 \end{frame}
 
-\begin{frame}{Untersuchte Modelle}
+\begin{frame}
+  \frametitle{Stochastische Regressionsmodelle}
   Stochastische Regressionsmodelle:
   \begin{itemize}
   \item Bayesian Neural Networks
     \includegraphics[scale=0.35]{images/bnn}
   \item Mixtures of Gaussian Process Experts
   \end{itemize}
+\end{frame}
+
+\begin{frame}[]
+  \frametitle{Training}
+  \begin{itemize}
+    \item Training mit Zeitreihen von allen Sensoren.
+  \item Loss Function - Wahrscheinlichkeitsverteilung (Proper Scoring Rules).
+  \end{itemize}
+  
 \end{frame}
 
 \begin{frame}
