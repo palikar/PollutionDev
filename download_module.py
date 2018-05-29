@@ -79,7 +79,7 @@ def _download_files():
         
     
     dates = np.arange(np.datetime64(start_date), np.datetime64(end_date))
-    if config_data_g["download_module"]["list_files"]:
+    if "list_files" in config_data_g["download_module"]:
         _get_all_files_to_downloa(dates)
 
         
@@ -110,7 +110,18 @@ def _download_files():
             if idx % 10 == 0:
                 print(str(idx) + "/" + size +" processed")
 
-            wget.download(day_link + "/" + link, out=download_dir)
+
+                
+            while True:
+                try:
+                    wget.download(day_link + "/" + link, out=download_dir)
+                    break
+                except:
+                    continue
+                        
+                
+
+            
             print("\n")
             
     if save_list:
