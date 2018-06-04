@@ -20,13 +20,17 @@
             "timestamp"
         ],
         "time_column": "timestamp",
-        "duplicates_resolution": "MEDIAN",
+        "duplicates_resolution": "MEAN",
         "files_list_file": "~/code/pollution/env/downloaded_files_0.txt",
-        "check_day_for_sensors": false,
+        "check_day_for_sensors": true,
         "good_sensors_list_file": "~/code/pollution/env/good_sensors_list.txt",
         "all_sensors_list_file": "~/code/pollution/env/all_sensors_list.txt",
+        "day_integration_type": "MEAN",
+        "day_integration_period": "30T",
         "min_sensor_cnt": 340,
         "good_sensors_data_files_list": "~/code/pollution/env/good_data_files.txt",
-        "read_good_files_from_list": true
+        "read_good_files_from_list": false,
+        "missing_data_resolution": "MEAN",
+        "missing_data_threshold" : 30
     }
 }
