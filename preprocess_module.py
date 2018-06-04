@@ -25,11 +25,14 @@ all_sensors_list_file = None
 good_sensors_data_files_list = None
 day_integration_type = None
 day_integration_period = None
+missing_data_resolution = None
+missing_data_cnt_threshold = None
+bad_missing_data_sensors = None
 
 sensors_on_date = {}
 
 def _read_config(config_data):
-    global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt, files_list_file, all_sensors_list_file, good_sensors_list_file, good_sensors_data_files_list, day_integration_period, day_integration_type
+    global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt, files_list_file, all_sensors_list_file, good_sensors_list_file, good_sensors_data_files_list, day_integration_period, day_integration_type, missing_data_cnt_threshold, missing_data_resolution, bad_missing_data_sensors
     print("Reading config data")
 
     files_dir = os.path.expanduser(config_data["data_files_dir"])
@@ -44,9 +47,12 @@ def _read_config(config_data):
     good_sensors_data_files_list = os.path.expanduser(config_data["preprocess_module"]["good_sensors_data_files_list"])
     day_integration_type = config_data["preprocess_module"]["day_integration_type"]
     day_integration_period = config_data["preprocess_module"]["day_integration_period"]
+    missing_data_cnt_threshold = config_data["preprocess_module"]["missing_data_cnt_threshold"]
+    missing_data_resolution = config_data["preprocess_module"]["missing_data_resolution"]
+    bad_missing_data_sensors = config_data["preprocess_module"]["bad_missing_data_sensors"]
 
 
-
+sensors = {}
 def _check_days_for_sensors (raw_files):
     global sensors
     print("Reading days and sensors")
@@ -71,15 +77,18 @@ def _check_days_for_sensors (raw_files):
 
 
     print("There are raw files for overall " + str(len(all_sensors)) + " sensors" )
-    print( str(len(all_sensors)) + " sensors have data files for more than " + str(min_sensor_cnt) + " days. Those are \'good\'" )
+    print(str(len(good_sensors)) + " sensors have data files for more than " + str(min_sensor_cnt) + " days. Those are \'good\'" )
 
     
     
     np.savetxt(str(good_sensors_list_file), good_sensors,fmt='%s')
     np.savetxt(str(all_sensors_list_file), all_sensors,fmt='%s')
+    return good_sensors
+    
 
+
+bad_data_sensors = np.array([])
 def _main():
-
     
     print("Starting the proprocess module from the command line")
     config_data = ut.get_config_data(sys.argv[1]) 
@@ -93,7 +102,6 @@ def _main():
     if "--read-good-files-from-list" in sys.argv:
         print("Files to be processed are read from: " + str(good_sensors_data_files_list))
         raw_files_np  = np.loadtxt(good_sensors_data_files_list, dtype='str',ndmin=1)
-        print(raw_files_np)
         raw_files = raw_files_np.tolist()
     else:
         print("Reading all raw files.")
@@ -103,27 +111,31 @@ def _main():
         
 
         if "--filter-raw-files" in sys.argv:
+            good_sensors = None
             if "--check-day-for-sensors" in sys.argv:
                 print("Processing the files and finding the good sensors")
-                _check_days_for_sensors(raw_files)
+                good_sensors = _check_days_for_sensors(raw_files)
             else:
                 print("Reading good sensors from: " + str(good_sensors_list_file))
                 good_sensors = open(good_sensors_list_file, "r").read().split('\n')
-                raw_files = list(filter(lambda f: str(re.search('sensor_(\d+)\.csv', f, re.IGNORECASE).group(0)) in good_sensors, raw_files))
-        if "--save-raw-files-list":
+            raw_files = list(filter(lambda f: str(re.search('sensor_(\d+)\.csv', f, re.IGNORECASE).group(0)) in good_sensors, raw_files))
+        if "--save-raw-files-list" in sys.argv:
             raw_files_np = np.array(raw_files)
             np.savetxt(str(good_sensors_data_files_list), raw_files_np, fmt='%s')
 
 
-        
-            
-    print(raw_files)
     if "--preprocess-files" in sys.argv:
         size = len(raw_files)
+        print("Processing " + str(size) + " files")
+        size = len(raw_files)
         for indx, f in enumerate(raw_files):
-            print(f)
             _process_file(f)
-    del(raw_files)
+            if indx % 25 == 0:
+                print(str(indx) + "/" + str(size))
+        print("Done processing files")
+        print("Sensors with missing data above the threshold: " + str(bad_data_sensors))
+        np.savetxt(bad_missing_data_sensors, bad_data_sensors, fmt='%s')
+
     
 
     
@@ -140,13 +152,10 @@ def _main():
         
     
     
-
-
-sensors = {}
 def _process_file(f):
-    global sensors
+    global bad_data_sensors
     
-    print("Processing file: " + str(f))
+    # print("Processing file: " + str(f))
     df = pd.read_csv(f,sep=';', parse_dates=[time_column])
     
     for key in df.keys():
@@ -160,8 +169,8 @@ def _process_file(f):
         format='%Y-%m-%d-%H-%M')
 
 
-    print("Resolving duplicates")
     if df[time_column].unique().size != df[time_column].count():
+        # print("Resolving duplicates")
         # print("Duplicates found. Perfoerming resolution on the duplicates")
         if duplicates_resolution == "MEAN":
             df = df.groupby(time_column, as_index=False,sort=True).mean().reset_index()
@@ -172,8 +181,8 @@ def _process_file(f):
         elif duplicates_resolution == "MAX":
             df = df.groupby(time_column, as_index=False,sort=True).max().reset_index()
 
-    size,fields_cnt = df.shape
-    print("Size after duplicates resolution: " + str(size))
+    # size,fields_cnt = df.shape
+    # print("Size after duplicates resolution: " + str(size))
 
 
 
@@ -188,29 +197,36 @@ def _process_file(f):
     
 
     
-    size,fields_cnt = df.shape
-    print("Size after date grouping: " + str(size))
+    # size,fields_cnt = df.shape
+    # print("Size after date grouping: " + str(size))
 
 
-    id = str(int(df['sensor_id'].iloc[0]))
     
+
+    #renaming for the final dataframe
+    id = str(int(df['sensor_id'].iloc[0]))
     df.rename(index=str, columns={"P1": "P1_"+id, "P2": "P2_"+id}, inplace=True)
 
 
     
-
     #Information about missing data
     missing_count = df["P1_"+id].isnull().sum()
-    print("Missing values: " + str(missing_count))
-    if missing_count > 0:
-        # df["P1_"+id].fillna(df["P1_"+id].mean(), inplace=True)
-        # df["P2_"+id].fillna(df["P2_"+id].mean(), inplace=True)
-        df["P1_"+id].interpolate(method="linear", inplace=True)
-        df["P2_"+id].interpolate(method="linear", inplace=True)
+    # print("Missing values: " + str(missing_count))
+    if missing_count > 0 and missing_count <= missing_data_cnt_threshold: 
+        if missing_data_resolution == "MEAN":
+            df["P2_"+id].fillna(df["P2_"+id].mean(), inplace=True)
+            df["P1_"+id].fillna(df["P1_"+id].mean(), inplace=True)
+        else:
+            df["P1_"+id].interpolate(method="linear", inplace=True)
+            df["P2_"+id].interpolate(method="linear", inplace=True)
+    elif missing_count > missing_data_cnt_threshold:
+        bad_data_sensors = np.append(bad_data_sensors, str(id))
+        # print(id)
+        
 
-    print(df)
-    df[["P1_"+id, "P2_"+id]].plot()
-    plt.show()
+    # print(df)
+    # df[["P1_"+id, "P2_"+id]].plot()
+    # plt.show()
 
     
     # if the file for this sensor does not exist, create it
@@ -234,7 +250,6 @@ def _process_file(f):
 
 def execute(config_data):
     _read_config(config_data)
-
 
 
 

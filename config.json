@@ -30,7 +30,11 @@
         "min_sensor_cnt": 340,
         "good_sensors_data_files_list": "~/code/pollution/env/good_data_files.txt",
         "read_good_files_from_list": false,
-        "missing_data_resolution": "MEAN",
-        "missing_data_threshold" : 30
+        "missing_data_resolution": "linear",
+        "missing_data_cnt_threshold" : 30,
+        "bad_missing_data_sensors" :"/home/arnaud/code/pollution/env/bad_data_sensors.txt"
+    },
+    "description_module":{
+        "var": 1
     }
 }
