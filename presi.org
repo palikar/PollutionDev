@@ -12,6 +12,10 @@
 #+EXCLUDE_TAGS: nocexport
 #+CREATOR: Emacs 25.2.2 (Org mode 9.1.13)
 
+#+LaTeX_CLASS_OPTIONS: [margin=0.01in]
+#+LATEX_HEADER: \usepackage[margin=1.7in]{geometry}
+
+
 
 
 * Präsentation
