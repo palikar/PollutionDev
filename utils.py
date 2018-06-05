@@ -37,6 +37,13 @@ def sanity_cahecks(config):
         os.makedirs(os.path.expanduser(config["data_files_dir"]))
 
 
+    if not "description_files_dir" in config:
+        print("Final description files directory not set in the config file (description_files_dir)")
+        sys.exit("Exiting with error")
+    if not os.path.isdir(os.path.expanduser(config["description_files_dir"])):
+        os.makedirs(os.path.expanduser(config["description_files_dir"]))
+
+
 
 
         

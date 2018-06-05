@@ -11,7 +11,7 @@ from scipy.stats import norm
 import properscoring as ps
 
 
-def my_nrd(x):
+def nrd(x):
     r = np.percentile(x, [0,25, 0.75])
     h = (r[1] - r[0])/1.34
     return 4 * 1.06 * min(math.sqrt(np.var(x)), h) * (x.shape[0])**(-1/5)
@@ -35,7 +35,7 @@ def dss_edf_samples(y, data):
     
     
 def log_edf_samples(y, m):
-    bw = my_nrd(m)
+    bw = nrd(m)
     n = m.shape[0]
     w = np.repeat(1.0/n, n)
     s = np.repeat(bw, n)
