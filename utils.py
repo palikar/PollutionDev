@@ -42,9 +42,16 @@ def sanity_cahecks(config):
         sys.exit("Exiting with error")
     if not os.path.isdir(os.path.expanduser(config["description_files_dir"])):
         os.makedirs(os.path.expanduser(config["description_files_dir"]))
+    if not os.path.isdir(os.path.join(os.path.expanduser(config["description_files_dir"]),"plots")):
+        os.makedirs(os.path.join(os.path.expanduser(config["description_files_dir"]),"plots"))
 
+    if not "lu_bw_data_files_dir" in config:
+        print("LU BW  files directory not set in the config file (lu_bw_data_files_dir)")
+        sys.exit("Exiting with error")
+    if not os.path.isdir(os.path.expanduser(config["lu_bw_data_files_dir"])):
+        os.makedirs(os.path.expanduser(config["lu_bw_data_files_dir"]))
 
-
+        
 
         
 if __name__ == '__main__':

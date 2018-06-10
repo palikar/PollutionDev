@@ -28,11 +28,15 @@ day_integration_period = None
 missing_data_resolution = None
 missing_data_cnt_threshold = None
 bad_missing_data_sensors = None
+values_columns = None
+id_column = None
+id_columnreindex_period = None
+
 
 sensors_on_date = {}
 
 def _read_config(config_data):
-    global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt, files_list_file, all_sensors_list_file, good_sensors_list_file, good_sensors_data_files_list, day_integration_period, day_integration_type, missing_data_cnt_threshold, missing_data_resolution, bad_missing_data_sensors
+    global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt, files_list_file, all_sensors_list_file, good_sensors_list_file, good_sensors_data_files_list, day_integration_period, day_integration_type, missing_data_cnt_threshold, missing_data_resolution, bad_missing_data_sensors, values_columns, id_column,id_columnreindex_period
     print("Reading config data")
 
     files_dir = os.path.expanduser(config_data["data_files_dir"])
@@ -51,6 +55,11 @@ def _read_config(config_data):
     missing_data_resolution = config_data["preprocess_module"]["missing_data_resolution"]
     bad_missing_data_sensors = config_data["preprocess_module"]["bad_missing_data_sensors"]
 
+    values_columns = config_data["preprocess_module"]["values_columns"]
+    id_column = config_data["preprocess_module"]["id_column"]
+    reindex_period = config_data["preprocess_module"]["reindex_period"]
+    
+    
 
 sensors = {}
 def _check_days_for_sensors (raw_files):
@@ -107,8 +116,7 @@ def _main():
         print("Reading all raw files.")
         raw_files = [os.path.join(raw_files_dir, f) for f in os.listdir(raw_files_dir)
                  if os.path.isfile(os.path.join(raw_files_dir, f))]
-        print(str(len(raw_files)) + " raw files found in the raw_files directory.("+ raw_files_dir +")")
-        
+        print(str(len(raw_files)) + " raw files found in the raw_files directory.("+ raw_files_dir +")")        
 
         if "--filter-raw-files" in sys.argv:
             good_sensors = None
@@ -122,7 +130,6 @@ def _main():
         if "--save-raw-files-list" in sys.argv:
             raw_files_np = np.array(raw_files)
             np.savetxt(str(good_sensors_data_files_list), raw_files_np, fmt='%s')
-
 
     if "--preprocess-files" in sys.argv:
         size = len(raw_files)
@@ -180,68 +187,58 @@ def _process_file(f):
             df = df.groupby(time_column, as_index=False,sort=True).min().reset_index()
         elif duplicates_resolution == "MAX":
             df = df.groupby(time_column, as_index=False,sort=True).max().reset_index()
-
-    # size,fields_cnt = df.shape
-    # print("Size after duplicates resolution: " + str(size))
-
+ 
 
 
     if day_integration_type == "MEAN":
-        df = df.groupby(pd.Grouper(key="timestamp", freq=day_integration_period)).mean()
+        df = df.groupby(pd.Grouper(key=time_column, freq=day_integration_period)).mean()
     elif day_integration_type == "MEADIAN":             
-        df = df.groupby(pd.Grouper(key="timestamp", freq=day_integration_period)).median()
+        df = df.groupby(pd.Grouper(key=time_column, freq=day_integration_period)).median()
     elif day_integration_type == "MIN":                 
-        df = df.groupby(pd.Grouper(key="timestamp", freq=day_integration_period)).min()
+        df = df.groupby(pd.Grouper(key=time_column, freq=day_integration_period)).min()
     elif day_integration_type == "MAX":                 
-        df = df.groupby(pd.Grouper(key="timestamp", freq=day_integration_period)).max()
+        df = df.groupby(pd.Grouper(key=time_column, freq=day_integration_period)).max()
     
 
     
-    # size,fields_cnt = df.shape
-    # print("Size after date grouping: " + str(size))
-
 
     
 
     #renaming for the final dataframe
-    id = str(int(df['sensor_id'].iloc[0]))
-    df.rename(index=str, columns={"P1": "P1_"+id, "P2": "P2_"+id}, inplace=True)
-
+    id = str(int(df[id_column].iloc[0]))
+    rename_dict = {}
+    for value_name in values_columns:
+        rename_dict[value_name] = value_name + "_" + id
+    df.rename(index=str, columns=rename_dict, inplace=True)
 
     
     #Information about missing data
-    missing_count = df["P1_"+id].isnull().sum()
+    missing_count = df[list(rename_dict.values())[0]].isnull().sum()
     # print("Missing values: " + str(missing_count))
     if missing_count > 0 and missing_count <= missing_data_cnt_threshold: 
         if missing_data_resolution == "MEAN":
-            df["P2_"+id].fillna(df["P2_"+id].mean(), inplace=True)
-            df["P1_"+id].fillna(df["P1_"+id].mean(), inplace=True)
+            for key,val in rename_dict.items():
+                df[val].fillna(df[val].mean(), inplace=True)
         else:
-            df["P1_"+id].interpolate(method="linear", inplace=True)
-            df["P2_"+id].interpolate(method="linear", inplace=True)
+            for key,val in rename_dict.items():
+                df[val].interpolate(method="linear", inplace=True)
     elif missing_count > missing_data_cnt_threshold:
         bad_data_sensors = np.append(bad_data_sensors, str(id))
-        # print(id)
-        
-
-    # print(df)
-    # df[["P1_"+id, "P2_"+id]].plot()
-    # plt.show()
-
+                
     
     # if the file for this sensor does not exist, create it
     # otherwise we just append the information at the end of the existing file
-    if not os.path.isfile(files_dir + "/end_data_frame_"+id+".cvs"):
+    if not os.path.isfile(files_dir + "/end_data_frame_"+id+".csv"):
         df.to_csv(
-            os.path.join(files_dir + "end_data_frame_"+id+".cvs"),
+            os.path.join(files_dir + "end_data_frame_"+id+".csv"),
             sep=";",
-            columns=["P1_"+id, "P2_"+id]
+            columns=list(rename_dict.values())
         )
     else:
         df.to_csv(
             os.path.join(files_dir + "end_data_frame_"+id+".cvs"),
             sep=";",
-            columns=["P1_"+id, "P2_"+id],
+            columns=list(rename_dict.values()),
             mode="a",
             header=False
         )
@@ -252,9 +249,6 @@ def execute(config_data):
     _read_config(config_data)
 
 
-
-
-
-    
 if __name__ == '__main__':
     _main()
+    

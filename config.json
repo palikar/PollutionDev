@@ -2,6 +2,7 @@
     "env_dir": "~/code/pollution/env",
     "raw_down_dir": "~/code/pollution/env/raw_files/",
     "data_files_dir": "~/code/pollution/env/data_files/",
+    "lu_bw_data_files_dir": "~/code/pollution/env/data_files/lu_bw/",
     "description_files_dir": "~/code/pollution/env/desc_files/",
     "download_module": {
         "base_url": "https://archive.luftdaten.info/",
@@ -33,9 +34,16 @@
         "read_good_files_from_list": false,
         "missing_data_resolution": "linear",
         "missing_data_cnt_threshold" : 30,
-        "bad_missing_data_sensors" :"/home/arnaud/code/pollution/env/bad_data_sensors.txt"
+        "bad_missing_data_sensors" :"/home/arnaud/code/pollution/env/bad_data_sensors.txt",
+        "values_columns": ["P1", "P2"],
+        "id_column":"sensor_id",
+        "reindex_period" :["2017-01-01","2018-01-01"]
     },
     "description_module":{
-        "description_fils_dir": "~/code/pollution/env/desc_files/"
+        "description_fils_dir": "~/code/pollution/env/desc_files/",
+        "value_columns" : ["P2", "P1"],
+        "reindex_period" : ["2017-01-01","2018-01-01"],
+        "reindex_freq": "30T",
+        "generate_plots": "true"
     }
 }
