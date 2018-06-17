@@ -7,6 +7,7 @@ import edward as ed
 from scipy.stats import norm
 from edward.models import Normal
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
 
 
 
@@ -59,7 +60,7 @@ def main():
 
 
 
- 
+
     saver = tf.train.Saver()
     
     rs = np.random.RandomState(0)
