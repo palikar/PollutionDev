@@ -11,7 +11,7 @@
 \titlelogo{myimage}
 
 
-\title[Short title]{Erstellung und Evaluierung stochastischer Regressionsmodelle auf Basis heterogener Messnetzwerke.}
+\title[HITS-Vortrag]{Erstellung und Evaluierung stochastischer Regressionsmodelle auf Basis heterogener Messnetzwerke.}
 \subtitle{Bachelor Arbeit, Betreuer - Dr. Johannes Riesterer, Dr. Sebastian Lerch}
 \author{Stanislav Arnaudov}
 
@@ -168,27 +168,6 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{BNN mit Edward und Tesorflow}
-  \begin{columns}
-    \begin{column}{0.4\textwidth}
-      \begin{itemize}
-      \item Daten - Kosinus mit Rauschen
-      \item Zweidimensionaler Eingaberaum: $z = cos(x_1 + x_2) + \epsilon, \newline \epsilon\sim N(0, 0.5)$
-      \item Eindimensionale Repräsentation 
-        \begin{itemize}
-        \item Auswerten vom Modell über die Eingabedaten
-        \item X-Achse - Index vom entsprechenden Datenpunkt
-        \end{itemize} 
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.6\textwidth}
-      \includegraphics[scale=0.2]{images/edward_example_bnn}
-    \end{column}
-  \end{columns}
-  
-\end{frame}
-
-\begin{frame}
   \frametitle{Evaluierung von Modellen}
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -202,6 +181,25 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}
+  \frametitle{BNN mit Edward und Tensorflow}
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \begin{itemize}
+      \item Daten - Kosinus mit Rauschen
+      \item Zweidimensionaler Eingaberaum: $y = cos(x_1 + x_2) + \epsilon, \newline \epsilon\sim N(0, 0.2)$
+        \item Eindimensionale Repräsentation
+        \begin{itemize}
+        \item Auswertung vom Modell über die Eingabedaten
+        \item X-Achse - Index vom entsprechenden Datenpunkt
+        \end{itemize} 
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \includegraphics[scale=0.225]{images/edward_example_bnn}
+    \end{column}
+  \end{columns}
+\end{frame}
 
 \end{document}
 

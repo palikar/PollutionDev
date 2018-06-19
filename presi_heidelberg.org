@@ -1,0 +1,58 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:t title:t toc:t todo:t |:t
+#+TITLE: What should be said(in Heidelberg)
+#+DATE: <2018-05-29 Tue>
+#+AUTHOR: Stanislav Arnaudov
+#+EMAIL: arnaud@localhost
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: nocexport
+#+CREATOR: Emacs 25.2.2 (Org mode 9.1.13)
+
+#+LaTeX_CLASS_OPTIONS: [margin=0.01in]
+#+LATEX_HEADER: \usepackage[margin=1.7in]{geometry}
+
+
+
+
+* Präsentation
+** Hallo
+Hallo, mein Name ist Stanislav Arnaudov und heute presentiere ich Ihnen kurz das Thema meiner Bachelor-Arbeit. In der Arbeit handelt sich hauptsächlich um Stochastische Regressionsmodelle für Vorhersage von Daten, ihre Evaluierung und welche Aussage über die verwendeten Daten gemacht werden können anhand der generierten Modellen.
+** Zur Motivation
+Kurz zur Motivation - was möchte ich gern erreichen und was für Probleme lösen wir. 
+- In vielen Anwendungen beschäftigt sich man mit Netzwerken von Sensoren, die irgendwas messen. Nehmen wir an, dass wir ein solches Netz haben, das sehr wenige Sensoren besitzt. Die Sensoren sind aber von hoher Qualität und die liefern möglichst präzisen Werte.
+- Die Frage ist jetzt, können wir das Netz so mit anderen Sensoren erweitern, so dass sich die Präzision erhöht.
+- Die interessante Bedingung im unseren Fall - die neuen Sensoren sind von unbekannten Qualitäten und bringen gewisse Unsicherheit.
+- Dass heißt, mit den neuen Sensoren ist die räumliche Auflösung des Netzes vergrößert und aber auch die Unsicherheit bei Messen. Die grundlegende Frage - können wir unsere Modelle für Vorhersagen so aufbauen, sodass die Präzision mit einer großen Wahrscheinlichkeit verbessert ist.
+** Daten
+Um das Thema ein bisschen zu konkretisieren - unsere Daten kommen aus einem heterogenen (spricht Sensoren mit verschiedenen Qualitäten) Netz von Feinstaubsensoren in der Nähe von Stuttgart. 
+- Drei von diesen Sensoren sind von LU-BW und liefern sehr genaue und vertrauliche Messungen.
+- Die anderen sind DIY-Sensoren und bei ihnen kommt die Unsicherheit ins Spiel - wir wissen also nicht, wie gut die Sensoren sind.
+- Das betrachtete Zeitraum ist von 2017 bis jetzt.
+- Die Messungen von den Sensoren sind ganz viel und deswegen ist eine Zeitliche Integration notwendig. Wir haben zwei Ansätze dafür geplant.a
+  - Wir betrachten nur den durchschnittlichen Wert von den Sensoren für jede halbe Stunde oder
+  - schauen wir nur den durchschnittlichen Wert für den einen genzen Tag.
+- Mehr zu den Daten - die sind schlecht! Vielen von den Sensoren haben keine Werte für jeden Tag. Nur 73 Sensoren haben Messungen für mehr als 340 Tage. Außerdem, von diesen 73 Sensoren, 20 besitzen Tage mit zu wenige Messungen. Im Endeffekt haben ungefär 50 Sensoren, damit wir die Modolle trainieren. Trotz allen Entfernungen von Sensoren gibt's "Lücken", die augelöst werden müssen, und da interpoliere ich entweder linear oder füllen wir einfach mit dem durchschnittlichen Wert der Probe.
+- Unten sind zwei Plots von einem Sensor angezeigt. Das erste Bild stellt die reinen Daten dar und das zweite ist ein rolling average über die Daten. Wie man sehen kann, sind die Daten höchstwahrscheinlich rauschbehaften.
+** Regressxionsmodelle
+Die Modelle, die wir im Rahmen der Arbeit untersuchen werden.
+- Baysian Neural Networks - die Gewichten von den einzelnen Neuronen sind nach bestimmter Wahrscheinlichkeitsverteilung generiert und das Output ist wieder eine Verteilung.
+- Mixture of Gaussian Process Experts - hier haben wir einige Gaussian Process Regressionsmodelle und deren Outputs sind in bestimmter Wiese durch ein Gating Network gewichten, damit ein besseres kombiniertes Modell aufgebaut wird.
+** Trainieren
+Mit den Modellen versuchen wir eine Vorhersage für die Feinstaub Werte in der Zukunft zu machen.
+- Wir trainieren die Modellen mit Zeitreihen aus allen Sensoren und im Endeffekt machen wir eine Vorhersage für eine bestimmte Station. Am besten wäre das ein von den drei 'besseren' Sensoren, weil wir da mit größer Sicherheit wissen, was die tatsächlichen Werte sind.
+- Wichtige Bemerkung - die Ausgaben der Modelle sind Wahrscheinlichkeitsverteilungen. Das heßst man kann Porper scoring rules bei der Evaluierung anwenden. Genau das ist der andere größe Teil meiner Arbeit.
+** Evaluierung.
+- Wie gesagt, im Endeffekt haben wir keine Punktschätzungen, sonder Wahrscheinlichkeitsverteilungen. Deswegen können wir sie sehr präzis evaluieren und anhand von Proper Scoring Rules genauere Aussagen machen.
+- Mein Fortschritt so weit:
+  - Wir haben drei Proper Scoring Rules in Python programmiert(DSS, CRPS, LOG) und hier ich habe ein Paar Beispielmodelle(Normalverteilungen) evaluiert um zu überprüfen, ob die Scoring Rules richtig konvergieren.Einge Plots davon, die hoffentlich geeignet sind, sodass man sehen kann, welches Modell nach welchen Rules besser ist.
+  - LLinks sind Plots, die zwei (oder eventuell mehrere) Modelle vergleichen, rechts wird angezeigt, wie die Scoring Rules für ein Modell konvergieren, wenn man immer mehrere Samples aus dem Modell nimmt.
+  - Oben und Unten werden nur verschiedene Beobachtungen für die Evaluierung genommen.
+  - Bezüglich des Aufbaus von den Modellen - bisher habe ich nur ein kleines Beispiel mit Edward und Tensorflow. Meine "Training Daten" sind einfach rauschbehaftet Kosinus Signal. Zu bemerken ist, dass der Eingaberaum zweidimensional ist. Also, genauer, dir Zahlen von zwei Intervallen addieren, Kosinus von der Summe nehmen und Rauschen einbringen. 
+    - die roten Kurven da sind Samples, die vom trainierten Modell gesamplet sind. Das ist natürlich ein stochastisches Modell und deswegen beim Auswerten von einem Datenpunkt mit dem Modell erhält man nur eine Wahrscheinlichkeitsverteilung, die in diesem Fall gar nicht analytisch beschreibbar ist und deswegen kann man nur Samples davon ziehen. Für die Auswertung von den Scoring Rules aber ist das ausreichend.
+      
+
+      

@@ -13,13 +13,22 @@ import re
 
 
 data_files_dir = None
-
+period = None
+freq = None
+ignored_sensors_files = None
+final_df_name = None
 def _read_config(config_data):
     "Loading config variables"
-    global data_files_dir
+    global data_files_dir, period, freq, final_df_name, folder
 
 
     data_files_dir = os.path.expanduser(config_data["data_files_dir"])
+    period = config_data["loader_module"]["period"]
+    freq = config_data["loader_module"]["freq"]
+    ignored_sensors_files = config_data["loader_module"]["ingored_sensors_files"]
+    folder = os.path.expanduser(config_data["loader_module"]["folder"])
+    final_df_name = config_data["loader_module"]["final_df_name"]
+    
 
     
     
@@ -37,33 +46,29 @@ def _main():
     
 
     df_end = pd.DataFrame()
-    date_range = pd.date_range(start="2017-01-01", end="2018-01-01" , freq="30T")
+    date_range = pd.date_range(start=period[1], end=period[1] , freq=freq)
     date_range = date_range[0:date_range.shape[0] - 1]
     df_end = df_end.reindex(date_range)
 
-    data_files = [os.path.join(data_files_dir, f) for f in os.listdir(data_files_dir)
-                  if os.path.isfile(os.path.join(data_files_dir, f))]
+    data_files = [os.path.join(folder, f) for f in os.listdir(folder)
+                  if os.path.isfile(os.path.join(folder, f))]
     for f in data_files:
-        print(f)
         df = pd.read_csv(f,sep=';',parse_dates=True, index_col="timestamp")
         df_end = pd.concat([df_end , df], axis=1)
 
 
 
 
-    data_files_dir = os.path.join(data_files_dir, "lu_bw")
+    lu_bw_folder = os.path.join(folder, "lu_bw")
     data_files = [os.path.join(data_files_dir, f) for f in os.listdir(data_files_dir)
                   if os.path.isfile(os.path.join(data_files_dir, f))]
 
     for f in data_files:
-        print(f)
         df = pd.read_csv(f,sep=';',parse_dates=True, index_col="timestamp")
         df_end = pd.concat([df_end, df], axis=1)
 
-
-
     
-    df_end.to_csv("env/final_data_frame.csv",sep=";",index_label="timestamp")
+    df_end.to_csv(folder + "/" + final_df_name, sep=";",index_label="timestamp")
 
 
 def execute(config_data):

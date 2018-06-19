@@ -30,15 +30,14 @@ samples drawn from them"
         
 
     def set_sampler(self, model_id, sampler):
-        "sampler must be a funtion taking and integer n and returning\
+        "Sampler must be a funtion taking and integer n and returning\
         an arraylike with size n containing samples from some\
         distrubuition that is to be evaluated"
         self.samplers[model_id] = sampler
         
                     
 
-    def def_log_model_results_in_file(self, log_file, scoring_results, y , model_id):
-        print("Logging results to file " + str(log_file))
+    def log_model_results_in_file(self, log_file, scoring_results, y , model_id):
         with open(log_file, "w") as out:
             out.write("Report for model " + str(model_id) + "\n")
             out.write("-----------------------\n")
@@ -62,8 +61,8 @@ samples drawn from them"
             out.write("Min: \n")
             for rule, score in scoring_results.items():
                 out.write(str(rule) + " : " + str(score[-1].min()) + "\n")
-            out.write("-----------------------\n")
-            out.write("Std: \n")
+                out.write("-----------------------\n")
+                out.write("Std: \n")
             for rule, score in scoring_results.items():
                 out.write(str(rule) + " : " + str(score[-1].std()) + "\n")
 
@@ -71,18 +70,24 @@ samples drawn from them"
 
 
     def create_evaluation_data_frame(self, data_frame_file, scoring_results, y , model_id):
-        print("Creating data drame in file " + str(data_frame_file))
         data = {}
+        data["model_id"] = np.repeat (model_id, y.shape[0])
         data["observation"] = y
         for rule, score in scoring_results.items():
             data[rule] = score[-1]
-            df = pd.DataFrame(data)
-            df.index.name = "num"
-            df.to_csv(data_frame_file, sep=";")
+        df = pd.DataFrame(data)
+        if os.path.isfile(data_frame_file):
+            df.to_csv(data_frame_file,
+                      sep=";",
+                      mode="a",
+                      index=False,
+                      header=False)
+        else:
+            df.to_csv(data_frame_file,
+                      index=False,
+                      sep=";")
 
-
-    def create_evalation_plots(self, plots_path, scoring_results, y , model_id, samples_range):
-        print("Ploting results in directory " + str(plots_path))
+    def create_evalation_plots(self, plots_path, scoring_results, y , model_id, samples_range, barplots=False):
         for y_indx, y_val in enumerate(np.nditer(y)):
             plt.cla()
             plt.close()
@@ -101,6 +106,9 @@ samples drawn from them"
         plt.close()
         plt.clf()
         plt.figure(figsize=(10,7), dpi=100)
+        if not barplots:
+            return
+
         index = np.arange(y.shape[0])
         bar_width = 0.05
         opacity = 0.8
@@ -125,12 +133,26 @@ samples drawn from them"
 
     
 
-    def evaluate_samples(self, y, samples, sampler):
+    def evaluate_samples(self, y, sampler, single_draw=True, last_score_only=True):
         scoring_results = {}
         samples_range = None
-        if samples is None:
-            print("Using the defined sampler function")
-            samples_range = range(self.min_samples, self.max_samples, self.samples_cnt_step)
+        if last_score_only:
+            for rule_name, rule_fun in self.scoring_rules.items():
+                scoring_results[rule_name] = np.array(rule_fun(y, sampler(self.max_samples)))
+            return scoring_results, [self.max_samples]
+                
+
+        
+        samples_range = range(self.min_samples, self.max_samples, self.samples_cnt_step)
+        if single_draw:
+            all_samples = sampler(samples_range[-1])
+            for i in samples_range:
+                for rule_name, rule_fun in self.scoring_rules.items():
+                    if rule_name not in scoring_results:
+                        scoring_results[rule_name] = np.array([rule_fun(y, all_samples[0:i])])
+                    else:
+                        scoring_results[rule_name] = np.append(scoring_results[rule_name], [rule_fun(y, all_samples[0:i])], axis=0)
+        else:            
             for i in samples_range:
                 new_samples = sampler(i)
                 for rule_name, rule_fun in self.scoring_rules.items():
@@ -138,44 +160,33 @@ samples drawn from them"
                         scoring_results[rule_name] = np.array([rule_fun(y, new_samples)])
                     else:
                         scoring_results[rule_name] = np.append(scoring_results[rule_name], [rule_fun(y, new_samples)], axis=0)
-
-        else:
-            print("Using user provided samples")
-            samples_range = np.array([])
-            for new_samples in np.nditer(samples):
-                samples_range = np.append(samples_range, len(new_samples))
-                for rule_name, rule_fun in self.scoring_rules.items():
-                    if rule_name not in scoring_results:
-                        scoring_results[rule_name] = np.array([rule_fun(y, new_samples)])
-                    else:
-                        scoring_results[rule_name] = np.append(scoring_results[rule_name], [rule_fun(y, new_samples)], axis=0)
+                            
 
         return scoring_results, samples_range
         
 
-    def single_model_evaluation(self,y, model_id, samples=None, plots_path=None, log_file=None, data_frame_file=None):
+    def single_model_evaluation(self,y, model_id, plots_path=None, log_file=None, data_frame_file=None, barplots=False,last_score_only=True):
 
         if not isinstance(y, np.ndarray):
             y = np.array([y])
-
-        scoring_results, samples_range = self.evaluate_samples(y, samples, self.samplers[model_id])
+            
+        scoring_results, samples_range = self.evaluate_samples(y, self.samplers[model_id], last_score_only=last_score_only)
                     
             
-        print("Evaluation of " + model_id + " complete")
-        print("Final scores")
-        for rule, score in scoring_results.items():
-            print(str(rule) + " : " + str(score[-1]))
-
         if log_file is not None:
-            self.def_log_model_results_in_file(log_file, scoring_results, y, model_id)
+            self.log_model_results_in_file(log_file, scoring_results, y, model_id)
 
         if data_frame_file is not None:
             self.create_evaluation_data_frame(data_frame_file, scoring_results, y, model_id)                
 
 
         if plots_path is not None:
-            self.create_evalation_plots(plots_path, scoring_results, y, model_id, samples_range)
+            self.create_evalation_plots(plots_path, scoring_results, y, model_id, samples_range, barplots=barplots)
 
+        final = {}
+        for rule, score in scoring_results.items():
+            final[rule] = score[-1]
+        return final
                 
 
     def cross_model_log_file(self, log_file, res, y , model_ids):
@@ -197,16 +208,6 @@ samples drawn from them"
                         out.write(model_id+" : "+str(res[model_id][0][rule][-1].std()) +"\n")
                     out.write("----------\n")
 
-
-    def cross_model_data_frame(self, data_frame_file, res, y , model_ids):
-        data = {}
-        data["observation"] = y
-        for rule in self.scoring_rules.keys():
-            for model_id in model_ids:
-                data[rule+"_"+model_id] = res[model_id][0][rule][-1]
-        df = pd.DataFrame(data)
-        df.index.name = "num"
-        df.to_csv(data_frame_file, sep=";")
 
 
     def cross_model_plots(self, plots_path, res, y , model_ids):
@@ -237,8 +238,6 @@ samples drawn from them"
             plt.clf()
             plt.figure(figsize=(10,7), dpi=100)
             for indx, model_id in enumerate(model_ids):
-
-                                
                 rects = plt.bar(index + indx*bar_width,
                                 list(map(lambda rule_res: rule_res[-1][y_indx],res[model_id][0].values())),
                                 bar_width,
@@ -263,7 +262,7 @@ samples drawn from them"
         
 
     
-    def cross_model_evaluation(self,y, model_ids, samples=None, plots_path=None, log_file=None, data_frame_file=None ):
+    def cross_model_evaluation(self,y, model_ids, plots_path=None, log_file=None, data_frame_file=None, single_draw=True, last_score_only=True):
 
         if not isinstance(y, np.ndarray):
             y = np.array([y])
@@ -271,58 +270,35 @@ samples drawn from them"
 
         res = {}
         for model_id in model_ids:
-            if samples is not None and model_id in samples:
-                res[model_id] = self.evaluate_samples(y, samples[model_id], None)
-            elif model_id in self.samplers:
-                res[model_id] = self.evaluate_samples(y, None, self.samplers[model_id])
+            if model_id in self.samplers:
+                print("Evaluating " + model_id)
+                res[model_id] = self.evaluate_samples(y, self.samplers[model_id],last_score_only=last_score_only)
             else:
-                print("Model id must be either in the provided samples or a sampler must be added")
+                print("Sampler for model " + str(model_id) + " is missing")
 
             print("Evaluation of " + model_id + " complete")
 
 
-        
-        for rule in self.scoring_rules.keys():
-            print("----------")
-            print("Rule: " + str(rule))
-            for model_id in model_ids:
-                print(model_id+" : "+str(res[model_id][0][rule][-1]))
-        print("----------")
-
+    
 
 
         if log_file is not None:
             self.cross_model_log_file(log_file, res,y, model_ids)
 
         if data_frame_file is not None:
-            self.cross_model_data_frame(data_frame_file, res,y, model_ids)
-
+            for model_id, scoring_results in res.items():
+                self.create_evaluation_data_frame(data_frame_file, scoring_results[0], y, model_id)
+                
         if plots_path is not None:
             self.cross_model_plots(plots_path, res,y, model_ids)
                 
 
 
 def main():
-    scorer = Scorer(min_samples=5, max_samples=100, samples_cnt_step=5)
-
-
+    scorer = Scorer(min_samples=5, max_samples=10000, samples_cnt_step=30)
     scorer.set_sampler("nomral_uo_std5", lambda n: norm.rvs(size=int(n), loc=0, scale=5))
-    scorer.set_sampler("nomral_u2_std7", lambda n: norm.rvs(size=int(n), loc=2, scale=7))
-
-
-    scorer.cross_model_evaluation(np.array([0.1,6,15]),
-                                   ["nomral_uo_std5", "nomral_u2_std7"],
-                                   log_file="/home/arnaud/code/pollution/scores_log.txt",
-                                   data_frame_file="/home/arnaud/code/pollution/scores_df.txt",
-                                   plots_path="/home/arnaud/code/pollution/scores_plots"
-                                   )
-
-    scorer.single_model_evaluation(np.array([0.1,6,15]),
-                                   "nomral_uo_std5",
-                                   log_file="/home/arnaud/code/pollution/scores_log.txt",
-                                   data_frame_file="/home/arnaud/code/pollution/scores_df.txt",
-                                   plots_path="/home/arnaud/code/pollution/scores_plots"
-                                   )
+    res = scorer.single_model_evaluation(np.array([0.1]),"nomral_uo_std5")
+    print(res)
 
 
 if __name__ == '__main__':

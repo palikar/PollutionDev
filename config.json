@@ -45,5 +45,12 @@
         "reindex_period" : ["2017-01-01","2018-01-01"],
         "reindex_freq": "30T",
         "generate_plots": "true"
+    },
+    "loader_module" : {
+        "folder" : "",
+        "ingored_sensors_files": [],
+        "period" : ["2017-01-01","2018-01-01"],
+        "freq": "30T",
+        "final_df_name": "final_data_frame_30T.csv"
     }
 }
