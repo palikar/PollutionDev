@@ -295,7 +295,7 @@ samples drawn from them"
 
 
 def main():
-    scorer = Scorer(min_samples=5, max_samples=10000, samples_cnt_step=30)
+    scorer = Scorer(min_samples=5, max_samples=1000, samples_cnt_step=30)
     scorer.set_sampler("nomral_uo_std5", lambda n: norm.rvs(size=int(n), loc=0, scale=5))
     res = scorer.single_model_evaluation(np.array([0.1]),"nomral_uo_std5")
     print(res)

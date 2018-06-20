@@ -84,7 +84,7 @@ def _check_days_for_sensors (raw_files):
 
 
     print("There are raw files for overall " + str(len(all_sensors)) + " sensors" )
-    print(str(len(good_sensors)) + " sensors have data files for more than " + str(min_sensor_cnt) + " days. Those are \'good\'" )
+    print(str(len(good_sensors)) + " sensors have data files for more than " + str(min_sensor_cnt) + " days. Those are \'saturated\'" )
 
     
     

@@ -19,7 +19,8 @@ ignored_sensors_files = None
 final_df_name = None
 def _read_config(config_data):
     "Loading config variables"
-    global data_files_dir, period, freq, final_df_name, folder
+    global data_files_dir, period, freq, final_df_name, folder, ignored_sensors_files
+
 
 
     data_files_dir = os.path.expanduser(config_data["data_files_dir"])
@@ -50,24 +51,48 @@ def _main():
     date_range = date_range[0:date_range.shape[0] - 1]
     df_end = df_end.reindex(date_range)
 
+    ignored_sens = np.array([])
+    
+    for f in ignored_sensors_files:
+        with open(os.path.expanduser(f)) as sens_file:
+            sens = sens_file.read().split('\n')
+            ignored_sens = np.append(ignored_sens,sens)        
+
     data_files = [os.path.join(folder, f) for f in os.listdir(folder)
                   if os.path.isfile(os.path.join(folder, f))]
-    for f in data_files:
-        df = pd.read_csv(f,sep=';',parse_dates=True, index_col="timestamp")
-        df_end = pd.concat([df_end , df], axis=1)
 
+
+
+
+    count = 0
+    for f in data_files:
+        res = re.search('end_data_frame_(\S+)\.csv', f, re.IGNORECASE)
+        id = res.group(1)
+        if str(id) not in ignored_sens:
+            df = pd.read_csv(f,sep=';',parse_dates=True, index_col="timestamp")
+            df_end = pd.concat([df_end , df], axis=1)
+        
+
+        
+                
 
 
 
     lu_bw_folder = os.path.join(folder, "lu_bw")
-    data_files = [os.path.join(data_files_dir, f) for f in os.listdir(data_files_dir)
-                  if os.path.isfile(os.path.join(data_files_dir, f))]
+    print(lu_bw_folder)
+    data_files = [os.path.join(lu_bw_folder, f) for f in os.listdir(lu_bw_folder)
+                  if os.path.isfile(os.path.join(lu_bw_folder, f))]
 
     for f in data_files:
+        print(f)
+        res = re.search('(\S+)\.csv', f, re.IGNORECASE)
+        id = res.group(1)
+        print("Loading " + id + " from lu bw")
         df = pd.read_csv(f,sep=';',parse_dates=True, index_col="timestamp")
         df_end = pd.concat([df_end, df], axis=1)
 
-    
+
+    print("Final shape of the DF: " + str(df_end.shape))
     df_end.to_csv(folder + "/" + final_df_name, sep=";",index_label="timestamp")
 
 

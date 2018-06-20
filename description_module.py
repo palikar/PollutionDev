@@ -109,7 +109,14 @@ def _main():
                 print("Too bad sensor - " + id)
             df = df[~df.index.duplicated()]
             df = df.reindex(date_range)
-        
+
+        if df.shape[0] > date_range.shape[0]:
+            dup_group = df.groupby(df.index, as_index=True,sort=True)
+            df = dup_group.mean()
+            df = df.reindex(date_range)
+
+
+
         df.fillna(df.mean(), inplace=True)                
         
         desc_file.write("Description after missing data correction\n-----------------------\n")

@@ -12,13 +12,21 @@ import re
 
 lu_bw_data_files_dir = None
 description_files_dir = None
+time_column = None
+reindex_period = None
+integration_type = None
+integration_freq = None
 
 def _read_config(config_data):
-    global lu_bw_data_files_dir, description_files_dir
+    global lu_bw_data_files_dir, description_files_dir, time_column, reindex_period, integration_type, integration_freq
 
     lu_bw_data_files_dir = os.path.expanduser(config_data["lu_bw_data_files_dir"])
-
     description_files_dir = os.path.expanduser(config_data["description_files_dir"])
+
+    time_column = config_data["lu_bw_prepreocesor"]["time_column"]
+    reindex_period = config_data["lu_bw_prepreocesor"]["reindex_period"]
+    integration_type = config_data["lu_bw_prepreocesor"]["integration_type"]
+    integration_freq = config_data["lu_bw_prepreocesor"]["integration_freq"]
     
     
 def _main():
@@ -34,13 +42,30 @@ def _main():
     print("Loading from " + file_name)
     frames = pd.ExcelFile(file_name, index_col="timestamp",parse_dates=True)
     print(frames.sheet_names)
-    for name in frames.sheet_names[0:1]:
+    for name in frames.sheet_names:
         df = frames.parse(name,index_col="timestamp",parse_dates=True)
+
+
+
+        df = df.sort_index()
+        day = df.groupby(pd.Grouper(freq=integration_freq))
+        if integration_type == "MEAN":
+            df = day.mean()
+        elif integration_type == "MEADIAN":             
+            df = day.median()
+        elif integration_type == "MIN":                 
+            df = day.min()
+        elif integration_type == "MAX":                 
+            df = day.max()
+
+
+
         
-        date_range = pd.date_range(start='2017-1-1',end='2018-01-01' , freq='30T')
+        
+        date_range = pd.date_range(start=reindex_period[0], end=reindex_period[1], freq=integration_freq)
         date_range = date_range[0:date_range.shape[0] - 1]
         df = df.reindex(date_range)
-
+        
         df["P1"] =  pd.to_numeric(df["P1"])
         df["P2"] =  pd.to_numeric(df["P2"])
 
