@@ -7,6 +7,7 @@ import edward as ed
 from scipy.stats import norm
 from edward.models import Normal
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
 
 
 
@@ -60,6 +61,7 @@ def main():
 
 
 
+    saver = tf.train.Saver()
     
     rs = np.random.RandomState(0)
     inputs_1 = np.linspace(0,2 , num=400, dtype=np.float32)
@@ -70,41 +72,55 @@ def main():
                         qb_0.sample(), qb_1.sample())
      for _ in range(10)])
 
+
+    init_op = tf.global_variables_initializer()
+    ed.get_session().run(init_op)
+    outputs = mus.eval(session=ed.get_session())
+    print(outputs)
+    print("------------------")
+
     
     inference = ed.KLqp({W_0: qW_0, b_0: qb_0,
                          W_1: qW_1, b_1: qb_1}, data={y: y_train})
+    
     inference.run(n_iter=1000,n_samples=5)
 
 
 
+    print("Saving")
+    saver.save(ed.get_session(), 'models/edward_model')
+    outputs = mus.eval(session=ed.get_session())
+    print(outputs)
+    print("------------------")
+
+    
     print("Done")
 
-    outputs = mus.eval()
+    
+    
+    # plt.figure(figsize=(15,13), dpi=100)
+    
+    # plt.subplot(2,1,1)
+    # plt.plot(np.arange(0, len(y_train)),y_train, 'ks', color="blue", linewidth=1.5)
+    # plt.title("Edward: Train Data")
+    # plt.xlabel("point[i]")
+    # plt.ylabel("output")
+    
+
+    # plt.subplot(2,1,2)
+
+    # plt.plot(np.linspace(0, len(outputs[0].T), num=len(y_train)),y_train, 'ks', color="blue", linewidth=1.5)
+    
+    # plt.plot(np.arange(len(outputs[0].T)), outputs[0].T, 'r', lw=2, alpha=0.5, label='posterior draws')
+    # plt.plot(np.arange(len(outputs[0].T)), outputs[1:].T, 'r', lw=2, alpha=0.5)
+
 
     
-    plt.figure(figsize=(15,13), dpi=100)
-    
-    plt.subplot(2,1,1)
-    plt.plot(np.arange(0, len(y_train)),y_train, 'ks', color="blue", linewidth=1.5)
-    plt.title("Edward: Train Data")
-    plt.xlabel("point[i]")
-    plt.ylabel("output")
-    
+    # plt.title("Edward: Model")
+    # plt.xlabel("point[i]")
+    # plt.ylabel("output")
 
-    plt.subplot(2,1,2)
-
-    plt.plot(np.linspace(0, len(outputs[0].T), num=len(y_train)),y_train, 'ks', color="blue", linewidth=1.5)
-    
-    plt.plot(np.arange(len(outputs[0].T)), outputs[0].T, 'r', lw=2, alpha=0.5, label='posterior draws')
-    plt.plot(np.arange(len(outputs[0].T)), outputs[1:].T, 'r', lw=2, alpha=0.5)
-
-
-    
-    plt.title("Edward: Model")
-    plt.xlabel("point[i]")
-    plt.ylabel("output")
-
-    plt.show()
+    # plt.savefig("edward_example_bnn.png", bbox_inches='tight')
 
     
     

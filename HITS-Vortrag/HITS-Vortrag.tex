@@ -11,7 +11,7 @@
 \titlelogo{myimage}
 
 
-\title[Short title]{Erstellung und Evaluierung stochastischer Regressionsmodelle auf Basis heterogener Messnetzwerke.}
+\title[HITS-Vortrag]{Erstellung und Evaluierung stochastischer Regressionsmodelle auf Basis heterogener Messnetzwerke.}
 \subtitle{Bachelor Arbeit, Betreuer - Dr. Johannes Riesterer, Dr. Sebastian Lerch}
 \author{Stanislav Arnaudov}
 
@@ -55,13 +55,22 @@
   \frametitle{Daten}
   \begin{itemize}
   \item Heterogenes Netzwerk von Feinstaubsensoren in Stuttgart.\\
-   \item Daten aus:
+  \item Daten aus:
     \begin{itemize}
     \item LU-BW (\textit{Landesanstalt für Umwelt, Messungen und Naturschutz Baden-Württemberg}) - \textbf{3 Sensoren} hocher Qualität.
     \item \textit{luftdaten.info} -- Daten aus einer großen Menge unsicherer Sensoren.
     \end{itemize}
-    \item Zeitraum: von 2017 bis jetzt.
+  \item Zeitraum: von 2017 bis jetzt.
   \end{itemize}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \includegraphics[scale=0.2]{images/SBC_1}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \includegraphics[scale=0.2]{images/SBC_2}
+    \end{column}
+  \end{columns}
 
 \end{frame}
 
@@ -153,21 +162,44 @@
         
       \end{tikzpicture}
       
-    \item  Loss Functions -- Wahrscheinlichkeitsverteilungen (Proper Scoring Rules).
+    \item  Loss Functions -- Wahrscheinlichkeitsverteilungen.
     \end{itemize}
   
 \end{frame}
 
-
 \begin{frame}
-  \frametitle{Evaluierung der Modelle}
-  \begin{itemize}
-  \item keine Punktschätzung, sondern Wahrscheinlichkeitsverteilung
-    \includegraphics[scale=0.5]{images/graph_2}
-  \item Proper Scoring Rules -- Evaluierung der vorhergesagten Wahrscheinlichkeitsverteilungen.
-  \end{itemize}
+  \frametitle{Evaluierung von Modellen}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \includegraphics[scale=0.2]{images/cross_model_scoring_0}
+      \includegraphics[scale=0.2]{images/cross_model_scoring_2}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \includegraphics[scale=0.23]{images/scroring_nomral_uo_std5_0}
+      \includegraphics[scale=0.23]{images/scroring_nomral_uo_std5_2}
+    \end{column}
+  \end{columns}
 \end{frame}
 
+\begin{frame}
+  \frametitle{BNN mit Edward und Tensorflow}
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \begin{itemize}
+      \item Daten - Kosinus mit Rauschen
+      \item Zweidimensionaler Eingaberaum: $y = cos(x_1 + x_2) + \epsilon, \newline \epsilon\sim N(0, 0.2)$
+        \item Eindimensionale Repräsentation
+        \begin{itemize}
+        \item Auswertung vom Modell über die Eingabedaten
+        \item X-Achse - Index vom entsprechenden Datenpunkt
+        \end{itemize} 
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \includegraphics[scale=0.225]{images/edward_example_bnn}
+    \end{column}
+  \end{columns}
+\end{frame}
 
 \end{document}
 

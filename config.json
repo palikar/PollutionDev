@@ -23,6 +23,7 @@
         ],
         "time_column": "timestamp",
         "duplicates_resolution": "MEAN",
+        "files_list_file": "~/code/pollution/env/downloaded_files_0.txt",
         "check_day_for_sensors": true,
         "good_sensors_list_file": "~/code/pollution/env/saturated_sensors_list.txt",
         "all_sensors_list_file": "~/code/pollution/env/all_sensors_list.txt",
@@ -47,5 +48,12 @@
         "missing_entries_threshold": 930,
         "reindexed_frames_file": "~/code/pollution/env/reindexed_frames_on_description.txt",
         "missing_entries_resolution": "MEAN"
+    },
+    "loader_module" : {
+        "folder" : "",
+        "ingored_sensors_files": [],
+        "period" : ["2017-01-01","2018-01-01"],
+        "freq": "30T",
+        "final_df_name": "final_data_frame_30T.csv"
     }
 }
