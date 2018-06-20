@@ -19,7 +19,6 @@ keep_columns = None
 time_column = None
 duplicates_resolution = None
 min_sensor_cnt = None
-files_list_file = None
 good_sensors_list_file = None
 all_sensors_list_file = None
 good_sensors_data_files_list = None
@@ -36,7 +35,7 @@ id_columnreindex_period = None
 sensors_on_date = {}
 
 def _read_config(config_data):
-    global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt, files_list_file, all_sensors_list_file, good_sensors_list_file, good_sensors_data_files_list, day_integration_period, day_integration_type, missing_data_cnt_threshold, missing_data_resolution, bad_missing_data_sensors, values_columns, id_column,id_columnreindex_period
+    global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt, all_sensors_list_file, good_sensors_list_file, good_sensors_data_files_list, day_integration_period, day_integration_type, missing_data_cnt_threshold, missing_data_resolution, bad_missing_data_sensors, values_columns, id_column,id_columnreindex_period
     print("Reading config data")
 
     files_dir = os.path.expanduser(config_data["data_files_dir"])
@@ -45,7 +44,6 @@ def _read_config(config_data):
     time_column = config_data["preprocess_module"]["time_column"]
     duplicates_resolution = config_data["preprocess_module"]["duplicates_resolution"]
     min_sensor_cnt = config_data["preprocess_module"]["min_sensor_cnt"]
-    files_list_file = os.path.expanduser(config_data["preprocess_module"]["files_list_file"])
     good_sensors_list_file = os.path.expanduser(config_data["preprocess_module"]["good_sensors_list_file"])
     all_sensors_list_file = os.path.expanduser(config_data["preprocess_module"]["all_sensors_list_file"])
     good_sensors_data_files_list = os.path.expanduser(config_data["preprocess_module"]["good_sensors_data_files_list"])
@@ -147,6 +145,7 @@ def _main():
 
     
     if "--sort-end-frames" in sys.argv:
+        print("Sorting data frames according to date")
         data_files = [os.path.join(files_dir, f) for f in os.listdir(files_dir)
                       if os.path.isfile(os.path.join(files_dir, f))]
         size = len(data_files)
@@ -176,28 +175,31 @@ def _process_file(f):
         format='%Y-%m-%d-%H-%M')
 
 
+    #Checking for duplicates and resolving them with a given strategy
     if df[time_column].unique().size != df[time_column].count():
         # print("Resolving duplicates")
         # print("Duplicates found. Perfoerming resolution on the duplicates")
+        dup_group = df.groupby(time_column, as_index=False,sort=True)
         if duplicates_resolution == "MEAN":
-            df = df.groupby(time_column, as_index=False,sort=True).mean().reset_index()
+            df = dup_group.mean().reset_index()
         elif duplicates_resolution == "MEADIAN":
-            df = df.groupby(time_column, as_index=False,sort=True).median().reset_index()
+            df = dup_group.median().reset_index()
         elif duplicates_resolution == "MIN":
-            df = df.groupby(time_column, as_index=False,sort=True).min().reset_index()
+            df = dup_group.min().reset_index()
         elif duplicates_resolution == "MAX":
-            df = df.groupby(time_column, as_index=False,sort=True).max().reset_index()
+            df = dup_group.max().reset_index()
  
 
-
+    #Performing the desired integration of all the data in a day
+    day = df.groupby(pd.Grouper(key=time_column, freq=day_integration_period))
     if day_integration_type == "MEAN":
-        df = df.groupby(pd.Grouper(key=time_column, freq=day_integration_period)).mean()
+        df = day.mean()
     elif day_integration_type == "MEADIAN":             
-        df = df.groupby(pd.Grouper(key=time_column, freq=day_integration_period)).median()
+        df = day.median()
     elif day_integration_type == "MIN":                 
-        df = df.groupby(pd.Grouper(key=time_column, freq=day_integration_period)).min()
+        df = day.min()
     elif day_integration_type == "MAX":                 
-        df = df.groupby(pd.Grouper(key=time_column, freq=day_integration_period)).max()
+        df = day.max()
     
 
     
@@ -236,7 +238,7 @@ def _process_file(f):
         )
     else:
         df.to_csv(
-            os.path.join(files_dir + "end_data_frame_"+id+".cvs"),
+            os.path.join(files_dir + "end_data_frame_"+id+".csv"),
             sep=";",
             columns=list(rename_dict.values()),
             mode="a",

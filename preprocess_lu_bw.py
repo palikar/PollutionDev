@@ -74,7 +74,7 @@ def _main():
         plt.cla()
         plt.close()
         plt.clf()
-        df.rolling(100).mean().plot(linewidth=1.0, style = ['r-', 'b--'], grid = True,figsize=(13, 11), title="Rolling avrages " + id)
+        df.rolling(100).mean().plot(linewidth=1.0, style = ['r-', 'b--'], grid = True,figsize=(13, 11), title="Rolling averages over P1 and P2 of " + id)
         plt.savefig(os.path.join(description_files_dir, "plots/" + id + "_rolling_avg.png"), bbox_inches='tight')
                 
         desc_file.write("Description after missing data correction\n-----------------------\n")

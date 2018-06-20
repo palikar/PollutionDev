@@ -3,26 +3,20 @@
 #+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
 #+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
 #+OPTIONS: timestamp:t title:t toc:t todo:t |:t
-#+TITLE: Things to be done
-#+DATE: <2018-05-29 Tue>
-#+AUTHOR: Stanislav Arnaudov
-#+EMAIL: arnaud@arnaudDev
-#+LANGUAGE: en
-#+SELECT_TAGS: export
-#+EXCLUDE_TAGS: noexport
-#+CREATOR: Emacs 25.1.1 (Org mode 9.1.13)
 
 
-* TODO Fix the slides
-* TODO Data Cleaning
+* DONE Fix the slixdes
+CLOSED: [2018-06-14 Thu 12:25]
+* DONE Data Cleaning
+CLOSED: [2018-06-14 Thu 12:25]
 - make graphs for the 'good sensors'
 - check the amount of information in the files themselves
-* TODO Understanding Edward
+* DONE Understanding Edward
+CLOSED: [2018-06-14 Thu 12:25]
 * TODO Understanding how the gated network thing is build and trained
 * TODO Building a Simple Gaussprocess Regressor (SciKit learn)
 * TODO Building a Simple MLP Classifier with soft max output (SciKit learn)
-* TODO Building a Simple Bayesian Neural Network (Edward)
-
-
-
-
+* DONE Building a Simple Bayesian Neural Network (Edward)
+CLOSED: [2018-06-14 Thu 12:25]
+* TODO Slides for Heidelberg
+* TODO Neural Network class for easier NN-Creation
