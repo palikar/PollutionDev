@@ -145,10 +145,11 @@ def _main():
         df.to_csv(f,sep=";",index_label=time_column)
         desc_file.close()
     np.savetxt(str(reindexed_frames_file), reindexed_frames,fmt='%s')
+
     df_before_p1.to_csv(env_dir+"/description_frame_p1_before.csv", sep=";")
     df_before_p2.to_csv(env_dir+"/description_frame_p2_before.csv", sep=";")
 
-    df_after_p1.to_csv(env_dir+"/description_frame_p2_after.csv", sep=";")
+    df_after_p1.to_csv(env_dir+"/description_frame_p1_after.csv", sep=";")
     df_after_p2.to_csv(env_dir+"/description_frame_p2_after.csv", sep=";")
 
 

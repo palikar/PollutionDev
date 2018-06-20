@@ -26,7 +26,7 @@
         "good_sensors_list_file": "~/code/pollution/env/saturated_sensors_list.txt",
         "all_sensors_list_file": "~/code/pollution/env/all_sensors_list.txt",
         "day_integration_type": "MEAN",
-        "day_integration_period": "1D",
+        "day_integration_period": "12H",
         "min_sensor_cnt": 340,
         "good_sensors_data_files_list": "~/code/pollution/env/saturated_data_files.txt",
         "read_good_files_from_list": false,
@@ -41,7 +41,7 @@
         "description_fils_dir": "~/code/pollution/env/desc_files/",
         "value_columns" : ["P2", "P1"],
         "reindex_period" : ["2017-01-01","2018-01-01"],
-        "reindex_freq": "1D",
+        "reindex_freq": "12H",
         "generate_plots": "true",
         "missing_entries_threshold": 30,
         "reindexed_frames_file": "~/code/pollution/env/reindexed_frames_on_description.txt",
@@ -49,7 +49,7 @@
     },
     "lu_bw_prepreocesor": {
         "integration_type": "MEAN",
-        "integration_freq": "1D",
+        "integration_freq": "12H",
         "reindex_period" : ["2017-01-01","2018-01-01"],
         "time_column": "timestamp"
     },
@@ -59,7 +59,7 @@
         ["~/code/pollution/env/reindexed_frames_on_description.txt",
          "/home/arnaud/code/pollution/env/low_days_data_sensors.txt"],
         "period" : ["2017-01-01","2018-01-01"],
-        "freq": "1D",
-        "final_df_name": "final_data_frame_1D.csv"
+        "freq": "12H",
+        "final_df_name": "final_data_frame_12H.csv"
     }
 }
