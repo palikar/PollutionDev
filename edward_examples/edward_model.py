@@ -24,12 +24,7 @@ def main():
     example_size = 100
     x_train_1 = np.linspace(0, 2, num=example_size,dtype=np.float32)
     x_train_2 = np.linspace(0, 2, num=example_size,dtype=np.float32)
-
-    
     rand = norm.rvs(size=example_size, loc=0, scale=0.1)
-
-
-    
     x_train = np.array([x_train_1, x_train_2]).T
     y_train = np.add(x_train_1,x_train_2,dtype=np.float32)
     y_train = np.sin(np.add(y_train, rand)).T
