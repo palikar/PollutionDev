@@ -3,7 +3,13 @@
 import json
 import os
 import sys
+import numpy as np
 
+
+
+
+if __name__ == '__main__':
+    unittest.main()
 
 
 def get_config_data(config_file_name):
@@ -51,9 +57,24 @@ def sanity_cahecks(config):
     if not os.path.isdir(os.path.expanduser(config["lu_bw_data_files_dir"])):
         os.makedirs(os.path.expanduser(config["lu_bw_data_files_dir"]))
 
-        
 
-        
+def generator(arrays, batch_size):
+    """Generate batches, one with respect to each array's first axis."""
+    starts = [0] * len(arrays)  # pointers to where we are in iteration
+    while True:
+        batches = []
+        for i, array in enumerate(arrays):
+            start = starts[i]
+            stop = start + batch_size
+            diff = stop - array.shape[0]
+            if diff <= 0:
+                batch = array[start:stop]
+                starts[i] += batch_size
+            else:
+                batch = np.concatenate((array[start:], array[:diff]))
+                starts[i] = diff
+            batches.append(batch)
+        yield batches
 if __name__ == '__main__':
     print("This file is not to be executed from the command line")
             

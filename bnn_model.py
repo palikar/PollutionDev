@@ -7,6 +7,10 @@ import edward as ed
 from edward.models import Normal
 from scipy.stats import norm
 from matplotlib import pyplot as plt
+import utils as ut
+
+
+
 class Bnn:
 
 
@@ -34,6 +38,7 @@ class Bnn:
             loc=self._neural_network(self.X,self.priorWs,self.priorBs),
             scale=0.1 
         )
+        self.y_ph = tf.placeholder(tf.float32, self.y.shape)
 
                 
         print("Building Network for evaluation")
@@ -101,41 +106,43 @@ class Bnn:
 
         qWs=list()
         qBs=list()
-
+        
         if len(layers_defs) == 0:
-            qWs.append(Normal(loc=tf.get_variable("q_W_input/loc",[input_dim, input_dim]),
-                              scale=tf.nn.softplus(tf.get_variable("q_W_input/scale",[input_dim, input_dim]))))
-            qBs.append(Normal(loc=tf.get_variable("q_B_input/loc", [input_dim]),
-                              scale=tf.nn.softplus(tf.get_variable("q_B_input/scale", [input_dim]))))
+            qWs.append(Normal(loc=tf.get_variable("q_W_input/loc",initializer=tf.random_uniform([input_dim, input_dim])),
+                              scale=tf.nn.softplus(tf.get_variable("q_W_input/scale", initializer=tf.random_uniform([input_dim, input_dim],minval=-10,maxval=10)))))
+            qBs.append(Normal(loc=tf.get_variable("q_B_input/loc", initializer=tf.random_uniform([input_dim])),
+                              scale=tf.nn.softplus(tf.get_variable("q_B_input/scale", initializer=tf.random_uniform([input_dim],minval=-10,maxval=10)))))
         else:
-            qWs.append(Normal(loc=tf.get_variable("q_W_input/loc",[input_dim, layers_defs[0]]),
-                              scale=tf.nn.softplus(tf.get_variable("q_W_input/scale",[input_dim, layers_defs[0] ]))))
-            qBs.append(Normal(loc=tf.get_variable("q_B_input/loc", [layers_defs[0]]),
-                              scale=tf.nn.softplus(tf.get_variable("q_B_input/scale", [layers_defs[0]]))))
+            qWs.append(Normal(loc=tf.get_variable("q_W_input/loc", initializer=tf.random_uniform([input_dim, layers_defs[0]],minval=-10,maxval=10)),
+                              scale=tf.nn.softplus(tf.get_variable("q_W_input/scale", initializer=tf.random_uniform([input_dim, layers_defs[0]])))))
+            qBs.append(Normal(loc=tf.get_variable("q_B_input/loc", initializer=tf.random_uniform([layers_defs[0]])),
+                              scale=tf.nn.softplus(tf.get_variable("q_B_input/scale", initializer=tf.random_uniform([layers_defs[0]])))))
         
         for i, layer in enumerate(layers_defs):
             if i == len(layers_defs) - 1:
-                qWs.append(Normal(loc=tf.get_variable("q_W_"+str(i)+"/loc",[layers_defs[i], layers_defs[i]]),
-                                    scale=tf.nn.softplus(tf.get_variable("q_W_"+str(i)+"/scale",[layers_defs[i], layers_defs[i]]))))
-                qBs.append(Normal(loc=tf.get_variable("q_B_"+str(i)+"/loc", [layers_defs[i]]),
-                                    scale=tf.nn.softplus(tf.get_variable("q_B_"+str(i)+"/scale", [layers_defs[i]]))))
+                qWs.append(Normal(loc=tf.get_variable("q_W_"+str(i)+"/loc", initializer=tf.random_uniform([layers_defs[i], layers_defs[i]],minval=-10,maxval=10)),
+                                    scale=tf.nn.softplus(tf.get_variable("q_W_"+str(i)+"/scale", initializer=tf.random_uniform([layers_defs[i], layers_defs[i]],minval=-10,maxval=10)))))
+                qBs.append(Normal(loc=tf.get_variable("q_B_"+str(i)+"/loc", initializer=tf.random_uniform([layers_defs[i]],minval=-10,maxval=10)),
+                                    scale=tf.nn.softplus(tf.get_variable("q_B_"+str(i)+"/scale", initializer=tf.random_uniform([layers_defs[i]],minval=-10,maxval=10)))))
 
             else:
-                qWs.append(Normal(loc=tf.get_variable("q_W_"+str(i)+"/loc",[layers_defs[i], layers_defs[i+1]]),
-                                    scale=tf.nn.softplus(tf.get_variable("q_W_"+str(i)+"/scale",[layers_defs[i], layers_defs[i+1]]))))
-                qBs.append(Normal(loc=tf.get_variable("q_B_"+str(i)+"/loc", [layers_defs[i+1]]),
-                                    scale=tf.nn.softplus(tf.get_variable("q_B_"+str(i)+"/scale",[layers_defs[i+1]]))))                
+                qWs.append(Normal(loc=tf.get_variable("q_W_"+str(i)+"/loc", initializer=tf.random_uniform([layers_defs[i], layers_defs[i+1]],minval=-10,maxval=10)),
+                                    scale=tf.nn.softplus(tf.get_variable("q_W_"+str(i)+"/scale", initializer=tf.random_uniform([layers_defs[i], layers_defs[i+1]],minval=-10,maxval=10)))))
+                qBs.append(Normal(loc=tf.get_variable("q_B_"+str(i)+"/loc", initializer=tf.random_uniform([layers_defs[i+1]],minval=-10,maxval=10)),
+                                    scale=tf.nn.softplus(tf.get_variable("q_B_"+str(i)+"/scale", initializer=tf.random_uniform([layers_defs[i+1]],minval=-10,maxval=10)))))               
 
+
+        
         if len(layers_defs) == 0:
-            qWs.append(Normal(loc=tf.get_variable("q_W_output/loc",[input_dim, output_dim]),
-                                scale=tf.nn.softplus(tf.get_variable("q_W_output/scale",[input_dim, output_dim]))))
-            qBs.append(Normal(loc=tf.get_variable("q_B_output/loc", [output_dim]),
-                          scale=tf.nn.softplus(tf.get_variable("q_B_output/scale",[output_dim]))))
+            qWs.append(Normal(loc=tf.get_variable("q_W_output/loc", initializer=tf.random_uniform([input_dim, output_dim],minval=-10,maxval=10)),
+                                scale=tf.nn.softplus(tf.get_variable("q_W_output/scale", initializer=tf.random_uniform([input_dim, output_dim],minval=-10,maxval=10)))))
+            qBs.append(Normal(loc=tf.get_variable("q_B_output/loc", initializer=tf.random_uniform([output_dim])),
+                          scale=tf.nn.softplus(tf.get_variable("q_B_output/scale", initializer=tf.random_uniform([output_dim])))))
         else:
-            qWs.append(Normal(loc=tf.get_variable("q_W_output/loc",[layers_defs[-1], output_dim]),
-                                scale=tf.nn.softplus(tf.get_variable("q_W_output/scale",[layers_defs[-1], output_dim]))))
-            qBs.append(Normal(loc=tf.get_variable("q_B_output/loc", [output_dim]),
-                          scale=tf.nn.softplus(tf.get_variable("q_B_output/scale",[output_dim]))))
+            qWs.append(Normal(loc=tf.get_variable("q_W_output/loc", initializer=tf.random_uniform([layers_defs[-1], output_dim],minval=-10,maxval=10)),
+                                scale=tf.nn.softplus(tf.get_variable("q_W_output/scale", initializer=tf.random_uniform([layers_defs[-1], output_dim])))))
+            qBs.append(Normal(loc=tf.get_variable("q_B_output/loc", initializer=tf.random_uniform([output_dim])),
+                          scale=tf.nn.softplus(tf.get_variable("q_B_output/scale", initializer=tf.random_uniform([output_dim],minval=-10,maxval=10)))))
 
         return qWs,qBs
 
@@ -144,17 +151,37 @@ class Bnn:
         ed.get_session().run(self.init_op)
 
     
-    def fit(self, X, y, n_iter=1000):
-
+    def fit(self, X, y, n_iter=1000, M=1, epochs=1, updates_per_batch=10):
         latent_vars = {}
-
+        N = y.shape[0]
         for var, q_var in zip(self.priorWs, self.qWs):
             latent_vars[var] = q_var
         for var, q_var in zip(self.priorBs, self.qBs):
             latent_vars[var] = q_var
-                    
-        inference = ed.ReparameterizationKLKLqp(latent_vars, data={self.y: y, self.X: X})
-        inference.run(n_iter=n_iter)
+
+        
+        n_batch = int(N / M)
+        n_epoch = epochs
+        data = ut.generator([X, y], M)
+
+        inference = ed.KLqp(latent_vars, data={self.y: self.y_ph})
+        inference.initialize(
+            n_iter=n_epoch * n_batch * updates_per_batch,
+            n_samples=5,
+            scale={self.y: N / M})
+        tf.global_variables_initializer().run()
+        print(str(inference.n_iter))
+        for i in range(n_epoch):
+            total_loss = 0
+            for _ in range(inference.n_iter // updates_per_batch //n_epoch):
+                X_batch, y_batch = next(data)
+                for _ in range(updates_per_batch):
+                    info_dict = inference.update({self.y_ph:y_batch, self.X:X_batch})
+                    inference.print_progress(info_dict)
+                total_loss += info_dict['loss']
+
+            print("\nEpoch "+str(i)+" complete. Total loss: " + str(total_loss))
+        
 
 
     def evaluate(self, x, samples_count):
@@ -183,7 +210,7 @@ def main():
     print("Starting BNN")
 
     model = Bnn("bnn_3_3")
-    model.build(2,1,100,layers_defs=[2])
+    model.build(2,1,100,layers_defs=[1])
 
     example_size = 40
     x_train_1 = np.linspace(0, 2, num=example_size,dtype=np.float32)
@@ -193,11 +220,9 @@ def main():
     y_train = np.multiply(x_train_1,x_train_2,dtype=np.float32)
     y_train = np.sin(np.add(y_train, rand)).T.reshape(example_size,1)
 
-    print(x_train.shape)
-    print(y_train.shape)
 
 
-    model.fit(x_train, y_train, n_iter=10000)
+    model.fit(x_train, y_train, n_iter=20000, M=40, updates_per_batch=3, epochs=5000)
 
     inputs_1 = np.linspace(0,2 , num=100, dtype=np.float32)
     inputs_2 = np.linspace(0,2 , num=100, dtype=np.float32)
