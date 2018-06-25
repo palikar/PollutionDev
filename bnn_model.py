@@ -12,7 +12,7 @@ from edward.models import Poisson
 from scipy.stats import norm
 from matplotlib import pyplot as plt
 import utils as ut
-
+import os
 
 
 class Bnn:
@@ -24,7 +24,7 @@ class Bnn:
         
         
 
-    def build(self, input_dim, output_dim, example_size, layers_defs=[3,3], activation=tf.nn.tanh,):
+    def build(self, input_dim, output_dim, layers_defs=[3,3], activation=tf.nn.tanh,):
 
 
         print("Generating prior Variables")
@@ -150,10 +150,10 @@ class Bnn:
 
 
     def reset(self):
-        ed.get_session().run(self.init_op)
+        ed.get_sessxion().run(self.init_op)
 
     
-    def fit(self, X, y, n_iter=1000, M=1, epochs=1, updates_per_batch=10):
+    def fit(self, X, y, M=1, epochs=1, updates_per_batch=10):
         latent_vars = {}
         N = y.shape[0]
         for var, q_var in zip(self.priorWs, self.qWs):
@@ -200,12 +200,21 @@ class Bnn:
         return res
         
 
-    def save(self, direcotry):
-        pass
+    def save(self, directory, name):
+        directory_exp = os.path.expanduser(directory)
+        if not os.path.isdir(directory_exp):
+            os.makedirs(directory_exp)            
+        self.saver.save(ed.get_session(), os.path.join(directory_exp,name))
+    
 
-    def load(self, direcotry):
-        pass
+    def load(self, directory, name):
+        sess =  ed.get_session()
+        directory_exp = os.path.expanduser(directory)
+        print(directory_exp + name)
+        self.saver = tf.train.import_meta_graph(directory_exp + name +".meta")
+        self.saver.restore(sess, tf.train.latest_checkpoint(directory_exp))
 
+    
         
         
         
@@ -219,6 +228,7 @@ def main():
     x_train_1 = np.linspace(0, 2, num=example_size,dtype=np.float32)
     x_train_2 = np.linspace(0, 2, num=example_size,dtype=np.float32)
     rand = norm.rvs(size=example_size, loc=0, scale=0.12)
+    x_train_2 = np.linspace(0, 2, num=example_size,dtype=np.float32)
 
     x_train = np.array([x_train_1, x_train_2]).T
 
@@ -228,7 +238,7 @@ def main():
     y_train /= 2
     # y_train += 1
     
-    model.fit(x_train, y_train, n_iter=20000, M=500, updates_per_batch=1, epochs=1000)
+    gmodel.fit(x_train, y_train, n_iter=20000, M=500, updates_per_batch=1, epochs=1000)
 
     inputs_1 = np.linspace(0,2 , num=example_size, dtype=np.float32)
     inputs_2 = np.linspace(0,2 , num=example_size, dtype=np.float32)
