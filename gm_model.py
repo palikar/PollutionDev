@@ -4,17 +4,22 @@
 import tensorflow as tf
 from scipy.stats import norm
 
-
+import os, sys
 
 import gpflow
+from gpflow.saver import Saver
 from gpflow.models.model import Model
 from gpflow.params.dataholders import Minibatch, DataHolder
 from gpflow.params import Parameter, ParamList
 from gpflow.training import AdamOptimizer, ScipyOptimizer
 from gpflow.decors import params_as_tensors, autoflow
-from scipy.stats import norm
 
+
+
+from scipy.stats import norm
 import numpy as np
+
+
 
 
 from matplotlib import pyplot as plt
@@ -26,7 +31,7 @@ float_type = gpflow.settings.float_type
 
 class Mdn(Model):
     
-    def __init__(self,model_id,X, Y, inner_dims=[10, 10,], activation=tf.nn.tanh, num_mixtures=5 ):
+    def __init__(self,model_id,X, Y, inner_dims=[10, 10,], activation=tf.nn.tanh, num_mixtures=5, model_file=None ):
         Model.__init__(self)
         self.model_id = model_id
 
@@ -34,10 +39,21 @@ class Mdn(Model):
         self.dims = [self.Din, ] + list(inner_dims) + [3 * num_mixtures]
         self.activation = activation
 
+        
+
         self.X = DataHolder(X)
         self.Y = DataHolder(Y)
 
-        self._create_network()
+        self.saver = Saver()
+
+        if model_file is None:
+            self._create_network()
+        else:
+            self.load(model_file)
+
+        
+
+        
 
         
     def _create_network(self):
@@ -83,15 +99,18 @@ class Mdn(Model):
         if not os.path.isdir(directory_exp):
             os.makedirs(directory_exp)            
 
-        self.saver.save(ed.get_session(), os.path.join(directory_exp,name))
+        self.saver.save(directory_exp+"/"+"model", [self.Ws, self.bs])
             
 
-    def load(self, directory, name):
-        sess =  ed.get_session()
-        directory_exp = os.path.expanduser(directory)
-        print(directory_exp + name)
-        self.saver = tf.train.import_meta_graph(directory_exp + name +".meta")
-        self.saver.restore(sess, tf.train.latest_checkpoint(directory_exp))
+    def load(self, path):
+        # sess =  ed.get_session()
+        # directory_exp = os.path.expanduser(directory)
+        # print(directory_exp + name)
+        # self.saver = tf.train.import_meta_graph(directory_exp + name +".meta")
+        # self.saver.restore(sess, tf.train.latest_checkpoint(directory_exp))
+        data = self.saver.load(path)
+        self.Ws = data[0]
+        self.bs = data[1]
 
 
 
@@ -99,11 +118,15 @@ class Mdn(Model):
     def fit(self, num_iter=10000):
         self.Ws.set_trainable(False)
         self.bs.set_trainable(True)
-        ScipyOptimizer().minimize(self, maxiter=num_iter)
+        ScipyOptimizer().minimize(self, maxiter=num_iter/3)
         # Continue, but only optimize the weights now
         self.Ws.set_trainable(True)
         self.bs.set_trainable(False)
-        ScipyOptimizer().minimize(self, maxiter=num_iter)
+        ScipyOptimizer().minimize(self, maxiter=num_iter/3)
+
+        self.Ws.set_trainable(True)
+        self.bs.set_trainable(True)
+        ScipyOptimizer().minimize(self, maxiter=num_iter/3)
 
 
 
@@ -118,19 +141,14 @@ def main():
 
 
     y_train = np.add(x_train_1,x_train_2)
-    y_train = np.sin(np.add(y_train, rand)).T.reshape(example_size,1)/2
+    y_train = np.sin(np.add(y_train, rand)).T.reshape(example_size,1)
     
-    model = Mdn("name", x_train, y_train, inner_dims=[10,10], num_mixtures=3)
-    
-
-
-    
-    # ScipyOptimizer().minimize(model, maxiter=10000)
-
-    
+    model = Mdn("name", x_train, y_train, inner_dims=[15,5], num_mixtures=3)
 
     model.fit(num_iter=10000)
 
+
+    model.save("/home/arnaud/code/pollution/env/models/my_model", "self")
 
 
     pis, mus, sigmas = model.eval_network(x_train)

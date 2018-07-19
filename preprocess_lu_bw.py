@@ -46,7 +46,10 @@ def _main():
         df = frames.parse(name,index_col="timestamp",parse_dates=True)
 
 
+        df["P1"].replace(to_replace = -999.0, value = np.NaN, inplace=True)
+        df["P2"].replace(to_replace = -999.0, value = np.NaN, inplace=True)
 
+        
         df = df.sort_index()
         day = df.groupby(pd.Grouper(freq=integration_freq))
         if integration_type == "MEAN":
@@ -60,18 +63,12 @@ def _main():
 
 
 
-        
-        
         date_range = pd.date_range(start=reindex_period[0], end=reindex_period[1], freq=integration_freq)
         date_range = date_range[0:date_range.shape[0] - 1]
         df = df.reindex(date_range)
         
         df["P1"] =  pd.to_numeric(df["P1"])
         df["P2"] =  pd.to_numeric(df["P2"])
-
-        df["P1"].replace(to_replace = -999.0, value = np.NaN, inplace=True)
-        df["P2"].replace(to_replace = -999.0, value = np.NaN, inplace=True)
-        
         id = name.split(" ")[0]
         rename_dict = {}
         rename_dict["P1"] = "P1_" + str(id)

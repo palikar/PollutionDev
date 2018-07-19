@@ -82,6 +82,7 @@ def _main():
                   if os.path.isfile(os.path.join(data_files_dir, f))]
     size = len(data_files)
     reindexed_frames = np.array([])
+
     for indx,f in enumerate(data_files):
         id = str(re.search('end_data_frame_(\d+)\.csv', f, re.IGNORECASE).group(1))
         if id  in  missig_data_sensors:

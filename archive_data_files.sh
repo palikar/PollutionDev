@@ -1,1 +1,1 @@
-tar -zcvf $1 ./env/data_files
+tar -zcvf $1 ./env/data_files ./env/description_frame_* ./env/desc_files/ ./env/reindexed_frames_on_description.txt ./env/saturated_data_files.txt ./env/saturated_sensors_list.txt ./env/data_files/final_data_frame*
