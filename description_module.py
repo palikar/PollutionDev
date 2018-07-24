@@ -82,7 +82,10 @@ def _main():
                   if os.path.isfile(os.path.join(data_files_dir, f))]
     size = len(data_files)
     reindexed_frames = np.array([])
+    too_far_sens = np.array([])
 
+
+    
     for indx,f in enumerate(data_files):
         id = str(re.search('end_data_frame_(\d+)\.csv', f, re.IGNORECASE).group(1))
         if id  in  missig_data_sensors:
@@ -142,9 +145,16 @@ def _main():
             df.rolling(100).mean().plot(linewidth=1.0, style = ['r-', 'b--'], grid = True,figsize=(13, 11), title="Rolling averages over P1 and P2 of " + id)
             plt.savefig(os.path.join(description_files_dir, "plots/" + id + "_rolling_plot_.png"), bbox_inches='tight')
 
+            
+
+        
+
+
+
         
         df.to_csv(f,sep=";",index_label=time_column)
         desc_file.close()
+    np.savetxt(str(reindexed_frames_file), reindexed_frames,fmt='%s')
     np.savetxt(str(reindexed_frames_file), reindexed_frames,fmt='%s')
 
     df_before_p1.to_csv(env_dir+"/description_frame_p1_before.csv", sep=";")

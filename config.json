@@ -35,7 +35,12 @@
         "bad_missing_data_sensors" :"/home/arnaud/code/pollution/env/low_days_data_sensors.txt",
         "values_columns": ["P1", "P2"],
         "id_column":"sensor_id",
-        "reindex_period" :["2017-01-01","2018-01-01"]
+        "reindex_period" :["2017-01-01","2018-01-01"],
+        "center": [
+            48.781342,
+            9.173868             
+        ],
+        "radius": 4
     },
     "description_module":{
         "description_fils_dir": "~/code/pollution/env/desc_files/",
@@ -45,6 +50,7 @@
         "generate_plots": "true",
         "missing_entries_threshold": 720,
         "reindexed_frames_file": "~/code/pollution/env/reindexed_frames_on_description.txt",
+        "far_away_sensors_file": "~/code/pollution/env/far_sensors.txt",
         "missing_entries_resolution": "MEAN"
     },
     "lu_bw_prepreocesor": {

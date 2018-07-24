@@ -30,12 +30,13 @@ bad_missing_data_sensors = None
 values_columns = None
 id_column = None
 id_columnreindex_period = None
-
+center = None
+radius = None
 
 sensors_on_date = {}
 
 def _read_config(config_data):
-    global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt, all_sensors_list_file, good_sensors_list_file, good_sensors_data_files_list, day_integration_period, day_integration_type, missing_data_cnt_threshold, missing_data_resolution, bad_missing_data_sensors, values_columns, id_column,id_columnreindex_period
+    global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt, all_sensors_list_file, good_sensors_list_file, good_sensors_data_files_list, day_integration_period, day_integration_type, missing_data_cnt_threshold, missing_data_resolution, bad_missing_data_sensors, values_columns, id_column,id_columnreindex_period, center, radius
     print("Reading config data")
 
     files_dir = os.path.expanduser(config_data["data_files_dir"])
@@ -56,6 +57,10 @@ def _read_config(config_data):
     values_columns = config_data["preprocess_module"]["values_columns"]
     id_column = config_data["preprocess_module"]["id_column"]
     reindex_period = config_data["preprocess_module"]["reindex_period"]
+
+    center = config_data["preprocess_module"]["center"]
+    radius = config_data["preprocess_module"]["radius"]
+
     
     
 
@@ -95,6 +100,7 @@ def _check_days_for_sensors (raw_files):
 
 
 bad_data_sensors = np.array([])
+
 def _main():
     
     print("Starting the proprocess module from the command line")
@@ -124,11 +130,28 @@ def _main():
             else:
                 print("Reading good sensors from: " + str(good_sensors_list_file))
                 good_sensors = open(good_sensors_list_file, "r").read().split('\n')
+
+            #perform location check
+            def location_check(s_id):
+                s_id = str(re.search('sensor_(\d+)\.csv', s_id, re.IGNORECASE).group(1))
+                (lat, lon) = ut.sensor_coord(s_id)
+                return ut.distanceInKmBetweenEarthCoordinates(center[0], center[1], lat, lon) < radius
+
+            good_sensors = list(filter(location_check, good_sensors))
+            print("Sensors that pass all the checks: ")
+            print(good_sensors)
+            
+
+            
             raw_files = list(filter(lambda f: str(re.search('sensor_(\d+)\.csv', f, re.IGNORECASE).group(0)) in good_sensors, raw_files))
+
         if "--save-raw-files-list" in sys.argv:
             raw_files_np = np.array(raw_files)
             np.savetxt(str(good_sensors_data_files_list), raw_files_np, fmt='%s')
 
+
+
+        
     if "--preprocess-files" in sys.argv:
         size = len(raw_files)
         print("Processing " + str(size) + " files")

@@ -4,8 +4,9 @@ import json
 import os
 import sys
 import numpy as np
-
-
+import subprocess
+import pandas as pd
+from math import cos, sin, atan2, sqrt
 
 
 if __name__ == '__main__':
@@ -75,6 +76,78 @@ def generator(arrays, batch_size):
                 starts[i] = diff
             batches.append(batch)
         yield batches
+
+
+
+def degreesToRadians(degrees):
+  return degrees * 3.14159265359 / 180;
+
+
+def distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2):
+    earthRadiusKm = 6371
+
+    dLat = degreesToRadians(lat2-lat1)
+    dLon = degreesToRadians(lon2-lon1)
+    
+    lat1 = degreesToRadians(lat1)
+    lat2 = degreesToRadians(lat2)
+
+    a = sin(dLat/2) * sin(dLat/2) + sin(dLon/2) * sin(dLon/2) * cos(lat1) * cos(lat2); 
+    c = 2 * atan2(sqrt(a), sqrt(1-a)); 
+    return earthRadiusKm * c
+
+
+
+
+def sensor_coord(s_id):
+    findCMD = 'find ./env/raw_files/*_'+ str(s_id)+".csv"
+    out = subprocess.Popen(findCMD,shell=True,stdin=subprocess.PIPE, 
+                           stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    (stdout, stderr) = out.communicate()
+    filelist = stdout.decode().split()
+    
+    df = pd.read_csv(filelist[0],sep=';')
+    lat = float(df["lat"][0])
+    lon = float(df["lon"][0])
+    return (lat, lon)
+    
+
+
+def list_coordinates(sensors):
+
+    center_lat = 48.781342
+    center_lon = 9.173868
+    
+    for sen in sensors:
+        s_id = sen.split("_")[1]
+        findCMD = 'find ./env/raw_files/*_' + "" + str(s_id) + ".csv"
+        out = subprocess.Popen(findCMD,shell=True,stdin=subprocess.PIPE, 
+                               stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        (stdout, stderr) = out.communicate()
+        filelist = stdout.decode().split()
+
+        df = pd.read_csv(filelist[0],sep=';')
+        lat = float(df["lat"][0])
+        lon = float(df["lon"][0])
+        print(s_id + ";" + str(lat) + ";" + str(lon))
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+        
+
 if __name__ == '__main__':
     print("This file is not to be executed from the command line")
             
+
+    
