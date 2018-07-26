@@ -98,7 +98,6 @@ def distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2):
 
 
 
-
 def sensor_coord(s_id):
     findCMD = 'find ./env/raw_files/*_'+ str(s_id)+".csv"
     out = subprocess.Popen(findCMD,shell=True,stdin=subprocess.PIPE, 
@@ -130,6 +129,44 @@ def list_coordinates(sensors):
         lat = float(df["lat"][0])
         lon = float(df["lon"][0])
         print(s_id + ";" + str(lat) + ";" + str(lon))
+
+
+
+
+def test_train_split(X, y, train_size=0.75, random=False):
+    if random:
+        return train_test_split(X, y, train_size=train_size, random_state=42)
+    else:
+        train_cnt = int(round(X.shape[0]*0.75, 0))
+        return X[0:train_cnt], X[train_cnt:], y[0:train_cnt], y[train_cnt:]
+    
+
+def select_data(station, value, period):
+    df = None
+    if period == "1D":
+        df = pd.read_csv("./env/data_frames/final_data_frame_1D.csv", sep=";", index_col="timestamp", parse_dates=True)
+    elif period == "12H":
+        df = pd.read_csv("./env/data_frames/final_data_frame_12H.csv", sep=";", index_col="timestamp", parse_dates=True)
+    elif period == "1H":
+        df = pd.read_csv("./env/data_frames/final_data_frame_1H.csv", sep=";", index_col="timestamp", parse_dates=True)
+
+    X, y = None, None
+    if value == "P1":
+        columns = list(filter(lambda col: "P1" in str(col),list(df.columns.values)))
+    elif value == "P2":
+        columns = list(filter(lambda col: "P2" in str(col),list(df.columns.values)))
+    else:
+        columns = list(filter(lambda col: "P2" in str(col) or "P1" in str(col),list(df.columns.values)))
+        
+    out_col = None
+    if station == "SBC":
+        out_col = -1
+    else:
+        out_col = -2
+
+    y = df[columns[out_col]].values
+    X = df[columns[0:-3]].values
+    return X, y
 
     
 

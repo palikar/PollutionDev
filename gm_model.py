@@ -148,7 +148,7 @@ def main():
     model.fit(num_iter=10000)
 
 
-    model.save("/home/arnaud/code/pollution/env/models/my_model", "self")
+    # model.save("/home/arnaud/code/pollution/env/models/my_model", "self")
 
 
     pis, mus, sigmas = model.eval_network(x_train)

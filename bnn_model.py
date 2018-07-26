@@ -37,27 +37,31 @@ class Bnn:
         
         print("Building Network for inference")
         #Final function of the network
+
         self.X = tf.placeholder(shape=[None, input_dim], name="input_placeholder", dtype=tf.float32)
         self.y = Normal(
-            loc=self._neural_network(self.X,self.priorWs,self.priorBs),
-            scale=0.1 
+            loc=self._neural_network(self.X, self.priorWs, self.priorBs),
+            scale=0.1 * tf.ones(50)
         )
-        self.y_ph = tf.placeholder(tf.float32, self.y.shape)
+        print(self.y.shape)
+        self.y_ph = tf.placeholder(tf.float32, self.y.shape, "output_placeholder")
 
                 
         print("Building Network for evaluation")
-        self.x_evaluation = tf.placeholder(shape=[None,input_dim], name="evaluation_placeholder", dtype=tf.float32)
+
+        self.x_evaluation = tf.placeholder(shape=[None,input_dim], name="evaluation_placeholder", dtype=tf.float32)        
         self.evaluation_sample_count = tf.placeholder(shape=None, name="evaluation_sample_count", dtype=tf.int32)        
+
         self.y_evaluation = tf.map_fn(
             lambda _: self._neural_network(
                 self.x_evaluation,
-                list(map(lambda x:x.sample(), self.qWs)),
-                list(map(lambda x:x.sample(), self.qBs))) ,
+                list(map(lambda W: W.sample(), self.qWs)),
+                list(map(lambda b: b.sample(), self.qBs))
+            ) ,
             tf.range(self.evaluation_sample_count),
             dtype=tf.float32)
 
-        
-        
+  
         
 
         self.init_op = tf.global_variables_initializer()
@@ -69,9 +73,10 @@ class Bnn:
 
     def _neural_network(self,x, Ws, bs):
         h = tf.tanh(tf.matmul(x, Ws[0]) + bs[0])
-        for W, b in zip(Ws[1:], bs[1:]):
+        for W, b in zip(Ws[1:-1], bs[1:-1]):
             h = tf.tanh(tf.matmul(h, W) + b)
-        return h
+        h = tf.matmul(h, Ws[-1]) + bs[-1]
+        return tf.reshape(h, [-1])
 
 
     def generate_prior_vars(self,input_dim, output_dim, layers_defs):
@@ -165,33 +170,33 @@ class Bnn:
         for var, q_var in zip(self.priorBs, self.qBs):
             latent_vars[var] = q_var
 
-        
-        n_batch = int(N / M)
-        n_epoch = epochs
-        data = ut.generator([X, y], M)
+        inference = ed.KLqp(latent_vars, data={self.y_ph:y, self.X:X})
+        inference.run(n_iter=epochs, n_samples=5)
 
-
-        inference = ed.KLqp(latent_vars, data={self.y: self.y_ph})
-        
-        inference.initialize(
-            n_iter=n_epoch * n_batch * updates_per_batch,
-            n_samples=5,
-            scale={self.y: N / M})
-        tf.global_variables_initializer().run()
-        print(str(inference.n_iter))
-        for i in range(n_epoch):
-            total_loss = 0
-            for _ in range(inference.n_iter // updates_per_batch //n_epoch):
-                X_batch, y_batch = next(data)
-                for _ in range(updates_per_batch):
-                    info_dict = inference.update({self.y_ph:y_batch, self.X:X_batch})
-                total_loss += info_dict['loss']
-            print("Epoch "+str(i)+" complete. Total loss: " + str(total_loss),  end="\r")
+            
+        # n_batch = int(N / M)
+        # n_epoch = epochs
+        # data = ut.generator([X, y], M)
+        # inference = ed.KLqp(latent_vars, data={self.y: self.y_ph})        
+        # inference.initialize(
+        #     n_iter=n_epoch * n_batch * updates_per_batch,
+        #     n_samples=5,
+        #     scale={self.y: N / M})
+        # tf.global_variables_initializer().run()
+        # print("Total iterations: " + str(inference.n_iter))
+        # for i in range(n_epoch):
+        #     total_loss = 0
+        #     for _ in range(inference.n_iter // updates_per_batch //n_epoch):
+        #         X_batch, y_batch = next(data)
+        #         for _ in range(updates_per_batch):
+        #             info_dict = inference.update({self.y_ph:y_batch, self.X:X_batch})
+        #         total_loss += info_dict['loss']
+        #     print("Epoch "+str(i)+" complete. Total loss: " + str(total_loss),  end="\r")
         
 
 
     def evaluate(self, x, samples_count):
-
+        
         res = self.y_evaluation.eval(
             feed_dict={
                 self.x_evaluation : x,
@@ -223,35 +228,47 @@ class Bnn:
         
 def main():
     print("Starting BNN")
+
+
     
     model = Bnn("bnn_3_3")
-    model.build(2,1,layers_defs=[20,20])
+    model.build(2,1,layers_defs=[3])
 
     example_size = 50
-    x_train_1 = np.linspace(0, 3, num=example_size,dtype=np.float32)
-    x_train_2 = np.linspace(0, 3, num=example_size,dtype=np.float32)
-    
 
-
+    x_train_1 = np.linspace(0, 2, num=example_size,dtype=np.float32)
+    x_train_2 = np.linspace(0, 2, num=example_size,dtype=np.float32)
     x_train = np.array([x_train_1, x_train_2]).T
 
     rand = norm.rvs(size=example_size, loc=0, scale=0.12)
     y_train = np.add(x_train_1,x_train_2,dtype=np.float32)
-    y_train = np.sin(np.add(y_train, rand)).T.reshape(example_size,1)
+    y_train = np.sin(np.add(y_train, rand)).T
 
 
+    print("X shape: " + str(x_train.shape))
+    print("Y shape: " + str(y_train.shape))
 
-    model.fit(x_train, y_train, M=example_size, updates_per_batch=2, epochs=10000)
+
+    model.fit(x_train, y_train, M=example_size, updates_per_batch=1, epochs=1000)
+
     
     
     
     samples=100
     outputs = model.evaluate(x_train, samples)
 
+    # outputs = outputs.T
+
+    outputs = outputs.reshape(samples, example_size)
+    # print(outputs.shape)
+    # print(outputs)
+
+
     
     plt.figure(figsize=(15,13), dpi=100)
     
     outputs = outputs.reshape(samples,example_size)
+    
     line, = plt.plot(np.arange(len(outputs[0].reshape(-1))), np.mean(outputs, 0).reshape(-1),'r', lw=2, label="posterior mean")
 
     plt.fill_between(np.arange(len(outputs[0].reshape(-1))),
@@ -259,7 +276,7 @@ def main():
                      np.percentile(outputs, 95, axis=0),
                      color=line.get_color(), alpha = 0.3, label="confidence_region")
     
-    plt.plot(np.linspace(0, len(outputs[0].reshape(-1)), num=len(y_train)), y_train, '.b', color="blue", linewidth=0.3,label='training data')
+    plt.plot(np.linspace(0, example_size, example_size), y_train.T, '.b', color="blue", linewidth=0.3,label='training data')
     
     
     plt.legend()
