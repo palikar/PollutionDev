@@ -165,7 +165,7 @@ samples drawn from them"
         return scoring_results, samples_range
         
 
-    def single_model_evaluation(self,y, model_id, plots_path=None, log_file=None, data_frame_file=None, barplots=False,last_score_only=True):
+    def single_model_evaluation(self,y, model_id, plots_path=None, log_file=None, data_frame_file=None, barplots=False, last_score_only=True):
 
         if not isinstance(y, np.ndarray):
             y = np.array([y])

@@ -116,17 +116,23 @@ class Mdn(Model):
 
 
     def fit(self, num_iter=10000):
+        self.compile()
+        opt = ScipyOptimizer()
+
+        iter_pro_stage = int(num_iter/3)
         self.Ws.set_trainable(False)
         self.bs.set_trainable(True)
-        ScipyOptimizer().minimize(self, maxiter=num_iter/3)
+
+        opt.minimize(self, maxiter=iter_pro_stage, disp=True)
+        
         # Continue, but only optimize the weights now
         self.Ws.set_trainable(True)
         self.bs.set_trainable(False)
-        ScipyOptimizer().minimize(self, maxiter=num_iter/3)
+        opt.minimize(self, maxiter=iter_pro_stage, disp=True)
 
         self.Ws.set_trainable(True)
         self.bs.set_trainable(True)
-        ScipyOptimizer().minimize(self, maxiter=num_iter/3)
+        opt.minimize(self, maxiter=iter_pro_stage, disp=True)
 
 
 
@@ -143,7 +149,7 @@ def main():
     y_train = np.add(x_train_1,x_train_2)
     y_train = np.sin(np.add(y_train, rand)).T.reshape(example_size,1)
     
-    model = Mdn("name", x_train, y_train, inner_dims=[15,5], num_mixtures=3)
+    model = Mdn("name", x_train, y_train, inner_dims=[15,5], num_mixtures=5)
 
     model.fit(num_iter=10000)
 

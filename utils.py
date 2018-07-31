@@ -141,7 +141,10 @@ def test_train_split(X, y, train_size=0.75, random=False):
         return X[0:train_cnt], X[train_cnt:], y[0:train_cnt], y[train_cnt:]
     
 
-def select_data(station, value, period):
+def select_data(station, value, period, include_lu_bw=False, output_value=None):
+    if output_value is None:
+        output_value = "P1"
+
     df = None
     if period == "1D":
         df = pd.read_csv("./env/data_frames/final_data_frame_1D.csv", sep=";", index_col="timestamp", parse_dates=True)
@@ -151,22 +154,38 @@ def select_data(station, value, period):
         df = pd.read_csv("./env/data_frames/final_data_frame_1H.csv", sep=";", index_col="timestamp", parse_dates=True)
 
     X, y = None, None
+    both_vals = False
     if value == "P1":
         columns = list(filter(lambda col: "P1" in str(col),list(df.columns.values)))
     elif value == "P2":
         columns = list(filter(lambda col: "P2" in str(col),list(df.columns.values)))
     else:
         columns = list(filter(lambda col: "P2" in str(col) or "P1" in str(col),list(df.columns.values)))
+        both_vals=True
         
-    out_col = None
-    if station == "SBC":
-        out_col = -1
-    else:
-        out_col = -2
-
+        
+    
+    out_col = columns.index(output_value+"_"+station)
+    out_name = columns[out_col]
     y = df[columns[out_col]].values
-    X = df[columns[0:-3]].values
-    return X, y
+    names=None
+    x=None
+    
+    if "P1_"+station in columns : columns.remove("P1_"+station)
+    if "P2_"+station in columns : columns.remove("P2_"+station)
+    
+    if not include_lu_bw:
+        if both_vals:
+            names = columns[0:-4]
+        else:
+            names = columns[0:-2]
+        X = df[names].values            
+    else:
+        names = columns    
+        X = df[columns].values
+        
+    
+    return X, y, names, out_name
 
     
 

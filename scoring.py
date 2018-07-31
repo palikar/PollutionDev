@@ -41,7 +41,6 @@ def log_edf_samples(y, m):
     s = np.repeat(bw, n)
 
     
-    #lsmixnC
     nrow = y.shape[0]
     ls = np.zeros(shape=nrow)
     W = 0.0
@@ -50,6 +49,11 @@ def log_edf_samples(y, m):
         for j in range(0, nrow):
             ls[j] = ls[j] + w[i] * norm.pdf(y[j], m[i], s[i])
 
+    if W == 0:
+        W = 0.00000000001
+    if 0 in ls:
+        ls =  ls + 0.0000000001
+    
     return np.log(W) - np.log(ls) 
 
 
