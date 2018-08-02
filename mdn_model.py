@@ -94,7 +94,7 @@ class Mdn(Model):
         return pis, mus, sigmas
 
 
-    def save(self, directory, name):
+    def save(self, directory):
         directory_exp = os.path.expanduser(directory)
         if not os.path.isdir(directory_exp):
             os.makedirs(directory_exp)            
@@ -103,11 +103,6 @@ class Mdn(Model):
             
 
     def load(self, path):
-        # sess =  ed.get_session()
-        # directory_exp = os.path.expanduser(directory)
-        # print(directory_exp + name)
-        # self.saver = tf.train.import_meta_graph(directory_exp + name +".meta")
-        # self.saver.restore(sess, tf.train.latest_checkpoint(directory_exp))
         data = self.saver.load(path)
         self.Ws = data[0]
         self.bs = data[1]
@@ -184,9 +179,6 @@ def main():
     plt.xlabel("point[i]")
     plt.ylabel("output")
     plt.show()
-
-
-    pass
 
 
 

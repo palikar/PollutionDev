@@ -189,6 +189,45 @@ samples drawn from them"
         return final
                 
 
+    def simple_evaluation(self, samples, y, model_id, df_file=None):
+        scores = {}
+
+        for rule_name, _ in self.scoring_rules.items():
+            scores[rule_name] = np.array([0.0]*y.shape[0])
+
+        for i in range(y.shape[0]):
+            for rule_name, rule_fun in self.scoring_rules.items():
+                scores[rule_name][i] = rule_fun(y[i], samples[i])
+
+        
+        
+        if df_file is not None:
+            data = {}
+            data["model_id"] = np.repeat(model_id, y.shape[0])
+            data["observation"] = np.squeeze(y)
+            for rule, scor in scores.items():
+                data[rule] = scor
+
+            df = pd.DataFrame(data)
+            if os.path.isfile(df_file):
+                df.to_csv(df_file,
+                          sep=";",
+                          mode="a",
+                          index=False,
+                          header=False)
+            else:
+                df.to_csv(df_file,
+                          index=False,
+                          sep=";")
+        
+        return scores
+
+            
+
+            
+            
+
+    
     def cross_model_log_file(self, log_file, res, y , model_ids):
         with open(log_file, "w") as out:
                 out.write("Logging for evaluation of models: " + str(model_ids) + "\n")
@@ -258,8 +297,7 @@ samples drawn from them"
             plt.tight_layout()
             plt.savefig(plots_path + "/cross_model_scroring_" + str(y_indx) +".png", bbox_inches='tight')
         
-        
-        
+         
 
     
     def cross_model_evaluation(self,y, model_ids, plots_path=None, log_file=None, data_frame_file=None, single_draw=True, last_score_only=True):

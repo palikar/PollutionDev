@@ -23,21 +23,25 @@ class Evaluator:
 
 
     def __init__(self, directory, description, out_val):
-        self.desc = directory + "/desc_file.txt"
-        self.directory = directory
-        self.out_val = out_val
-
         if not os.path.isdir(directory):
             os.mkdir(directory)
+            
+        self.directory = directory
+        self.desc = directory + "/desc_file.txt"
+        self.out_val = out_val
+
+
+
         with open(self.desc, "w") as desc_f:
-            desc_f.write(description)
-            desc_f.write("--------")
+            desc_f.write(description+"\n")
+            desc_f.write("--------\n")
             
 
 
     def set_names(self, col_name, res_name):
         self.col_name = col_name
         self.res_name = res_name
+
 
     def set_test_train_split(self, X_train, X_test, y_train, y_test ):
        self.X_train = X_train
@@ -52,16 +56,84 @@ class Evaluator:
         X[col] = shuffle(X[col])
         return X.T
 
-        
-        
-       
 
+    
+    def calculate_rules(self, y, scorer, model_name, sample_data, res_file):
+        scores = scorer.simple_evaluation(sample_data, y, model_name, df_file=res_file)
+        return scores
+
+            
+
+    def calculate_feature_imp(self, scorer, X, y, generate_sample_data, model_name, true_vals):
+        feature_imp = list(range(X.shape[1]))
+        for i in range(X.shape[1]):
+            print("Column: ", self.col_name[i], "(", i,"/",X.shape[1],")")
+            feature_imp[i] = {}
+            
+            X_shuf = self.gen_feature_importance_data(X, i)
+            sample_data = generate_sample_data(X_shuf)
+            
+            rules_val = self.calculate_rules(
+                y, scorer, model_name,
+                sample_data,
+                None)
+            for rule, vals in rules_val.items():
+                diff = vals - true_vals[rule]
+                print("Diff: ",rule," - ", diff.mean())
+                feature_imp[i][rule] = diff
+        return feature_imp
+
+    def log_rules(self, rules_val, header):
+        with open(self.desc, "a") as desc_f:
+            desc_f.write(header+"\n")
+            for rule, vals in rules_val.items():
+                print(rule,":", vals.mean())
+                desc_f.write(str(rule)+":"+str(vals.mean())+"\n")
+            desc_f.write("------------\n")            
+
+        
+
+    def log_feature_importance(self, df_file, feature_imp, model_name):
+        cols = ["Model", "feature", "rule", "diff_value"]
+        feature_imp_df = pd.DataFrame(columns=cols)
+        
+        for i in range(len(feature_imp)):
+            feature = self.col_name[i]
+            for rule, diff_val in feature_imp[i].items():
+                feature_imp_df = feature_imp_df.append(
+                    {
+                        cols[0] : model_name,
+                        cols[1] : feature,
+                        cols[2] : rule,
+                        cols[3] : diff_val.mean()
+                    }, ignore_index=True)
+        if not os.path.isfile(df_file):
+            feature_imp_df.to_csv(df_file, sep=";")
+        else:
+            feature_imp_df.to_csv(df_file, sep=";", mode="a", header=False)
+
+
+
+    
+    def mdn_samples(self, model, X, samples):
+        pis, mus, sigmas = model.eval_network(X)
+        mu = np.sum(pis.T*mus.T, axis=0)
+        std = np.sum(pis.T*sigmas.T, axis=0)
+        sample_data = np.array([
+            norm.rvs(size=samples, loc=mu[i], scale=std[i])
+            for i in range(mu.shape[0])
+        ])
+        return sample_data
+
+
+
+
+    
     def evaluate_bnn(self, model):
         pass
 
 
-    def evaluate_mdn(self, model):
-
+    def evaluate_mdn(self, model, samples=10000):
         print("Evaluating MDN model")
         
         pis, mus, sigmas = model.eval_network(self.X_train)
@@ -72,7 +144,7 @@ class Evaluator:
         res_test_mu = np.sum(pis.T*mus.T, axis=0)
         res_test_std = np.sum(pis.T*sigmas.T, axis=0)
 
-
+        sc = Scorer(max_samples=samples)
 
         print("Generating plots")
         plt.figure(figsize=(15,13), dpi=100)
@@ -101,85 +173,41 @@ class Evaluator:
         plt.xlabel("t")
         plt.ylabel(self.res_name)
         
-        
         plt.savefig(self.directory+"/mdn_data_plot.png", bbox_inches='tight')
-        # plt.show()
+        
 
-        
-        sc = Scorer(max_samples=5)
-        
+
         print("Calculating rules on the test set")
-        rules_val_test = {}
-        for i in range(self.y_test.shape[0]):
-            print("Looking at example", i)
-            sc.set_sampler("mdn_test", lambda n: norm.rvs(size=int(n), loc=res_test_mu[i], scale=res_test_std[i]))
-            rules = sc.single_model_evaluation(np.array(self.y_test[i]),"mdn_test",
-                                               data_frame_file=self.directory+"/evaluation_results_df.csv")
-            for rule, val in rules.items():
-                if rule not in rules_val_test.keys():
-                    rules_val_test[rule] = np.array([])
-                rules_val_test[rule] = np.append(rules_val_test[rule], val)
-            
-        with open(self.desc, "w+") as desc_f:
-            for rule, vals in rules_val_test.items():
-                print(rule,":", vals.mean())
-                desc_f.write("Results of MDN")
-                desc_f.write(str(rule)+":"+str(vals.mean()))
-                desc_f.write("------------")
+        sample_data = np.array([
+            norm.rvs(size=samples, loc=res_test_mu[i], scale=res_test_std[i])
+            for i in range(res_test_mu.shape[0])
+        ])
+        rules_val_test = self.calculate_rules(
+            self.y_test, sc, "mdn_test",
+            sample_data,
+            self.directory+"/evaluation_results_df.csv")
+        self.log_rules(rules_val_test, "Results of MDN on test")
+
 
         
         print("Calculating rules on the train set")
-        rules_val_train = {}
-        for i in range(self.y_test.shape[0]):
-            print("Looking at example", i)
-            sc.set_sampler("mdn_train", lambda n: norm.rvs(size=int(n), loc=res_train_mu[i], scale=res_train_std[i]))
-            rules = sc.single_model_evaluation(np.array(self.y_train[i]),"mdn_train",
-                                               data_frame_file=self.directory+"/evaluation_results_train_df.csv")
-            for rule, val in rules.items():
-                if rule not in rules_val_train.keys():
-                    rules_val_train[rule] = np.array([])
-                rules_val_train[rule] = np.append(rules_val_train[rule], val)
-                                    
-        with open(self.desc, "w+") as desc_f:
-            for rule, vals in rules_val_train.items():
-                print(rule,":", vals.mean())
-                desc_f.write("Results of MDN")
-                desc_f.write(str(rule)+":"+str(vals.mean()))
-                desc_f.write("------------")
+        sample_data = np.array([
+            norm.rvs(size=samples, loc=res_train_mu[i], scale=res_train_std[i])
+            for i in range(res_train_mu.shape[0])
+        ])
+        rules_val_train = self.calculate_rules(
+            self.y_train, sc, "mdn_train",
+            sample_data,
+            self.directory+"/evaluation_results_train_df.csv")
+        self.log_rules(rules_val_train, "Results of MDN on train")
 
-        print("Calcualting feature importance on the test set")
-        featrue_imp = list(range(self.X_test.shape[1]))
-        for i in range(self.X_test.shape[1]):
-            featrue_imp[i] = {}
-
-            X_shuf = self.gen_feature_importance_data(self.X_test, i)            
-            pis, mus, sigmas = model.eval_network(X_shuf)
-            mu = np.sum(pis.T*mus.T, axis=0)
-            std = np.sum(pis.T*sigmas.T, axis=0)
-            print("Col: ", i)
-            rules_val = {}
-            for j in range(self.y_test.shape[0]):
-                print("Example: ", j)
-                sc.set_sampler("mdn_im", lambda n: norm.rvs(size=int(n), loc=res_test_mu[i], scale=res_test_std[i]))                
-                rules = sc.single_model_evaluation(np.array(self.y_test[j]),"mdn_im",data_frame_file=self.directory+"/evaluation_results_df.csv")
-                for rule, val in rules.items():
-                    if rule not in rules_val.keys():
-                        rules_val[rule] = np.array([])
-                    rules_val[rule] = np.append(rules_val[rule], val)
-
-            
-            for rule, vals in rules_val.items():
-                diff = vals - rules_val_test[rule]
-                print("Diff: ",rule,"",diff.mean())
-                featrue_imp[i][rule] = diff
-
-            
-        #save to df! (model, rule, col, score)
-            
-            
 
         
-
+        print("Calcualting feature importance on the test set")
+        feature_imp = self.calculate_feature_imp(sc, self.X_test, self.y_test, lambda X: self.mdn_samples(model, X, samples) , "mdn_feature_imp", rules_val_test)
+        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, "mdn_test")
+                
+        
 
                 
         
@@ -197,7 +225,9 @@ class Evaluator:
             for i in range(start_pos,end_pos)
         ], dtype=np.float32)
         mus = res.mean(axis=1)        
+
         np.savetxt(self.directory+"/empirical_result.txt", res)
+
         print("Generating plot")
         #generate plot
         plt.figure(figsize=(15,13), dpi=100)
@@ -213,10 +243,10 @@ class Evaluator:
         
         print("Calculating scoring rules")
         # calculate scoring rules
-        sc = Scorer(max_samples=10000)
+        sc = Scorer(max_samples=samples)
+
         rules_val = {}
         for i in range(start_pos,end_pos):
-            print("Looking at example", i-start_pos)
             sc.set_sampler("empirical", lambda n: res[i - start_pos])
             rules = sc.single_model_evaluation(np.array(y[i]),"empirical",
                                                  data_frame_file=self.directory+"/evaluation_results_df.csv")
@@ -225,12 +255,12 @@ class Evaluator:
                     rules_val[rule] = np.array([])
                 rules_val[rule] = np.append(rules_val[rule], [val])
 
-        with open(self.desc, "w+") as desc_f:
+        with open(self.desc, "a") as desc_f:
+            desc_f.write("Results of Empirical on test\n")
             for rule, vals in rules_val.items():
                 print(rule,":", vals.mean())
-                desc_f.write("Results of Empirical")
-                desc_f.write(str(rule)+":"+str(vals.mean()))
-                desc_f.write("------------")
+                desc_f.write(str(rule)+":"+str(vals.mean())+"\n")
+            desc_f.write("------------\n")
                 
 
             
@@ -238,23 +268,12 @@ class Evaluator:
 
         
 
-    
-
-# plots with the mean and std proper scoring rules in the dataframe
-# feature importance - interate columns, use scorerm generate rule
-# vecors, substract them from the original(unpermuted), log results in
-# DF (model(name, id), rule_col )
-
 
 
 
 def main():
-    # scorer = Scorer(min_samples=5, max_samples=10000, samples_cnt_step=30)
-    # scorer.set_sampler("nomral_uo_std5", lambda n: norm.rvs(size=int(n), loc=0, scale=5))
-    # res = scorer.single_model_evaluation(np.array([0.1]),"nomral_uo_std5",
-    #                                      data_frame_file="./evaluation_results.csv")
-    # print(res)
     pass
+
 
 
 

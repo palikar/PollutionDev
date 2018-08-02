@@ -135,7 +135,7 @@ def list_coordinates(sensors):
 
 def test_train_split(X, y, train_size=0.75, random=False):
     if random:
-        return train_test_split(X, y, train_size=train_size, random_state=42)
+        return train_test_split(X, y, train_size=train_size)
     else:
         train_cnt = int(round(X.shape[0]*0.75, 0))
         return X[0:train_cnt], X[train_cnt:], y[0:train_cnt], y[train_cnt:]

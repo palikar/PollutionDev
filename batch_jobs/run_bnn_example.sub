@@ -1,0 +1,16 @@
+cmd ./bnn_example.sh
+transfer_input_files = ./../bnn_model.py
+
+
+requesrequest_memory = 32 GB
+request_cpus = 16
+
++REQUESTED_WALLTIME = 3
+
+notify_user = ujevj@student.kit.edu
+notification = Always
+when_to_transfer_output = on_exit_or_evict
+output = $(Cluster)-$(Process)_job.out
+error = $(Cluster)-$(Process)_job.error
+log = $(Cluster)-$(Process)_job.log
+queue 1
