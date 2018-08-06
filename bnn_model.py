@@ -17,10 +17,10 @@ class Bnn:
 
     def __init__(self, model_id):
         self.model_id = model_id
-        
+
         
 
-    def build(self, input_dim, output_dim, layers_defs=[3,3], activation=tf.nn.tanh):
+    def build(self, input_dim, output_dim, layers_defs=[3,3], activation=tf.nn.tanh, examples=50):
 
 
         print("Generating prior Variables")
@@ -35,7 +35,7 @@ class Bnn:
         self.X = tf.placeholder(shape=[None, input_dim], name="input_placeholder", dtype=tf.float32)
         self.y = Normal(
             loc=self._neural_network(self.X, self.priorWs, self.priorBs),
-            scale=0.1 * tf.ones(50)
+            scale=0.1 * tf.ones(examples)
         )
         self.y_ph = tf.placeholder(tf.float32, self.y.shape, "output_placeholder")
 
@@ -54,7 +54,7 @@ class Bnn:
             tf.range(self.evaluation_sample_count),
             dtype=tf.float32)
         self.y_evaluation = tf.identity(self.y_evaluation, name="evaluation")
-        print(self.y_evaluation.name)        
+        # print(self.y_evaluation.name)        
 
         self.init_op = tf.global_variables_initializer()
         ed.get_session().run(self.init_op)
@@ -164,7 +164,6 @@ class Bnn:
 
     def reset(self):
         ed.get_sessxion().run(self.init_op)
-
     
     def fit(self, X, y, M=None, epochs=1, updates_per_batch=1, samples=30):
         latent_vars = {}
@@ -199,19 +198,25 @@ class Bnn:
                     info_dict = inference.update({self.y_ph:y_batch, self.X:X_batch})
                 total_loss += info_dict['loss']
             
-            print("Epoch "+str(i)+" complete. Total loss: " + str(total_loss),  end="\r")
+                print("Epoch "+str(i)+" complete. Total loss: " + str(total_loss))
         
 
 
     def evaluate(self, x, samples_count):
+
         op = tf.get_default_graph().get_tensor_by_name("evaluation:0")
+
+        x_evaluation = tf.get_default_graph().get_tensor_by_name("evaluation_placeholder:0")
+        evaluation_sample_count = tf.get_default_graph().get_tensor_by_name("evaluation_sample_count:0")
+
         sess=ed.get_session()        
         res = sess.run(op,
             feed_dict={
-                self.x_evaluation : x,
-                self.evaluation_sample_count : samples_count
+                x_evaluation : x,
+                evaluation_sample_count : samples_count
             }
-        )        
+        )
+        
         return res
         
 
@@ -225,7 +230,6 @@ class Bnn:
     def load(self, directory, name):
         sess =  ed.get_session()
         directory_exp = os.path.expanduser(directory)
-        print(directory_exp + name)
         self.saver = tf.train.import_meta_graph(directory_exp + name +".meta")
         self.saver.restore(sess, tf.train.latest_checkpoint(directory_exp))
 

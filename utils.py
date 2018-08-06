@@ -141,17 +141,17 @@ def test_train_split(X, y, train_size=0.75, random=False):
         return X[0:train_cnt], X[train_cnt:], y[0:train_cnt], y[train_cnt:]
     
 
-def select_data(station, value, period, include_lu_bw=False, output_value=None):
+def select_data(station, value, period, include_lu_bw=False, output_value=None, base_dir=None):
     if output_value is None:
         output_value = "P1"
 
     df = None
     if period == "1D":
-        df = pd.read_csv("./env/data_frames/final_data_frame_1D.csv", sep=";", index_col="timestamp", parse_dates=True)
+        df = pd.read_csv(base_dir + "/final_data_frame_1D.csv", sep=";", index_col="timestamp", parse_dates=True)
     elif period == "12H":
-        df = pd.read_csv("./env/data_frames/final_data_frame_12H.csv", sep=";", index_col="timestamp", parse_dates=True)
+        df = pd.read_csv(base_dir + "/final_data_frame_12H.csv", sep=";", index_col="timestamp", parse_dates=True)
     elif period == "1H":
-        df = pd.read_csv("./env/data_frames/final_data_frame_1H.csv", sep=";", index_col="timestamp", parse_dates=True)
+        df = pd.read_csv(base_dir + "/final_data_frame_1H.csv", sep=";", index_col="timestamp", parse_dates=True)
 
     X, y = None, None
     both_vals = False

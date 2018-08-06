@@ -83,6 +83,8 @@ class Evaluator:
                 feature_imp[i][rule] = diff
         return feature_imp
 
+
+
     def log_rules(self, rules_val, header):
         with open(self.desc, "a") as desc_f:
             desc_f.write(header+"\n")
@@ -108,9 +110,9 @@ class Evaluator:
                         cols[3] : diff_val.mean()
                     }, ignore_index=True)
         if not os.path.isfile(df_file):
-            feature_imp_df.to_csv(df_file, sep=";")
+            feature_imp_df.to_csv(df_file, sep=";", index=False)
         else:
-            feature_imp_df.to_csv(df_file, sep=";", mode="a", header=False)
+            feature_imp_df.to_csv(df_file, sep=";", mode="a", header=False, index=False)
 
 
 
@@ -127,11 +129,86 @@ class Evaluator:
 
 
 
+    def bnn_samples(self, model, X, samples):
+        res = model.evaluate(X, samples)
+        res = res.reshape(samples, X.shape[0]).T
+        return res
+
+
+
 
     
-    def evaluate_bnn(self, model):
-        pass
+    def evaluate_bnn(self, model, samples=10000):
 
+
+        res_train = model.evaluate(self.X_train, samples)
+        res_train = res_train.reshape(samples, self.X_train.shape[0])
+
+        res_test = model.evaluate(self.X_test, samples)
+        res_test = res_test.reshape(samples, self.X_test.shape[0])
+        
+        sc = Scorer(max_samples=samples)
+
+        print("Generating plots")
+        plt.figure(figsize=(15,13), dpi=100)
+
+        
+
+        plt.subplot(2,1,1)
+        plt.plot(np.arange(self.y_train.shape[0]), self.y_train, '-b', linewidth=1.0,label='Station ' + self.res_name)
+        plt.plot(np.arange(self.y_train.shape[0]), np.mean(res_train, 0).reshape(-1), 'r-', lw=2, label="Posterior mean")
+        plt.fill_between(np.arange(self.y_train.shape[0]),
+                         np.percentile(res_train, 5, axis=0),
+                         np.percentile(res_train, 95, axis=0),
+                         color = "red", alpha = 0.5, label="90% confidence region")        
+        plt.legend()
+        plt.title("Bayesian Neural Network(train set)")
+        plt.xlabel("t")
+        plt.ylabel(self.res_name)
+
+        
+        plt.subplot(2,1,2)
+        plt.plot(np.arange(self.y_test.shape[0]), self.y_test, '-b', linewidth=1.0,label='Station ' + self.res_name)
+        plt.plot(np.arange(self.y_test.shape[0]), np.mean(res_test, 0).reshape(-1), 'r-', lw=2, label="Posterior mean")
+        plt.fill_between(np.arange(self.y_test.shape[0]),
+                         np.percentile(res_test, 5, axis=0),
+                         np.percentile(res_test, 95, axis=0),
+                         color = "red", alpha = 0.5, label="90% confidence region")
+        plt.legend()
+        plt.title("Bayesian Neural Network(test set)")
+        plt.xlabel("t")
+        plt.ylabel(self.res_name)
+
+
+        plt.savefig(self.directory+"/bnn_data_plot.png", bbox_inches='tight')
+
+
+        print("Calculating rules on the test set")
+        sample_data = res_test.T
+
+
+        rules_val_test = self.calculate_rules(
+            self.y_test, sc, "bnn_test",
+            sample_data,
+            self.directory+"/evaluation_results_df.csv")
+        self.log_rules(rules_val_test, "Results of BNN on test")
+
+
+        
+        print("Calculating rules on the train set")
+        sample_data = res_train.T
+        rules_val_train = self.calculate_rules(
+            self.y_train, sc, "bnn_train",
+            sample_data,
+            self.directory+"/evaluation_results_train_df.csv")
+        self.log_rules(rules_val_train, "Results of BNN on train")
+
+
+
+        print("Calcualting feature importance on the test set")
+        feature_imp = self.calculate_feature_imp(sc, self.X_test, self.y_test, lambda X: self.bnn_samples(model, X, samples) , "mdn_feature_imp", rules_val_test)
+        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, "mdn_test")
+        
 
     def evaluate_mdn(self, model, samples=10000):
         print("Evaluating MDN model")
@@ -157,7 +234,7 @@ class Evaluator:
                          res_train_mu + res_train_std,
                          color="red", alpha=0.5, label="90 confidence region")
         plt.legend()
-        plt.title("Mixture Density Network")
+        plt.title("Mixture Density Network(train set)")
         plt.xlabel("t")
         plt.ylabel(self.res_name)
 
@@ -169,7 +246,7 @@ class Evaluator:
                          res_test_mu + res_test_std,
                          color="red", alpha=0.5, label="90% confidence region")
         plt.legend()
-        plt.title("Mixture Density Network")
+        plt.title("Mixture Density Network(test set)")
         plt.xlabel("t")
         plt.ylabel(self.res_name)
         
@@ -226,7 +303,7 @@ class Evaluator:
         ], dtype=np.float32)
         mus = res.mean(axis=1)        
 
-        np.savetxt(self.directory+"/empirical_result.txt", res)
+        # np.savetxt(self.directory+"/empirical_result.txt", res)
 
         print("Generating plot")
         #generate plot

@@ -1,7 +1,6 @@
 #!/home/arnaud/anaconda3/bin/python3.6
 
 
-
 import sys, os
 import pandas as pd
 import numpy as np
@@ -10,12 +9,55 @@ import math
 from scipy.stats import norm
 import properscoring as ps
 
+import tensorflow as tf
+
 
 def nrd(x):
     r = np.percentile(x, [0,25, 0.75])
     h = (r[1] - r[0])/1.34
     return 4 * 1.06 * min(math.sqrt(np.var(x)), h) * (x.shape[0])**(-1/5)
-    
+
+
+
+class TFProperScoring:
+
+    def __init__(self):
+        
+        self.dss_data = tf.placeholder(tf.float32, name="dss_data")
+        self.dss_observations = tf.placeholder(tf.float32, name="dss_observations")
+
+        data_mean =  tf.reduce_mean(self.dss_data)
+        v = tf.subtract(tf.reduce_mean(tf.pow(self.dss_data, 2)), tf.pow(data_mean, 2))
+        self.dss_res = tf.map_fn(lambda s:  tf.add(
+            tf.divide(tf.pow(tf.subtract(s, data_mean),2), v),
+            tf.multiply(2.0, tf.log(v))),
+                                 self.dss_observations, dtype=tf.float32, parallel_iterations=100)
+
+        
+    def log(self, y, data):
+        with tf.Session() as sess:
+            return sess.run(self.log_res,
+                            feed_dict={
+                                self.dss_data: data,
+                                self.dss_observations: y
+                            })
+
+        
+
+    def dss(self, y, data):
+        with tf.Session() as sess:
+            return sess.run(self.dss_res,
+                           feed_dict={
+                               self.dss_data: data,
+                               self.dss_observations: y
+                           })
+            
+
+        
+        
+        
+
+        
 
 
 def crps_edf_samples(y, data):
@@ -47,7 +89,7 @@ def log_edf_samples(y, m):
     for i in range(0, n):
         W = W + w[i]
         for j in range(0, nrow):
-            ls[j] = ls[j] + w[i] * norm.pdf(y[j], m[i], s[i])
+            ls[j] = ls[j] + w[i] * norm.pdf<(y[j], m[i], s[i])
 
     if W == 0:
         W = 0.00000000001
@@ -62,67 +104,76 @@ def log_edf_samples(y, m):
 def main():
     print("Starting")
 
-    fig, ax = plt.subplots(1, 1)
+    # fig, ax = plt.subplots(1, 1)
     
+
+
+
     r = norm.rvs(size=int(sys.argv[1]), loc=0, scale=5)
+    y = np.array([0.1, 20,1,2,3,4])
 
-    print("Mean: 0 , STD: 5")
-    y = np.array([0.1, 20])
+    scoring = TFProperScoring()
+
+    # print(scoring.dss(y,r))
+    print(log_edf_samples(y, r))
+
+
     
-    # print("Data" + str(y))
-    # scores = dss_edf_samples(y, r)
-    # print("DSS: " + str(scores))
-    # scores = log_edf_samples(y, r)
-    # print("LOG: " + str(scores))
-    # score = crps_edf_samples(y, r)
-    # print("CRPS: " + str(score))
+    
+    # # print("Data" + str(y))
+    # # scores = dss_edf_samples(y, r)
+    # # print("DSS: " + str(scores))
+    # # scores = log_edf_samples(y, r)
+    # # print("LOG: " + str(scores))
+    # # score = crps_edf_samples(y, r)
+    # # print("CRPS: " + str(score))
 
 
 
-    scores = np.empty(3, dtype=object)
-    scores[0] = np.array([])
-    scores[1] = np.array([])
-    scores[2] = np.array([])
-    for i in range(2, 1002, 20):
-        r = norm.rvs(size=i, loc=0, scale=5)
-        scores[0] = np.append(scores[0], dss_edf_samples(y, r)[0])
-        scores[1] = np.append(scores[1], log_edf_samples(y, r)[0])
-        scores[2] = np.append(scores[2], crps_edf_samples(y, r)[0])
+    # scores = np.empty(3, dtype=object)
+    # scores[0] = np.array([])
+    # scores[1] = np.array([])
+    # scores[2] = np.array([])
+    # for i in range(2, 1002, 20):
+    #     r = norm.rvs(size=i, loc=0, scale=5)
+    #     scores[0] = np.append(scores[0], dss_edf_samples(y, r)[0])
+    #     scores[1] = np.append(scores[1], log_edf_samples(y, r)[0])
+    #     scores[2] = np.append(scores[2], crps_edf_samples(y, r)[0])
     
 
-    # plt.figure(figsize=(15,13), dpi=100)
+    # # plt.figure(figsize=(15,13), dpi=100)
     
-    plt.subplot(2,1,1)
-    plt.plot(range(1,1000,20), scores[0], "g", linewidth = 1.3, label="DSS")
-    plt.plot(range(1,1000,20), scores[1], "r-", linewidth = 1.3, label="LOG")
-    plt.plot(range(1,1000,20), scores[2], "b--", linewidth = 1, label="CRPS")
-    plt.legend()
-    plt.title('Scoring rules for observation ' + str(y[0]) + " and Normal distribution with Mean: 0 , STD: 5")
-    plt.xlabel("Number of samples")
-    plt.ylabel("Rule score")
+    # plt.subplot(2,1,1)
+    # plt.plot(range(1,1000,20), scores[0], "g", linewidth = 1.3, label="DSS")
+    # plt.plot(range(1,1000,20), scores[1], "r-", linewidth = 1.3, label="LOG")
+    # plt.plot(range(1,1000,20), scores[2], "b--", linewidth = 1, label="CRPS")
+    # plt.legend()
+    # plt.title('Scoring rules for observation ' + str(y[0]) + " and Normal distribution with Mean: 0 , STD: 5")
+    # plt.xlabel("Number of samples")
+    # plt.ylabel("Rule score")
 
-    scores = np.empty(3, dtype=object)
-    scores[0] = np.array([])
-    scores[1] = np.array([])
-    scores[2] = np.array([])
-    for i in range(2, 1002, 20):
-        r = norm.rvs(size=i, loc=0, scale=5)
-        scores[0] = np.append(scores[0], dss_edf_samples(y, r)[1])
-        scores[1] = np.append(scores[1], log_edf_samples(y, r)[1])
-        scores[2] = np.append(scores[2], crps_edf_samples(y, r)[1])
+    # scores = np.empty(3, dtype=object)
+    # scores[0] = np.array([])
+    # scores[1] = np.array([])
+    # scores[2] = np.array([])
+    # for i in range(2, 1002, 20):
+    #     r = norm.rvs(size=i, loc=0, scale=5)
+    #     scores[0] = np.append(scores[0], dss_edf_samples(y, r)[1])
+    #     scores[1] = np.append(scores[1], log_edf_samples(y, r)[1])
+    #     scores[2] = np.append(scores[2], crps_edf_samples(y, r)[1])
         
 
 
-    plt.subplot(2,1,2)
-    plt.plot(range(1,1000,20), scores[0], "g", linewidth = 1.3, label="DSS")
-    plt.plot(range(1,1000,20), scores[1], "r-", linewidth = 1.3, label="LOG")
-    plt.plot(range(1,1000,20), scores[2], "b--", linewidth = 1, label="CRPS")
-    plt.legend()
-    plt.title('Scoring rules for observation ' + str(y[1]) + " and Normal distribution with Mean: 0 , STD: 5")
-    plt.xlabel("Number of samples")
-    plt.ylabel("Rule score")
+    # plt.subplot(2,1,2)
+    # plt.plot(range(1,1000,20), scores[0], "g", linewidth = 1.3, label="DSS")
+    # plt.plot(range(1,1000,20), scores[1], "r-", linewidth = 1.3, label="LOG")
+    # plt.plot(range(1,1000,20), scores[2], "b--", linewidth = 1, label="CRPS")
+    # plt.legend()
+    # plt.title('Scoring rules for observation ' + str(y[1]) + " and Normal distribution with Mean: 0 , STD: 5")
+    # plt.xlabel("Number of samples")
+    # plt.ylabel("Rule score")
 
-    plt.show()
+    # plt.show()
 
 
 if __name__ == '__main__':
