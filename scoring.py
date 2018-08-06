@@ -3,13 +3,12 @@
 
 import sys, os
 import pandas as pd
-import numpy as np
 from matplotlib import pyplot as plt
 import math
 from scipy.stats import norm
 import properscoring as ps
 
-import tensorflow as tf
+import numpy as np
 
 
 def nrd(x):
@@ -17,45 +16,6 @@ def nrd(x):
     h = (r[1] - r[0])/1.34
     return 4 * 1.06 * min(math.sqrt(np.var(x)), h) * (x.shape[0])**(-1/5)
 
-
-
-class TFProperScoring:
-
-    def __init__(self):
-        
-        self.dss_data = tf.placeholder(tf.float32, name="dss_data")
-        self.dss_observations = tf.placeholder(tf.float32, name="dss_observations")
-
-        data_mean =  tf.reduce_mean(self.dss_data)
-        v = tf.subtract(tf.reduce_mean(tf.pow(self.dss_data, 2)), tf.pow(data_mean, 2))
-        self.dss_res = tf.map_fn(lambda s:  tf.add(
-            tf.divide(tf.pow(tf.subtract(s, data_mean),2), v),
-            tf.multiply(2.0, tf.log(v))),
-                                 self.dss_observations, dtype=tf.float32, parallel_iterations=100)
-
-        
-    def log(self, y, data):
-        with tf.Session() as sess:
-            return sess.run(self.log_res,
-                            feed_dict={
-                                self.dss_data: data,
-                                self.dss_observations: y
-                            })
-
-        
-
-    def dss(self, y, data):
-        with tf.Session() as sess:
-            return sess.run(self.dss_res,
-                           feed_dict={
-                               self.dss_data: data,
-                               self.dss_observations: y
-                           })
-            
-
-        
-        
-        
 
         
 
@@ -86,10 +46,20 @@ def log_edf_samples(y, m):
     nrow = y.shape[0]
     ls = np.zeros(shape=nrow)
     W = 0.0
-    for i in range(0, n):
-        W = W + w[i]
-        for j in range(0, nrow):
-            ls[j] = ls[j] + w[i] * norm.pdf<(y[j], m[i], s[i])
+    
+
+    it = np.nditer(w, flags=['f_index'], op_flags= ['readwrite'])
+    while not it.finished:
+        i = it.index
+        W = W + it[0]
+        # it_in = np.nditer(ls, flags=['f_index'], op_flags= ['readwrite'])
+        # while not it_in.finished:
+        #     j = it_in.index
+        #     it_in[0] = it_in[0] + it[0] * norm.pdf(y[j], m[i], s[i])
+        #     it_in.iternext()
+
+        
+        it.iternext()
 
     if W == 0:
         W = 0.00000000001
@@ -105,20 +75,14 @@ def main():
     print("Starting")
 
     # fig, ax = plt.subplots(1, 1)
+
     
-
-
-
     r = norm.rvs(size=int(sys.argv[1]), loc=0, scale=5)
     y = np.array([0.1, 20,1,2,3,4])
 
-    scoring = TFProperScoring()
 
-    # print(scoring.dss(y,r))
     print(log_edf_samples(y, r))
 
-
-    
     
     # # print("Data" + str(y))
     # # scores = dss_edf_samples(y, r)
