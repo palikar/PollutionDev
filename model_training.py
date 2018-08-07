@@ -102,15 +102,18 @@ def main():
 
 
     
-    ev_samples_cnt = 20000
+    ev_samples_cnt = 55000
     
-    mdn_iter = 100000
-    mdn_layers = [50, 50]
-    mdn_mixture_cnt = 20
+    mdn_iter = 300000
+    mdn_layers = [1024,1024]
+    mdn_mixture_cnt = 10
+    mdn_id = "bnn_l"+str(mdn_layers)+"_i"+str(mdn_iter)+"_mc"+str(mdn_mixture_cnt)
+
 
     bnn_samples = 1
-    bnn_iter = 100
+    bnn_iter = 10
     bnn_layers = [5]
+    bnn_id = "bnn_l"+str(bnn_layers)+"_i"+str(bnn_iter)+"_s"+str(bnn_samples)
 
 
     
@@ -185,21 +188,21 @@ def main():
     if args.model == "bnn":
         print("Fitting the BNN")
         bnn_model = get_bnn()
-        ev.evaluate_bnn(bnn_model, samples=ev_samples_cnt)
+        ev.evaluate_bnn(bnn_model, bnn_id, samples=ev_samples_cnt)
     elif args.model == "mdn":
         print("Fitting the MDN")
         mdn_model = get_mdn()
-        ev.evaluate_mdn(mdn_model, samples=ev_samples_cnt)
+        ev.evaluate_mdn(mdn_model, mdn_id, samples=ev_samples_cnt)
     else:
         print("Fitting the MDN")
         mdn_model = get_mdn()
-        ev.evaluate_mdn(mdn_model, samples=ev_samples_cnt)
+        ev.evaluate_mdn(mdn_model, mdn_id, samples=ev_samples_cnt)
 
         tf.reset_default_graph()
         
         print("Fitting the BNN")
         bnn_model = get_bnn()
-        ev.evaluate_bnn(bnn_model, samples=ev_samples_cnt)
+        ev.evaluate_bnn(bnn_model,bnn_id, samples=ev_samples_cnt)
         
 
     ev.evaluate_empirical(samples=ev_samples_cnt)

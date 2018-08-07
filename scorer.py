@@ -23,6 +23,7 @@ samples drawn from them"
         self.scoring_rules["DSS"] = sc.dss_edf_samples
         self.scoring_rules["LOG"] = sc.log_edf_samples
         self.scoring_rules["CRPS"] = sc.crps_edf_samples
+        
         self.min_samples = min_samples
         self.max_samples = max_samples
         self.samples_cnt_step = samples_cnt_step

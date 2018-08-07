@@ -17,6 +17,8 @@ from bnn_model import *
 from mdn_model import *
 from empirica_model import *
 
+import properscoring as ps
+
 
 class Evaluator:
 
@@ -55,46 +57,51 @@ class Evaluator:
         X = data.T
         X[col] = shuffle(X[col])
         return X.T
+        
 
-
-    
-    def calculate_rules(self, y, scorer, model_name, sample_data, res_file):
-        scores = scorer.simple_evaluation(sample_data, y, model_name, df_file=res_file)
-        return scores
-
-            
-
-    def calculate_feature_imp(self, scorer, X, y, generate_sample_data, model_name, true_vals):
+    def calculate_feature_imp(self, X, fun, true_vals):
         feature_imp = list(range(X.shape[1]))
         for i in range(X.shape[1]):
             print("Column: ", self.col_name[i], "(", i,"/",X.shape[1],")")
             feature_imp[i] = {}
             
             X_shuf = self.gen_feature_importance_data(X, i)
-            sample_data = generate_sample_data(X_shuf)
+            scores_dict = fun(X_shuf)
             
-            rules_val = self.calculate_rules(
-                y, scorer, model_name,
-                sample_data,
-                None)
-            for rule, vals in rules_val.items():
+
+            for rule, vals in scores_dict.items():
                 diff = vals - true_vals[rule]
                 print("Diff: ",rule," - ", diff.mean())
                 feature_imp[i][rule] = diff
         return feature_imp
 
 
-
-    def log_rules(self, rules_val, header):
+    def log_scores(self, model_id, scores_dict, df_file, header):
         with open(self.desc, "a") as desc_f:
             desc_f.write(header+"\n")
-            for rule, vals in rules_val.items():
-                print(rule,":", vals.mean())
-                desc_f.write(str(rule)+":"+str(vals.mean())+"\n")
-            desc_f.write("------------\n")            
+            for rule, val in scores_dict.items():
+                print(rule,":", val)
+                desc_f.write(str(rule)+" : "+str(val)+"\n")
+            desc_f.write("------------\n")
+        
+        if df_file is not None:
+            data = {}
+            data["model_id"] = [model_id]
+            for rule, score in scores_dict.items():
+                data[rule] = [score]
+            df = pd.DataFrame(data)
+            if os.path.isfile(df_file):
+                df.to_csv(df_file,
+                          sep=";",
+                          mode="a",
+                          index=False,
+                          header=False)
+            else:
+                df.to_csv(df_file,
+                          index=False,
+                          sep=";")
 
         
-
     def log_feature_importance(self, df_file, feature_imp, model_name):
         cols = ["Model", "feature", "rule", "diff_value"]
         feature_imp_df = pd.DataFrame(columns=cols)
@@ -116,30 +123,139 @@ class Evaluator:
 
 
 
-    
-    def mdn_samples(self, model, X, samples):
-        pis, mus, sigmas = model.eval_network(X)
-        mu = np.sum(pis.T*mus.T, axis=0)
-        std = np.sum(pis.T*sigmas.T, axis=0)
-        sample_data = np.array([
-            norm.rvs(size=samples, loc=mu[i], scale=std[i])
-            for i in range(mu.shape[0])
+
+
+
+    def get_ranks(self, obs, samples):
+        sorted = np.sort(samples, axis=1, kind='quicksort')
+        return np.array([
+            np.searchsorted(sorted[j], obs[j])
+            for j in np.arange(obs.shape[0])
         ])
-        return sample_data
 
 
+    def generate_rank_hist(self, y, samples, image_file, heading ):
+        poss = self.get_ranks(y, samples).squeeze()
+        plt.figure(figsize=(15,13), dpi=100)
+        n_bins = 11
+        plt.hist(poss, bins=n_bins, density=True, facecolor='green', alpha=0.75, histtype='stepfilled', edgecolor='black', linewidth=1.0, rwidth=0.9)
+        plt.title(heading)
+        plt.xlabel("Rank")
+        plt.ylabel("Fraction")
+        plt.grid(True)
+        plt.savefig(image_file, bbox_inches='tight')
 
-    def bnn_samples(self, model, X, samples):
-        res = model.evaluate(X, samples)
-        res = res.reshape(samples, X.shape[0]).T
-        return res
-
-
-
+        
 
     
-    def evaluate_bnn(self, model, samples=10000):
+    def mixed_desnity(self, pis, mus, sigmas, y, j):
+        val = 0.0
+        for i in np.arange(pis.shape[1]):
+            val = val + pis[j][i] * norm.pdf(y, mus[j][i], sigmas[j][i])
+        return val
 
+
+    def sample_mixed(self, pis, mus, sigmas, j, size=1):
+        choice = np.random.choice(np.arange(0, pis.shape[1]), p=pis[j])
+        return norm.rvs(size=size, loc=mus[j][choice], scale=sigmas[j][choice])
+
+
+    def mdn_rules(self, model, X, y, samples):
+        pis, mus, sigmas = model.eval_network(X)
+        res_mu = np.sum(pis.T*mus.T, axis=0)
+        sampled = np.array([ self.sample_mixed(pis, mus, sigmas, j, size=samples) for j in range(y.shape[0])])
+        
+        log_scores = -np.log(np.array([self.mixed_desnity(pis, mus, sigmas, y, j) for j, y in enumerate(y)]).clip(0.001))
+        crps_scores = np.array([ ps.crps_gaussian(y, mu=res_mu[j], sig=sampled[j,:].std()) for j, y in enumerate(y)])
+        dss_scores = np.array([sc.dss_norm(y, loc=res_mu[j], scale=sampled[j,:].std()) for j, y in enumerate(y)])
+
+        scores = dict()
+        scores['CRPS'] = crps_scores.mean()
+        scores['LS'] = log_scores.mean()
+        scores['DSS'] = dss_scores.mean()
+        # print(scores['DSS'])
+        
+        return scores
+
+
+    def evaluate_mdn(self, model, model_id, samples=10000):
+        print("Evaluating MDN model")
+
+        pis_train, mus_train, sigmas_train = model.eval_network(self.X_train)
+        res_train_mu = np.sum(pis_train.T*mus_train.T, axis=0)
+        sampled_train = np.array([ self.sample_mixed(pis_train, mus_train, sigmas_train, j, size=samples) for j in range(self.y_train.shape[0])])
+        
+        pis_test, mus_test, sigmas_test = model.eval_network(self.X_test)
+        res_test_mu = np.sum(pis_test.T*mus_test.T, axis=0)
+        sampled_test = np.array([ self.sample_mixed(pis_test, mus_test, sigmas_test, j, size=samples) for j in range(self.y_test.shape[0])])
+
+        print("Generating plots")
+        plt.figure(figsize=(15,13), dpi=100)
+        plt.subplot(2,1,1)
+        plt.plot(np.arange(self.y_train.shape[0]), self.y_train, '-b', linewidth=1.0,label='Station ' + self.res_name)
+        plt.plot(np.arange(self.y_train.shape[0]), res_train_mu, '-r', color="green", linewidth=2.4,label='Distribution mean')        
+        plt.fill_between(np.arange(self.y_train.shape[0]),
+                         np.percentile(sampled_train, 5, axis=1),
+                         np.percentile(sampled_train, 95, axis=1),
+                         color="red", alpha=0.5, label="90 confidence region")        
+        plt.legend()
+        plt.title("Mixture Density Network(train set)")
+        plt.xlabel("t")
+        plt.ylabel(self.res_name)
+        plt.subplot(2,1,2)
+        plt.plot(np.arange(self.y_test.shape[0]), self.y_test, '-b', linewidth=1.0,label='Station ' + self.res_name)
+        plt.plot(np.arange(self.y_test.shape[0]), res_test_mu, '-r', color="green", linewidth=2.4,label='Distribution mean')
+        plt.fill_between(np.arange(self.y_test.shape[0]),
+                         np.percentile(sampled_test, 5, axis=1),
+                         np.percentile(sampled_test, 95, axis=1),
+                         color="red", alpha=0.5, label="90 confidence region")
+        plt.legend()
+        plt.title("Mixture Density Network(test set)")
+        plt.xlabel("t")
+        plt.ylabel(self.res_name)
+        plt.savefig(self.directory+"/mdn_data_plot.png", bbox_inches='tight')
+
+
+        self.generate_rank_hist(self.y_test, sampled_test, self.directory+"/mdn_rank_hist_test.png" , "MDN rank histogram on test set")
+        self.generate_rank_hist(self.y_train, sampled_train, self.directory+"/mdn_rank_hist_train.png" , "MDN rank histogram on train set")
+
+        print("Calculating rules on train set")
+        scores_train = self.mdn_rules(model, self.X_train, self.y_train, samples)
+        self.log_scores(model_id+"_test", scores_train, self.directory + "/rules_scores_train.csv", "Results of MDN on train set\n")
+
+        
+        print("Calculating rules on test set")
+        scores_test = self.mdn_rules(model, self.X_test, self.y_test, samples)
+        self.log_scores(model_id+"_train", scores_test, self.directory + "/rules_scores.csv", "Results of MDN on test set\n")
+
+
+        print("Calcualting feature importance on the test set")
+        feature_imp = self.calculate_feature_imp(self.X_test, lambda X: self.mdn_rules(model, X, self.y_test, samples), scores_test)
+        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, "mdn_test")
+                
+
+
+
+
+        
+    def bnn_rules(self, model, X, y, samples):
+        res_train = model.evaluate(X, samples)
+        res_train = res_train.reshape(samples, X.shape[0])
+        sampled = res_train.T
+
+        log_scores = -np.log(np.array([norm.pdf(y, loc=sampled[j].mean(), scale=sampled[j].std()) for j, y in enumerate(y)]).clip(0.001))
+        crps_scores = np.array([ ps.crps_gaussian(y, mu=sampled[j].mean(), sig=sampled[j].std()) for j, y in enumerate(y)])
+        dss_scores = np.array([sc.dss_norm(y, loc=sampled[j].mean(), scale=sampled[j].std()) for j, y in enumerate(y)])
+
+        scores = dict()
+        scores['CRPS'] = crps_scores.mean()
+        scores['LS'] = log_scores.mean()
+        scores['DSS'] = dss_scores.mean()
+        
+        return scores
+
+
+    def evaluate_bnn(self, model, model_id, samples=10000):
 
         res_train = model.evaluate(self.X_train, samples)
         res_train = res_train.reshape(samples, self.X_train.shape[0])
@@ -147,12 +263,8 @@ class Evaluator:
         res_test = model.evaluate(self.X_test, samples)
         res_test = res_test.reshape(samples, self.X_test.shape[0])
         
-        sc = Scorer(max_samples=samples)
-
         print("Generating plots")
         plt.figure(figsize=(15,13), dpi=100)
-
-        
 
         plt.subplot(2,1,1)
         plt.plot(np.arange(self.y_train.shape[0]), self.y_train, '-b', linewidth=1.0,label='Station ' + self.res_name)
@@ -164,9 +276,7 @@ class Evaluator:
         plt.legend()
         plt.title("Bayesian Neural Network(train set)")
         plt.xlabel("t")
-        plt.ylabel(self.res_name)
-
-        
+        plt.ylabel(self.res_name)        
         plt.subplot(2,1,2)
         plt.plot(np.arange(self.y_test.shape[0]), self.y_test, '-b', linewidth=1.0,label='Station ' + self.res_name)
         plt.plot(np.arange(self.y_test.shape[0]), np.mean(res_test, 0).reshape(-1), 'r-', lw=2, label="Posterior mean")
@@ -178,113 +288,34 @@ class Evaluator:
         plt.title("Bayesian Neural Network(test set)")
         plt.xlabel("t")
         plt.ylabel(self.res_name)
-
-
         plt.savefig(self.directory+"/bnn_data_plot.png", bbox_inches='tight')
 
 
-        print("Calculating rules on the test set")
-        sample_data = res_test.T
-
-
-        rules_val_test = self.calculate_rules(
-            self.y_test, sc, "bnn_test",
-            sample_data,
-            self.directory+"/evaluation_results_df.csv")
-        self.log_rules(rules_val_test, "Results of BNN on test")
-
 
         
-        print("Calculating rules on the train set")
-        sample_data = res_train.T
-        rules_val_train = self.calculate_rules(
-            self.y_train, sc, "bnn_train",
-            sample_data,
-            self.directory+"/evaluation_results_train_df.csv")
-        self.log_rules(rules_val_train, "Results of BNN on train")
 
+        self.generate_rank_hist(self.y_test, res_test.T, self.directory+"/bnn_rank_hist_test.png" , "BNN rank histogram on test set")
+        self.generate_rank_hist(self.y_train, res_train.T, self.directory+"/bnn_rank_hist_train.png" , "BNN rank histogram on train set")
+
+        
+        print("Calculating rules on the test set")
+        scores_test = self.bnn_rules(model,self.X_test, self.y_test ,samples)
+        self.log_scores(model_id+"_test", scores_test, self.directory + "/rules_scores.csv", "Results of BNN on test set\n")
+
+        print("Calculating rules on the test set")
+        scores_train = self.bnn_rules(model,self.X_train, self.y_train ,samples)
+        self.log_scores(model_id+"_train", scores_train, self.directory + "/rules_scores_train.csv", "Results of BNN on train set\n")
 
 
         print("Calcualting feature importance on the test set")
-        feature_imp = self.calculate_feature_imp(sc, self.X_test, self.y_test, lambda X: self.bnn_samples(model, X, samples) , "mdn_feature_imp", rules_val_test)
-        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, "mdn_test")
-        
-
-    def evaluate_mdn(self, model, samples=10000):
-        print("Evaluating MDN model")
-        
-        pis, mus, sigmas = model.eval_network(self.X_train)
-        res_train_mu = np.sum(pis.T*mus.T, axis=0)
-        res_train_std = np.sum(pis.T*sigmas.T, axis=0)
-
-        pis, mus, sigmas = model.eval_network(self.X_test)
-        res_test_mu = np.sum(pis.T*mus.T, axis=0)
-        res_test_std = np.sum(pis.T*sigmas.T, axis=0)
-
-        sc = Scorer(max_samples=samples)
-
-        print("Generating plots")
-        plt.figure(figsize=(15,13), dpi=100)
-
-        plt.subplot(2,1,1)
-        plt.plot(np.arange(self.y_train.shape[0]), self.y_train, '-b', linewidth=1.0,label='Station ' + self.res_name)
-        plt.plot(np.arange(self.y_train.shape[0]), res_train_mu, '-r', color="green", linewidth=2.4,label='training data')
-        plt.fill_between(np.arange(self.y_train.shape[0]),
-                         res_train_mu - res_train_std,
-                         res_train_mu + res_train_std,
-                         color="red", alpha=0.5, label="90 confidence region")
-        plt.legend()
-        plt.title("Mixture Density Network(train set)")
-        plt.xlabel("t")
-        plt.ylabel(self.res_name)
-
-        plt.subplot(2,1,2)
-        plt.plot(np.arange(self.y_test.shape[0]), self.y_test, '-b', linewidth=1.0,label='Station ' + self.res_name)
-        plt.plot(np.arange(self.y_test.shape[0]), res_test_mu, '-r', color="green", linewidth=2.4,label='training data')
-        plt.fill_between(np.arange(self.y_test.shape[0]),
-                         res_test_mu - res_test_std,
-                         res_test_mu + res_test_std,
-                         color="red", alpha=0.5, label="90% confidence region")
-        plt.legend()
-        plt.title("Mixture Density Network(test set)")
-        plt.xlabel("t")
-        plt.ylabel(self.res_name)
-        
-        plt.savefig(self.directory+"/mdn_data_plot.png", bbox_inches='tight')
+        feature_imp = self.calculate_feature_imp(self.X_test, lambda X: self.bnn_rules(model, X, self.y_test, samples), scores_test)
+        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, model_id)
         
 
 
-        print("Calculating rules on the test set")
-        sample_data = np.array([
-            norm.rvs(size=samples, loc=res_test_mu[i], scale=res_test_std[i])
-            for i in range(res_test_mu.shape[0])
-        ])
-        rules_val_test = self.calculate_rules(
-            self.y_test, sc, "mdn_test",
-            sample_data,
-            self.directory+"/evaluation_results_df.csv")
-        self.log_rules(rules_val_test, "Results of MDN on test")
 
 
-        
-        print("Calculating rules on the train set")
-        sample_data = np.array([
-            norm.rvs(size=samples, loc=res_train_mu[i], scale=res_train_std[i])
-            for i in range(res_train_mu.shape[0])
-        ])
-        rules_val_train = self.calculate_rules(
-            self.y_train, sc, "mdn_train",
-            sample_data,
-            self.directory+"/evaluation_results_train_df.csv")
-        self.log_rules(rules_val_train, "Results of MDN on train")
 
-
-        
-        print("Calcualting feature importance on the test set")
-        feature_imp = self.calculate_feature_imp(sc, self.X_test, self.y_test, lambda X: self.mdn_samples(model, X, samples) , "mdn_feature_imp", rules_val_test)
-        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, "mdn_test")
-                
-        
 
                 
         
@@ -302,6 +333,7 @@ class Evaluator:
             for i in range(start_pos,end_pos)
         ], dtype=np.float32)
         mus = res.mean(axis=1)        
+        sigmas = res.std(axis=1)        
 
         # np.savetxt(self.directory+"/empirical_result.txt", res)
 
@@ -319,26 +351,20 @@ class Evaluator:
         
         
         print("Calculating scoring rules")
-        # calculate scoring rules
-        sc = Scorer(max_samples=samples)
+        log_scores = -np.log(np.array([norm.pdf(y, loc=mus[j], scale=sigmas[j]) for j, y in enumerate(self.y_test)]))
+        crps_scores = np.array([ ps.crps_gaussian(y, mu=mus[j], sig=sigmas[j]) for j, y in enumerate(self.y_test)])
+        dss_scores = np.array([sc.dss_norm(y, loc=mus[j], scale=sigmas[j]) for j, y in enumerate(self.y_test)])
 
-        rules_val = {}
-        for i in range(start_pos,end_pos):
-            sc.set_sampler("empirical", lambda n: res[i - start_pos])
-            rules = sc.single_model_evaluation(np.array(y[i]),"empirical",
-                                                 data_frame_file=self.directory+"/evaluation_results_df.csv")
-            for rule, val in rules.items():
-                if rule not in rules_val.keys():
-                    rules_val[rule] = np.array([])
-                rules_val[rule] = np.append(rules_val[rule], [val])
+        scores = dict()
+        scores['CRPS'] = crps_scores.mean()
+        scores['LS'] = log_scores.mean()
+        scores['DSS'] = dss_scores.mean()
+        
+        self.log_scores("empirical", scores, self.directory + "/rules_scores.csv", "Results of Empirical on test set\n")
 
-        with open(self.desc, "a") as desc_f:
-            desc_f.write("Results of Empirical on test\n")
-            for rule, vals in rules_val.items():
-                print(rule,":", vals.mean())
-                desc_f.write(str(rule)+":"+str(vals.mean())+"\n")
-            desc_f.write("------------\n")
-                
+        
+        self.generate_rank_hist(self.y_test, res, self.directory+"/empirical_rank_hist_test.png" , "Empirical model rank histogram on test set")
+                        
 
             
         

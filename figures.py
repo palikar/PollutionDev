@@ -50,7 +50,7 @@ def draw_crps_intuition():
     
 
     x_vals = np.linspace(-20,obs,100)
-    plt.fill_between(x_vals, np.repeat(0, 100), norm.cdf(x_vals, mean, std), color="blue", alpha=0.7, label="CRPS")
+    plt.fill_between(x_vals, np.repeat(0, 100), norm.cdf(x_vals, mean, std), color="blue", alpha=0.7)
     x_vals = np.linspace(obs,20,100)
     plt.fill_between(x_vals, np.repeat(1, 100), norm.cdf(x_vals, mean, std), color="blue", alpha=0.7)
     x_vals = np.linspace(-20,20,100)
@@ -165,10 +165,58 @@ def draw_distribution_for_observation():
 
 
 
+
+
+def draw_rank_hist():
+    plt.figure(figsize=(14,5), dpi=100)
+
+     
+    plt.subplot(1,2,1)
+    plt.grid()
+
+    x = np.random.uniform(low=-1, high=5, size=15)
+    plt.plot([x[0], x[0]], [0, 3], "b-", linewidth=1.3, label="Forecast Samples")
+    for obs in x[1:]:
+        plt.plot([x, x], [0, 3], "b-", linewidth=1.5)
+        
+    plt.plot([2, 2], [0, 4], "k-", linewidth=3.5, label="Observation")
+
+
+    plt.xlim(-10,10)
+    plt.ylim(0, 7)
+    
+    plt.legend()
+    plt.title("Forecast samples and actual observation")
+    plt.xlabel("Value")
+    plt.ylabel("")
+    
+    plt.subplot(1,2,2)
+
+    x = np.random.uniform(low=0, high=6, size=1000)
+    bins = np.arange(7) - 0.5
+    plt.hist(x, bins=bins, density=True, facecolor='lightblue', alpha=0.75, histtype='bar', edgecolor='black', linewidth=1.0, rwidth=0.9)
+
+    # plt.xlim(0,2)
+    plt.ylim(0, 0.6)
+
+    plt.xticks(range(6))
+    # plt.xlim([-1, 10])
+
+    plt.grid(True)
+    plt.title("Rank verification histogram")
+    plt.xlabel("Rank")
+    plt.ylabel("Fraction")
+
+
+
+    plt.show()
+
+
 def main():
-    draw_crps_intuition()
-    draw_stochastic_regression()
-    draw_distribution_for_observation()
+    # draw_crps_intuition()
+    # draw_stochastic_regression()
+    # draw_distribution_for_observation()
+    draw_rank_hist()
 
 
 
