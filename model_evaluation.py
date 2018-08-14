@@ -8,6 +8,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import math
 from scipy.stats import norm
+from scipy.stats import gaussian_kde
 import properscoring as ps
 import scoring as sc
 from scorer import Scorer
@@ -121,6 +122,18 @@ class Evaluator:
         else:
             feature_imp_df.to_csv(df_file, sep=";", mode="a", header=False, index=False)
 
+        with open(self.desc, "a") as desc_f:
+            desc_f.write("Feature importance for " + model_name +"\n")
+            for i in range(len(feature_imp)):
+                feature = self.col_name[i]
+                desc_f.write(feature + ":\n")
+                for rule, diff_val in feature_imp[i].items():
+                    desc_f.write("     Mean diff in " + rule + " : "+ str(diff_val.mean()) +"\n")
+                    
+            desc_f.write("------------\n")
+
+            
+
 
 
 
@@ -166,7 +179,8 @@ class Evaluator:
         sampled = np.array([ self.sample_mixed(pis, mus, sigmas, j, size=samples) for j in range(y.shape[0])])
         
         log_scores = -np.log(np.array([self.mixed_desnity(pis, mus, sigmas, y, j) for j, y in enumerate(y)]).clip(0.001))
-        crps_scores = np.array([ ps.crps_gaussian(y, mu=res_mu[j], sig=sampled[j,:].std()) for j, y in enumerate(y)])
+
+        crps_scores = np.array([ ps.crps_ensemble(y_val, sampled[j]) for j, y_val in enumerate(y.squeeze())]) #fixed
         dss_scores = np.array([sc.dss_norm(y, loc=res_mu[j], scale=sampled[j,:].std()) for j, y in enumerate(y)])
 
         scores = dict()
@@ -197,7 +211,8 @@ class Evaluator:
         plt.fill_between(np.arange(self.y_train.shape[0]),
                          np.percentile(sampled_train, 5, axis=1),
                          np.percentile(sampled_train, 95, axis=1),
-                         color="red", alpha=0.5, label="90 confidence region")        
+                         color="red", alpha=0.5, label="90 confidence region")
+        plt.ylim(self.y_train.min() - 10, self.y_train.max() + 10)
         plt.legend()
         plt.title("Mixture Density Network(train set)")
         plt.xlabel("t")
@@ -209,6 +224,7 @@ class Evaluator:
                          np.percentile(sampled_test, 5, axis=1),
                          np.percentile(sampled_test, 95, axis=1),
                          color="red", alpha=0.5, label="90 confidence region")
+        plt.ylim(self.y_test.min() - 10, self.y_test.max() + 10)
         plt.legend()
         plt.title("Mixture Density Network(test set)")
         plt.xlabel("t")
@@ -231,20 +247,23 @@ class Evaluator:
 
         print("Calcualting feature importance on the test set")
         feature_imp = self.calculate_feature_imp(self.X_test, lambda X: self.mdn_rules(model, X, self.y_test, samples), scores_test)
-        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, "mdn_test")
+        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, model_id + "_test")
+
+        print("Calcualting feature importance on the train set")
+        feature_imp = self.calculate_feature_imp(self.X_train, lambda X: self.mdn_rules(model, X, self.y_train, samples), scores_train)
+        self.log_feature_importance(self.directory+"/feature_importance_train.csv", feature_imp, model_id + "_test")
                 
-
-
-
-
         
     def bnn_rules(self, model, X, y, samples):
         res_train = model.evaluate(X, samples)
         res_train = res_train.reshape(samples, X.shape[0])
         sampled = res_train.T
 
-        log_scores = -np.log(np.array([norm.pdf(y, loc=sampled[j].mean(), scale=sampled[j].std()) for j, y in enumerate(y)]).clip(0.001))
-        crps_scores = np.array([ ps.crps_gaussian(y, mu=sampled[j].mean(), sig=sampled[j].std()) for j, y in enumerate(y)])
+
+        
+        
+        log_scores = -np.log(np.array([gaussian_kde(sampled[j]).pdf(y)  for j, y in enumerate(y)]).clip(0.001)) #fixed    
+        crps_scores = np.array([ ps.crps_ensemble(y_val, sampled[j]) for j, y_val in enumerate(y.squeeze())]) #fixed    
         dss_scores = np.array([sc.dss_norm(y, loc=sampled[j].mean(), scale=sampled[j].std()) for j, y in enumerate(y)])
 
         scores = dict()
@@ -265,14 +284,14 @@ class Evaluator:
         
         print("Generating plots")
         plt.figure(figsize=(15,13), dpi=100)
-
         plt.subplot(2,1,1)
         plt.plot(np.arange(self.y_train.shape[0]), self.y_train, '-b', linewidth=1.0,label='Station ' + self.res_name)
         plt.plot(np.arange(self.y_train.shape[0]), np.mean(res_train, 0).reshape(-1), 'r-', lw=2, label="Posterior mean")
         plt.fill_between(np.arange(self.y_train.shape[0]),
                          np.percentile(res_train, 5, axis=0),
                          np.percentile(res_train, 95, axis=0),
-                         color = "red", alpha = 0.5, label="90% confidence region")        
+                         color = "red", alpha = 0.5, label="90% confidence region")
+        plt.ylim(self.y_train.min() - 10, self.y_train.max() + 10)
         plt.legend()
         plt.title("Bayesian Neural Network(train set)")
         plt.xlabel("t")
@@ -284,6 +303,7 @@ class Evaluator:
                          np.percentile(res_test, 5, axis=0),
                          np.percentile(res_test, 95, axis=0),
                          color = "red", alpha = 0.5, label="90% confidence region")
+        plt.ylim(self.y_test.min() - 10, self.y_test.max() + 10)
         plt.legend()
         plt.title("Bayesian Neural Network(test set)")
         plt.xlabel("t")
@@ -309,16 +329,15 @@ class Evaluator:
 
         print("Calcualting feature importance on the test set")
         feature_imp = self.calculate_feature_imp(self.X_test, lambda X: self.bnn_rules(model, X, self.y_test, samples), scores_test)
-        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, model_id)
+        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, model_id+"_test")
+
+        print("Calcualting feature importance on the train set")
+        feature_imp = self.calculate_feature_imp(self.X_train, lambda X: self.bnn_rules(model, X, self.y_train, samples), scores_train)
+        self.log_feature_importance(self.directory+"/feature_importance_train.csv", feature_imp, model_id+"_test")
         
 
 
 
-
-
-
-                
-        
     def evaluate_empirical(self,samples=10000):
         print("Evaluating empirical model")
         empirical_model = Emp("Empirical model")

@@ -104,10 +104,10 @@ def main():
     
     ev_samples_cnt = 55000
     
-    mdn_iter = 300000
-    mdn_layers = [1024,1024]
-    mdn_mixture_cnt = 10
-    mdn_id = "bnn_l"+str(mdn_layers)+"_i"+str(mdn_iter)+"_mc"+str(mdn_mixture_cnt)
+    mdn_iter = 10
+    mdn_layers = [10]
+    mdn_mixture_cnt = 5
+    mdn_id = "mdn_l"+str(mdn_layers)+"_i"+str(mdn_iter)+"_mc"+str(mdn_mixture_cnt)
 
 
     bnn_samples = 1
