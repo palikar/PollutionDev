@@ -165,7 +165,7 @@ class Bnn:
     def reset(self):
         ed.get_sessxion().run(self.init_op)
     
-    def fit(self, X, y, M=None, epochs=1, updates_per_batch=1, samples=30):
+    def fit(self, X, y, M=None, epochs=1, updates_per_batch=1, samples=30, callback=None):
         latent_vars = {}
         N = y.shape[0]
         for var, q_var in zip(self.priorWs, self.qWs):
@@ -198,7 +198,10 @@ class Bnn:
                     info_dict = inference.update({self.y_ph:y_batch, self.X:X_batch})
                 total_loss += info_dict['loss']
             
-                print("Epoch "+str(i)+" complete. Total loss: " + str(total_loss))
+            print("Epoch "+str(i)+" complete. Total loss: " + str(total_loss))
+            if i % 1000 == 0 and callback is not None:
+                callback(self, i)
+                
         
 
 

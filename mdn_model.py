@@ -110,24 +110,32 @@ class Mdn(Model):
 
 
 
-    def fit(self, num_iter=10000):
+    def fit(self, num_iter=10000, callback=None):
         self.compile()
         opt = ScipyOptimizer()
 
         iter_pro_stage = int(num_iter/3)
-        self.Ws.set_trainable(False)
-        self.bs.set_trainable(True)
-
-        opt.minimize(self, maxiter=iter_pro_stage, disp=True)
         
-        # Continue, but only optimize the weights now
         self.Ws.set_trainable(True)
         self.bs.set_trainable(False)
         opt.minimize(self, maxiter=iter_pro_stage, disp=True)
+        if callback is not None:
+            callback(self, int(num_iter/3)*1)
+        
+        self.Ws.set_trainable(False)
+        self.bs.set_trainable(True)
+        opt.minimize(self, maxiter=iter_pro_stage, disp=True)
+        if callback is not None:
+            callback(self, int(num_iter/3)*2)
+
+        
 
         self.Ws.set_trainable(True)
         self.bs.set_trainable(True)
         opt.minimize(self, maxiter=iter_pro_stage, disp=True)
+        if callback is not None:
+            callback(self, int(num_iter))
+
 
 
 
