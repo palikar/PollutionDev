@@ -2,6 +2,8 @@
 
 import os, sys, argparse
 
+import matplotlib as mpl
+mpl.use('Agg')
 from matplotlib import pyplot as plt
 from scipy.stats import norm
 from sklearn import model_selection
