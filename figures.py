@@ -212,12 +212,94 @@ def draw_rank_hist():
     plt.show()
 
 
-def main():
-    # draw_crps_intuition()
-    # draw_stochastic_regression()
-    # draw_distribution_for_observation()
-    draw_rank_hist()
+def draw_point_vs_dens():
+    plt.figure(figsize=(14,5), dpi=100)     
+    plt.tight_layout()
 
+    obs_x = 2.9
+    mean = 2
+    std = 1.3
+    ylim = 0.4
+
+    plt.subplot2grid((2, 3), (0, 0), rowspan=2)
+    # plt.subplot(2, 3, 1, rowspan=2)
+    plt.tight_layout()
+    plt.plot([obs_x, obs_x],[0, 0.3],'b-', lw=2, alpha=1, label='Obseravtion')
+    plt.xlim(-10,10)
+    plt.ylim(0, ylim)
+    plt.yticks([0.0])
+    plt.grid()
+    plt.legend()
+    plt.title("Realised observation")
+    plt.xlabel("Value")
+    plt.ylabel("")
+
+    plt.subplot(2,3,2)
+    plt.tight_layout()
+    y_vals = x_vals = np.linspace(-20, 20, 100)
+    y_vals = norm.pdf(x_vals, mean, std)
+    plt.plot(x_vals, y_vals,'r-', lw=2, alpha=1, label='Density of forecast')
+    plt.fill_between(x_vals, np.repeat(0, y_vals.shape[0] ), y_vals, color='red', alpha=0.2)
+    plt.xlim(-10,10)
+    plt.ylim(0, ylim)
+    plt.grid()
+    plt.legend()
+    plt.title("Predicted forecast")
+    plt.xlabel("Value")
+    plt.ylabel("PDF")
+
+    plt.subplot(2,3,3)
+    plt.tight_layout()
+    y_vals = x_vals = np.linspace(-20, 20, 100)
+    y_vals = norm.pdf(x_vals, mean, std)
+    plt.plot(x_vals, y_vals,'r-', lw=2, alpha=1, label='Density of forecast')
+    plt.plot([obs_x, obs_x],[0, 0.3],'b-', lw=2, alpha=1, label='Obseravtion')
+    plt.fill_between(x_vals, np.repeat(0, y_vals.shape[0] ), y_vals, color='red', alpha=0.2)
+    plt.xlim(-10,10)
+    plt.ylim(0, ylim)
+    plt.grid()
+    plt.legend()
+    plt.title("Comparasion between obsrvation and forecast")
+    plt.xlabel("Value")
+    plt.ylabel("PDF")
+    
+
+    plt.subplot(2, 3, 5)
+    plt.tight_layout()
+    plt.plot([1.9, 1.9],[0, 0.3],'r-', lw=2, alpha=1, label='Point estimate')
+    plt.xlim(-10,10)
+    plt.ylim(0, ylim)
+    plt.yticks([0.0])
+    plt.grid()
+    plt.legend()
+    plt.title("Predicted point estimate")
+    plt.xlabel("Value")
+    plt.ylabel("")
+
+    
+    plt.subplot(2,3, 6)
+    plt.tight_layout()
+    plt.plot([1.9, 1.9],[0, 0.3],'r-', lw=2, alpha=1, label='Point estimate')
+    plt.plot([obs_x, obs_x],[0, 0.3],'b-', lw=2, alpha=1, label='Obseravtion')
+    plt.xlim(-10,10)
+    plt.ylim(0, ylim)
+    plt.yticks([0.0])
+    plt.grid()
+    plt.legend()
+    plt.title("Comparasion between obsrvation and the point esitmate")
+    plt.xlabel("Value")
+    plt.ylabel("")
+
+    plt.show()
+
+    
+
+def main():
+    draw_crps_intuition()
+    draw_stochastic_regression()
+    draw_distribution_for_observation()
+    draw_rank_hist()
+    draw_point_vs_dens()
 
 
 
