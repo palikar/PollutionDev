@@ -18,12 +18,13 @@ from empirica_model import *
 from utils import test_train_split
 from utils import select_data
 import utils as ut
+import json
 
 
 
 
-#rm -rf test_eval/ && ./model_training.py --model mdn --station SBC --predictor P1P2 --period 1D --outvalue P1  --dest "/home/arnaud/code/pollution/test_eval" --base-dir "./env/data_frames"
-# ./model_training.py --model both --station SBC --predictor P1 --period 1D --outvalue P1 --take_lubw  --dest "/home/arnaud/code/pollution/test_eval_1" --base-dir "./env/data_frames" --load-mdn ./test_eval/mdn_model/model --load-bnn ./test_eval/bnn_model/
+#rm -rf test_eval/ && ./model_training.py --config ./model_config.json --model mdn --station SBC --predictor P1P2 --period 1D --outvalue P1  --dest "/home/arnaud/code/pollution/test_eval" --base-dir "./env/data_frames"
+# ./model_training.py --config ./model_config.json --model both --station SBC --predictor P1 --period 1D --outvalue P1 --take_lubw  --dest "/home/arnaud/code/pollution/test_eval_1" --base-dir "./env/data_frames" --load-mdn ./test_eval/mdn_model/model --load-bnn ./test_eval/bnn_model/
 
 
 
@@ -116,6 +117,9 @@ def main():
     parser.add_argument('--model', dest='model', action='store',
                     help='the model to be trained')
 
+    parser.add_argument('--config', dest='config', action='store', required=True,
+                    help='the configuration file with setting for the architecture of the models')
+
     parser.add_argument('--station', dest='station', action='store', default="SBC",
                         help='the model to be trained')
 
@@ -166,6 +170,9 @@ def main():
     y_train = y_train.reshape(y_train.shape[0],1)
     y_test = y_test.reshape(y_test.shape[0],1)
 
+    config_file = open(args.config, "r")
+    config = json.load(config_file)
+    config_file.close()
 
     
     print("Period: " + period)
@@ -180,17 +187,17 @@ def main():
 
 
     
-    ev_samples_cnt = 55000
+    ev_samples_cnt = config["ev_samples_cnt"]
     
-    mdn_iter = 30000
-    mdn_layers = [10,10,10,10,10]
-    mdn_mixture_cnt = 2
+    mdn_iter = config["mdn"]["mdn_iter"]
+    mdn_layers = config["mdn"]["mdn_layers"]
+    mdn_mixture_cnt = config["mdn"]["mdn_mixture_cnt"]
     mdn_id = "mdn_l"+str(mdn_layers)+"_i"+str(mdn_iter)+"_mc"+str(mdn_mixture_cnt)
 
 
-    bnn_samples = 1
-    bnn_iter = 10
-    bnn_layers = [5]
+    bnn_samples = config["bnn"]["bnn_samples"]
+    bnn_iter = config["bnn"]["bnn_iter"]
+    bnn_layers = config["bnn"]["bnn_layers"]
     bnn_id = "bnn_l"+str(bnn_layers)+"_i"+str(bnn_iter)+"_s"+str(bnn_samples)
 
     
