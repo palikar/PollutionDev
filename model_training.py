@@ -2,6 +2,8 @@
 
 import os, sys, argparse
 
+import matplotlib as mpl
+mpl.use('Agg')
 from matplotlib import pyplot as plt
 from scipy.stats import norm
 from sklearn import model_selection
@@ -18,23 +20,107 @@ from empirica_model import *
 from utils import test_train_split
 from utils import select_data
 import utils as ut
+import json
 
 
 
 
-#rm -rf test_eval/ && ./model_training.py --model mdn --station SBC --predictor P1P2 --period 1D --outvalue P1  --dest "/home/arnaud/code/pollution/test_eval" --base-dir "./env/data_frames"
-# ./model_training.py --model both --station SBC --predictor P1 --period 1D --outvalue P1 --take_lubw  --dest "/home/arnaud/code/pollution/test_eval_1" --base-dir "./env/data_frames" --load-mdn ./test_eval/mdn_model/model --load-bnn ./test_eval/bnn_model/
+#rm -rf test_eval/ && ./model_training.py --config ./model_config.json --model mdn --station SBC --predictor P1P2 --period 1D --outvalue P1  --dest "/home/arnaud/code/pollution/test_eval" --base-dir "./env/data_frames"
+# ./model_training.py --config ./model_config.json --model both --station SBC --predictor P1 --period 1D --outvalue P1 --take_lubw  --dest "/home/arnaud/code/pollution/test_eval_1" --base-dir "./env/data_frames" --load-mdn ./test_eval/mdn_model/model --load-bnn ./test_eval/bnn_model/
 
 
 
+def plot_bnn(X_train, X_test, y_train, y_test, directory,  model, i):
+    samples = 50000
+    res_train = model.evaluate(X_train, samples)
+    res_train = res_train.reshape(samples, X_train.shape[0])
 
+    res_test = model.evaluate(X_test, samples)
+    res_test = res_test.reshape(samples, X_test.shape[0])
+
+    plt.figure(figsize=(15,13), dpi=100)
+    plt.subplot(2,1,1)
+    plt.plot(np.arange(y_train.shape[0]), y_train, '-b', linewidth=1.0,label='Data')
+    plt.plot(np.arange(y_train.shape[0]), np.mean(res_train, 0).reshape(-1), 'r-', lw=2, label="Posterior mean")
+    plt.fill_between(np.arange(y_train.shape[0]),
+                     np.percentile(res_train, 5, axis=0),
+                     np.percentile(res_train, 95, axis=0),
+                     color = "red", alpha = 0.5, label="90% confidence region")
+    plt.ylim(y_train.min() - 10, y_train.max() + 10)
+    plt.legend()
+    plt.title("Bayesian Neural Network(train set), it: " + str(i))
+    plt.xlabel("t")
+    plt.ylabel("Value")        
+    plt.subplot(2,1,2)
+    plt.plot(np.arange(y_test.shape[0]), y_test, '-b', linewidth=1.0,label='Data')
+    plt.plot(np.arange(y_test.shape[0]), np.mean(res_test, 0).reshape(-1), 'r-', lw=2, label="Posterior mean")
+    plt.fill_between(np.arange(y_test.shape[0]),
+                     np.percentile(res_test, 5, axis=0),
+                     np.percentile(res_test, 95, axis=0),
+                     color = "red", alpha = 0.5, label="90% confidence region")
+    plt.ylim(y_test.min() - 10, y_test.max() + 10)
+    plt.legend()
+    plt.title("Bayesian Neural Network(test set), it: " + str(i))
+    plt.xlabel("t")
+    plt.ylabel("Value")
+    plt.savefig(directory+"/bnn_data_plot_"+str(i)+".png", bbox_inches='tight')
+
+
+    
+def plot_mdn(X_train, X_test, y_train, y_test, directory,  model, i):
+    samples = 50000
+
+    def sample_mixed( pis, mus, sigmas, j, size=1):
+        choice = np.random.choice(np.arange(0, pis.shape[1]), p=pis[j])
+        return norm.rvs(size=size, loc=mus[j][choice], scale=sigmas[j][choice])
+
+    
+    pis_train, mus_train, sigmas_train = model.eval_network(X_train)
+    res_train_mu = np.sum(pis_train.T*mus_train.T, axis=0)
+    sampled_train = np.array([ sample_mixed(pis_train, mus_train, sigmas_train, j, size=samples) for j in range(y_train.shape[0])])
+    
+    pis_test, mus_test, sigmas_test = model.eval_network(X_test)
+    res_test_mu = np.sum(pis_test.T*mus_test.T, axis=0)
+    sampled_test = np.array([ sample_mixed(pis_test, mus_test, sigmas_test, j, size=samples) for j in range(y_test.shape[0])])
+    
+    plt.figure(figsize=(15,13), dpi=100)
+    plt.subplot(2,1,1)
+    plt.plot(np.arange(y_train.shape[0]), y_train, '-b', linewidth=1.0,label='Data')
+    plt.plot(np.arange(y_train.shape[0]), res_train_mu, '-r', color="green", linewidth=2.4,label='Distribution mean')        
+    plt.fill_between(np.arange(y_train.shape[0]),
+                     np.percentile(sampled_train, 5, axis=1),
+                     np.percentile(sampled_train, 95, axis=1),
+                     color="red", alpha=0.5, label="90 confidence region")
+    plt.ylim(y_train.min() - 10, y_train.max() + 10)
+    plt.legend()
+    plt.title("Mixture Density Network(train set)")
+    plt.xlabel("t")
+    plt.ylabel("Value")
+    plt.subplot(2,1,2)
+    plt.plot(np.arange(y_test.shape[0]), y_test, '-b', linewidth=1.0,label='Data')
+    plt.plot(np.arange(y_test.shape[0]), res_test_mu, '-r', color="green", linewidth=2.4,label='Distribution mean')
+    plt.fill_between(np.arange(y_test.shape[0]),
+                     np.percentile(sampled_test, 5, axis=1),
+                     np.percentile(sampled_test, 95, axis=1),
+                     color="red", alpha=0.5, label="90 confidence region")
+    plt.ylim(y_test.min() - 10, y_test.max() + 10)
+    plt.legend()
+    plt.title("Mixture Density Network(test set)")
+    plt.xlabel("t")
+    plt.ylabel("Value")
+    plt.savefig(directory + "/mdn_data_plot_" + str(i) + ".png", bbox_inches='tight')
+
+
+    
 def main():
-
-
+    
     parser = argparse.ArgumentParser(description='tain model, save it, evaluate it!')
-
+    
     parser.add_argument('--model', dest='model', action='store',
                     help='the model to be trained')
+
+    parser.add_argument('--config', dest='config', action='store', required=True,
+                    help='the configuration file with setting for the architecture of the models')
 
     parser.add_argument('--station', dest='station', action='store', default="SBC",
                         help='the model to be trained')
@@ -86,8 +172,9 @@ def main():
     y_train = y_train.reshape(y_train.shape[0],1)
     y_test = y_test.reshape(y_test.shape[0],1)
 
-
-
+    config_file = open(args.config, "r")
+    config = json.load(config_file)
+    config_file.close()
 
     
     print("Period: " + period)
@@ -102,19 +189,18 @@ def main():
 
 
     
-    ev_samples_cnt = 55000
+    ev_samples_cnt = config["ev_samples_cnt"]
     
-    mdn_iter = 300000
-    mdn_layers = [1024,1024]
-    mdn_mixture_cnt = 10
-    mdn_id = "bnn_l"+str(mdn_layers)+"_i"+str(mdn_iter)+"_mc"+str(mdn_mixture_cnt)
+    mdn_iter = config["mdn"]["mdn_iter"]
+    mdn_layers = config["mdn"]["mdn_layers"]
+    mdn_mixture_cnt = config["mdn"]["mdn_mixture_cnt"]
+    mdn_id = "mdn_l"+str(mdn_layers)+"_i"+str(mdn_iter)+"_mc"+str(mdn_mixture_cnt)
 
 
-    bnn_samples = 1
-    bnn_iter = 10
-    bnn_layers = [5]
+    bnn_samples = config["bnn"]["bnn_samples"]
+    bnn_iter = config["bnn"]["bnn_iter"]
+    bnn_layers = config["bnn"]["bnn_layers"]
     bnn_id = "bnn_l"+str(bnn_layers)+"_i"+str(bnn_iter)+"_s"+str(bnn_samples)
-
 
     
     desc = ""
@@ -153,12 +239,16 @@ def main():
     ev.set_test_train_split(X_train, X_test, y_train, y_test)
     ev.set_names(col_names, out_name)
 
+    os.makedirs(dest+"/bnn_train_plots")
+    os.makedirs(dest+"/mdn_train_plots")
+
 
     
     def get_mdn():
         if args.load_mdn is None:
             mdn_model = Mdn("MDN Model", X_train, y_train, inner_dims=mdn_layers, num_mixtures=mdn_mixture_cnt)
-            mdn_model.fit(num_iter=mdn_iter)
+            mdn_model.fit(num_iter=mdn_iter,
+                          callback = lambda mod,j: plot_mdn(X_train, X_test, y_train, y_test, dest+"/mdn_train_plots", mod, j) )
             mdn_model.save(dest + "/mdn_model")
             return mdn_model
         else:
@@ -168,12 +258,12 @@ def main():
             return mdn_model
 
 
-
     def get_bnn():
         if args.load_bnn is None:
             bnn_model = Bnn("BNN Model")
             bnn_model.build(X_train.shape[1],1,layers_defs=bnn_layers, examples = X_train.shape[0])
-            bnn_model.fit(X_train, np.squeeze(y_train), epochs=bnn_iter, samples=bnn_samples)
+            bnn_model.fit(X_train, np.squeeze(y_train), epochs=bnn_iter, samples=bnn_samples,
+                          callback = lambda mod,j: plot_bnn(X_train, X_test, y_train, y_test, dest+"/bnn_train_plots", mod, j))
             bnn_model.save(dest + "/bnn_model", "bnn_model")
             return bnn_model
         else:
