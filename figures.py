@@ -41,8 +41,8 @@ def draw_crps_intuition():
     
     plt.legend()
     plt.title("Observation and forecast density")
-    plt.xlabel("Density")
-    plt.ylabel("Value")
+    plt.ylabel("Density")
+    plt.xlabel("Value")
 
 
     plt.subplot(1,2,2)
@@ -65,8 +65,8 @@ def draw_crps_intuition():
     plt.xlim(-10,10)
     plt.ylim(0, 1.)
     plt.title("Observation and forecast CDF")
-    plt.xlabel("CDF")
-    plt.ylabel("Value")
+    plt.ylabel("CDF")
+    plt.xlabel("Value")
 
 
 
@@ -103,7 +103,7 @@ def draw_stochastic_regression():
     plt.fill_between(x_vals,
                      y_pred + 0 * sigma,
                      y_pred - 0 * sigma,
-                         color="red", alpha=0.5, label="Density")
+                         color="red", alpha=0.5, label="Confidence region")
     for i in np.linspace(0.0, 2.0, 20):
         plt.fill_between(x_vals,
                      y_pred + i * sigma,
@@ -115,7 +115,7 @@ def draw_stochastic_regression():
     plt.ylim(-1.5, 1.5)
 
     plt.grid()
-    plt.title("Observation and forecast CDF")
+    plt.title("Probabilistic regression")
     plt.legend()
     plt.xlabel("Input data")
     plt.ylabel("Output data")
@@ -148,12 +148,12 @@ def draw_distribution_for_observation():
     draws = np.random.normal(0, 0.55, draws_cnt)
     plt.plot(np.repeat(4.8, draws_cnt), draws,'ro', markersize=5, alpha=0.01)
     
-    plt.text(1.4, 2.5, "Forecast in form of samples from some distributions", fontsize=11, color="red")
+    plt.text(1.4, 2.5, "Forecast in form of samples from some distribution", fontsize=11, color="red")
     plt.arrow(2.5, 2.3, 4.8-2.65, 0-2.0, color="red",  head_width=0.1)    
 
     plt.ylim(-2, 5)
     # plt.grid()
-    plt.title("Probabilistic regression")
+    plt.title("Forecast distribution")
     plt.legend()
     plt.grid()
     plt.xlabel("Input data")
@@ -168,10 +168,11 @@ def draw_distribution_for_observation():
 
 
 def draw_rank_hist():
-    plt.figure(figsize=(14,5), dpi=100)
+    plt.figure(figsize=(10,9), dpi=100)
 
      
-    plt.subplot(1,2,1)
+    plt.subplot(3,2,1)
+    plt.tight_layout()
     plt.grid()
 
     x = np.random.uniform(low=-1, high=5, size=15)
@@ -190,23 +191,109 @@ def draw_rank_hist():
     plt.xlabel("Value")
     plt.ylabel("")
     
-    plt.subplot(1,2,2)
+    plt.subplot(3,2,2)
+    plt.tight_layout()
 
-    x = np.random.uniform(low=0, high=6, size=1000)
+    x = np.random.uniform(low=0, high=6, size=1200)
+    # x = np.random.normal(loc=2, scale=1, size=1000)
     bins = np.arange(7) - 0.5
     plt.hist(x, bins=bins, density=True, facecolor='lightblue', alpha=0.75, histtype='bar', edgecolor='black', linewidth=1.0, rwidth=0.9)
 
     # plt.xlim(0,2)
     plt.ylim(0, 0.6)
-
     plt.xticks(range(6))
     # plt.xlim([-1, 10])
 
     plt.grid(True)
-    plt.title("Rank verification histogram")
+    plt.title("Verification Rank Histogram")
     plt.xlabel("Rank")
     plt.ylabel("Fraction")
 
+    plt.subplot(3,2,3)
+    plt.tight_layout()
+    plt.grid()
+
+    x = np.random.uniform(low=1.5, high=2.5, size=15)
+    plt.plot([x[0], x[0]], [0, 3], "b-", linewidth=1.3, label="Forecast Samples")
+    for obs in x[1:]:
+        plt.plot([x, x], [0, 3], "b-", linewidth=1.5)
+        
+    plt.plot([4, 4], [0, 3], "b-", linewidth=1.5)
+    plt.plot([3.4, 3.4], [0, 3], "b-", linewidth=1.5)
+    plt.plot([0, 0], [0, 3], "b-", linewidth=1.5)
+    plt.plot([0.5, 0.5], [0, 3], "b-", linewidth=1.5)
+    plt.plot([1, 1], [0, 3], "b-", linewidth=1.5)
+    plt.plot([2, 2], [0, 4], "k-", linewidth=3.5, label="Observation")
+
+
+    plt.xlim(-10,10)
+    plt.ylim(0, 7)
+    
+    plt.legend()
+    plt.title("Forecast samples and actual observation")
+    plt.xlabel("Value")
+    plt.ylabel("")
+    
+    plt.subplot(3,2,4)
+    plt.tight_layout()
+
+    x = np.random.normal(loc=2, scale=1, size=1000)
+    bins = np.arange(7) - 0.5
+    plt.hist(x, bins=bins, density=True, facecolor='lightblue', alpha=0.75, histtype='bar', edgecolor='black', linewidth=1.0, rwidth=0.9)
+
+    # plt.xlim(0,2)
+    plt.ylim(0, 0.6)
+    plt.xticks(range(6))
+    # plt.xlim([-1, 10])
+
+    plt.grid(True)
+    plt.title("Verification Rank Histogram")
+    plt.xlabel("Rank")
+    plt.ylabel("Fraction")
+
+    
+
+    plt.subplot(3,2,5)
+    plt.tight_layout()
+    plt.grid()
+
+    x = np.random.uniform(low=2.5, high=4.5, size=15)
+    plt.plot([x[0], x[0]], [0, 3], "b-", linewidth=1.3, label="Forecast Samples")
+    for obs in x[1:]:
+        plt.plot([x, x], [0, 3], "b-", linewidth=1.5)
+
+    plt.plot([1.5, 1.5], [0, 3], "b-", linewidth=1.5)
+    plt.plot([1.7, 1.7], [0, 3], "b-", linewidth=1.5)
+    plt.plot([2.1, 2.1], [0, 3], "b-", linewidth=1.5)
+    plt.plot([2, 2], [0, 4], "k-", linewidth=3.5, label="Observation")
+
+
+    plt.xlim(-10,10)
+    plt.ylim(0, 7)
+    
+    plt.legend()
+    plt.title("Forecast samples and actual observation")
+    plt.xlabel("Value")
+    plt.ylabel("")
+    
+    plt.subplot(3,2,6)
+    plt.tight_layout()
+
+
+    x = np.hstack([
+                   np.random.normal(loc=0.2, scale=0.9, size=2000)])
+    bins = np.arange(7) - 0.5
+    plt.hist(x, bins=bins, density=True, facecolor='lightblue', alpha=0.75, histtype='bar', edgecolor='black', linewidth=1.0, rwidth=0.9)
+
+    # plt.xlim(0,2)
+    plt.ylim(0, 0.9)
+    plt.xticks(range(6))
+    # plt.xlim([-1, 10])
+
+    plt.grid(True)
+    plt.title("Verification Rank Histogram")
+    plt.xlabel("Rank")
+    plt.ylabel("Fraction")
 
 
     plt.show()
