@@ -20,7 +20,7 @@ class Bnn:
 
         
 
-    def build(self, input_dim, output_dim, layers_defs=[3,3], activation=tf.nn.tanh, examples=50):
+    def build(self, input_dim, output_dim, layers_defs=[3,3], examples=50):
 
 
         print("Generating prior Variables")
@@ -54,7 +54,6 @@ class Bnn:
             tf.range(self.evaluation_sample_count),
             dtype=tf.float32)
         self.y_evaluation = tf.identity(self.y_evaluation, name="evaluation")
-        # print(self.y_evaluation.name)        
 
         self.init_op = tf.global_variables_initializer()
         ed.get_session().run(self.init_op)

@@ -2,7 +2,7 @@ DF=$(grep -e '\"final_df_name\": \"\K(\S+)(?=.csv\")' config.json -oP | grep -e 
 LOG="${DF}_log.txt"
 touch $LOG
 echo "Running preprocessesor for generating the cache" | tee -a $LOG
-. preprocess_new.sh config.json | tee -a  $LOG
+. preprocess_new_cache.sh config.json | tee -a  $LOG
 echo "Running preprocessor for generating data files" | tee -a  $LOG
 . preprocess_with_cached.sh config.json | tee -a  $LOG
 echo "Processing the LU BW files" | tee -a  $LOG

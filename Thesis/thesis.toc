@@ -1,0 +1,50 @@
+\babel@toc {english}{}
+\babel@toc {english}{}
+\babel@toc {ngerman}{}
+\babel@toc {english}{}
+\babel@toc {english}{}
+\contentsline {section}{\numberline {1}Introduction}{1}{section.1}
+\contentsline {subsection}{\numberline {1.1}Motivation}{1}{subsection.1.1}
+\contentsline {subsection}{\numberline {1.2}Probabilistic regression}{1}{subsection.1.2}
+\contentsline {subsection}{\numberline {1.3}Data}{4}{subsection.1.3}
+\contentsline {subsection}{\numberline {1.4}Models}{6}{subsection.1.4}
+\contentsline {section}{\numberline {2}Related work}{7}{section.2}
+\contentsline {section}{\numberline {3}Probabilistic Modeling}{8}{section.3}
+\contentsline {subsection}{\numberline {3.1}Bayesian regression modeling}{8}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Bayesian Neural Networks}{10}{subsection.3.2}
+\contentsline {subsubsection}{\numberline {3.2.1}Neural networks}{10}{subsubsection.3.2.1}
+\contentsline {subsubsection}{\numberline {3.2.2}Neural networks in Bayesian settings}{11}{subsubsection.3.2.2}
+\contentsline {subsubsection}{\numberline {3.2.3}Variational inference and Kullback-Leibler divergence}{12}{subsubsection.3.2.3}
+\contentsline {subsection}{\numberline {3.3}Mixture Density Networks}{14}{subsection.3.3}
+\contentsline {section}{\numberline {4}Model evaluation methods}{16}{section.4}
+\contentsline {subsection}{\numberline {4.1}Probabilistic Forecast}{16}{subsection.4.1}
+\contentsline {subsubsection}{\numberline {4.1.1}Prediction spaces}{17}{subsubsection.4.1.1}
+\contentsline {subsubsection}{\numberline {4.1.2}Dispersion and sharpness}{17}{subsubsection.4.1.2}
+\contentsline {subsection}{\numberline {4.2}Proper Scoring rules}{18}{subsection.4.2}
+\contentsline {subsubsection}{\numberline {4.2.1}Logarithmic score (LS)}{18}{subsubsection.4.2.1}
+\contentsline {subsubsection}{\numberline {4.2.2}Continuously ranked probability score (CRPS)}{19}{subsubsection.4.2.2}
+\contentsline {subsubsection}{\numberline {4.2.3}Dawid\IeC {\textendash }Sebastiani score (DSS)}{19}{subsubsection.4.2.3}
+\contentsline {subsubsection}{\numberline {4.2.4}Computation of scoring rules}{20}{subsubsection.4.2.4}
+\contentsline {subsection}{\numberline {4.3}Rank Histogram}{21}{subsection.4.3}
+\contentsline {subsection}{\numberline {4.4}Feature Importance}{23}{subsection.4.4}
+\contentsline {section}{\numberline {5}Results}{24}{section.5}
+\contentsline {subsection}{\numberline {5.1}Data used}{24}{subsection.5.1}
+\contentsline {subsection}{\numberline {5.2}Evaluation of the models}{24}{subsection.5.2}
+\contentsline {section}{\numberline {6}Implementation}{24}{section.6}
+\contentsline {subsection}{\numberline {6.1}Preparing the data}{24}{subsection.6.1}
+\contentsline {subsubsection}{\numberline {6.1.1}Download module}{25}{subsubsection.6.1.1}
+\contentsline {subsubsection}{\numberline {6.1.2}Preprocess module}{25}{subsubsection.6.1.2}
+\contentsline {subsubsection}{\numberline {6.1.3}Description module}{26}{subsubsection.6.1.3}
+\contentsline {subsubsection}{\numberline {6.1.4}Preprocess LU BW}{27}{subsubsection.6.1.4}
+\contentsline {subsubsection}{\numberline {6.1.5}Loader module}{27}{subsubsection.6.1.5}
+\contentsline {subsection}{\numberline {6.2}Models implementations}{27}{subsection.6.2}
+\contentsline {subsubsection}{\numberline {6.2.1}Mixture density networks}{28}{subsubsection.6.2.1}
+\contentsline {subsubsection}{\numberline {6.2.2}Bayesian neural networks}{30}{subsubsection.6.2.2}
+\contentsline {subsection}{\numberline {6.3}Model training}{31}{subsection.6.3}
+\contentsline {subsection}{\numberline {6.4}Models evaluation}{31}{subsection.6.4}
+\contentsline {subsection}{\numberline {6.5}Auxiliary scripts}{31}{subsection.6.5}
+\contentsline {subsubsection}{\numberline {6.5.1}Run Generation pipeline}{31}{subsubsection.6.5.1}
+\contentsline {subsubsection}{\numberline {6.5.2}Clean \texttt {env}}{32}{subsubsection.6.5.2}
+\contentsline {section}{\numberline {7}Conclusion}{33}{section.7}
+\contentsline {subsection}{\numberline {7.1}Summery}{33}{subsection.7.1}
+\contentsline {subsection}{\numberline {7.2}Discussion}{33}{subsection.7.2}

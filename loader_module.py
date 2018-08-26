@@ -17,6 +17,7 @@ period = None
 freq = None
 ignored_sensors_files = None
 final_df_name = None
+
 def _read_config(config_data):
     "Loading config variables"
     global data_files_dir, period, freq, final_df_name, folder, ignored_sensors_files

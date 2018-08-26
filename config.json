@@ -3,7 +3,7 @@
     "raw_down_dir": "~/code/pollution/env/raw_files/",
     "data_files_dir": "~/code/pollution/env/data_files/",
     "lu_bw_data_files_dir": "~/code/pollution/env/data_files/lu_bw/",
-    "descriptionhttps://nm40.abv.bg/Mail.html#inbox:fid/40:pid/0_files_dir": "~/code/pollution/env/desc_files/",
+    "description_files_dir": "~/code/pollution/env/desc_files/",
     "download_module": {
         "base_url": "https://archive.luftdaten.info/",
         "start_date": "2017-12-31",
@@ -13,6 +13,11 @@
         "list_files": true
     },
     "preprocess_module": {
+        "center": [
+            48.781342,
+            9.173868             
+        ],
+        "radius": 4,
         "keep_columns": [
             "sensor_id",
             "P1",
@@ -20,27 +25,21 @@
             "timestamp"
         ],
         "time_column": "timestamp",
-        "duplicates_resolution": "MEAN",
-        "files_list_file": "~/code/pollution/env/downloaded_files_0.txt",
-        "check_day_for_sensors": true,
-        "good_sensors_list_file": "~/code/pollution/env/saturated_sensors_list.txt",
-        "all_sensors_list_file": "~/code/pollution/env/all_sensors_list.txt",
-        "day_integration_type": "MEAN",
-        "day_integration_period": "1H",
-        "min_sensor_cnt": 340,
-        "good_sensors_data_files_list": "~/code/pollution/env/saturated_data_files.txt",
-        "read_good_files_from_list": false,
-        "missing_data_resolution": "linear",
-        "missing_data_cnt_threshold" : 12,
-        "bad_missing_data_sensors" :"/home/arnaud/code/pollution/env/low_days_data_sensors.txt",
         "values_columns": ["P1", "P2"],
         "id_column":"sensor_id",
         "reindex_period" :["2017-01-01","2018-01-01"],
-        "center": [
-            48.781342,
-            9.173868             
-        ],
-        "radius": 4
+        "min_sensor_cnt": 340,
+        "day_integration_period": "1H",
+        "missing_data_cnt_threshold" : 12,
+        "duplicates_resolution": "MEAN",
+        "missing_data_resolution": "linear",
+        "day_integration_type": "MEAN",
+        "check_day_for_sensors": true,
+        "read_good_files_from_list": false,
+        "good_sensors_list_file": "~/code/pollution/env/saturated_sensors_list.txt",
+        "good_sensors_data_files_list": "~/code/pollution/env/saturated_data_files.txt",
+        "all_sensors_list_file": "~/code/pollution/env/all_sensors_list.txt",
+        "bad_missing_data_sensors" :"/home/arnaud/code/pollution/env/low_days_data_sensors.txt"        
     },
     "description_module":{
         "description_fils_dir": "~/code/pollution/env/desc_files/",
@@ -50,7 +49,6 @@
         "generate_plots": "true",
         "missing_entries_threshold": 720,
         "reindexed_frames_file": "~/code/pollution/env/reindexed_frames_on_description.txt",
-        "far_away_sensors_file": "~/code/pollution/env/far_sensors.txt",
         "missing_entries_resolution": "MEAN"
     },
     "lu_bw_prepreocesor": {
@@ -59,8 +57,8 @@
         "reindex_period" : ["2017-01-01","2018-01-01"],
         "time_column": "timestamp"
     },
-    "loader_module" : {
-        "folder" : "~/code/pollution/env/data_files",
+    "loader_module" : { 
+        "folder" : "~/code/pollution/env/data_filesia",
         "ingored_sensors_files":[
             "~/code/pollution/env/reindexed_frames_on_description.txt",
             "/home/arnaud/code/pollution/env/low_days_data_sensors.txt"

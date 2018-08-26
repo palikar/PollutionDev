@@ -129,12 +129,6 @@ def _download_files():
 
 
     
-def execute(config_data):
-    print("Excuting downlaod module")
-    ut.sanity_cahecks(config_data)
-    _read_config(config_data)    
-    _download_files()
-
     
 
 def _main():
