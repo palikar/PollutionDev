@@ -380,11 +380,6 @@ def main():
         print("Generating LaTeX Table")
         gen_tables(sec, args.dest)
 
-    
-
-
-
-
 
 if __name__ == '__main__':
     main()
