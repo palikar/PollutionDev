@@ -67,7 +67,7 @@ class Evaluator:
             feature_imp[i] = {}
             
             X_shuf = self.gen_feature_importance_data(X, i)
-            scores_dict = fun(X_shuf)
+            scores_dict,_ = fun(X_shuf)
             
 
             for rule, vals in scores_dict.items():
@@ -90,6 +90,28 @@ class Evaluator:
             data["model_id"] = [model_id]
             for rule, score in scores_dict.items():
                 data[rule] = [score]
+            df = pd.DataFrame(data)
+            if os.path.isfile(df_file):
+                df.to_csv(df_file,
+                          sep=";",
+                          mode="a",
+                          index=False,
+                          header=False)
+            else:
+                df.to_csv(df_file,
+                          index=False,
+                          sep=";")
+
+    def log_scores_l(self, model_id, scores_l_dict, df_file, header):
+            
+        if df_file is not None:
+            data = {}
+            n = None
+            for rule, scores in scores_l_dict.items():
+                data[rule] = scores.squeeze()
+                n = scores.shape[0]
+                
+            data["model_id"] = [model_id]*n
             df = pd.DataFrame(data)
             if os.path.isfile(df_file):
                 df.to_csv(df_file,
@@ -180,16 +202,22 @@ class Evaluator:
         
         log_scores = -np.log(np.array([self.mixed_desnity(pis, mus, sigmas, y, j) for j, y in enumerate(y)]).clip(0.001))
 
-        crps_scores = np.array([ ps.crps_ensemble(y_val, sampled[j]) for j, y_val in enumerate(y.squeeze())]) #fixed
+        crps_scores = np.array([ ps.crps_gaussian(y_val, mu=sampled[j].mean(), sig=sampled[j].std() ) for j, y_val in enumerate(y.squeeze())]) #fixed
+
         dss_scores = np.array([sc.dss_norm(y, loc=res_mu[j], scale=sampled[j,:].std()) for j, y in enumerate(y)])
 
         scores = dict()
         scores['CRPS'] = crps_scores.mean()
         scores['LS'] = log_scores.mean()
         scores['DSS'] = dss_scores.mean()
+
+        scores_l = dict()
+        scores_l['CRPS'] = crps_scores
+        scores_l['LS'] = log_scores
+        scores_l['DSS'] = dss_scores
         # print(scores['DSS'])
         
-        return scores
+        return scores,scores_l
 
 
     def evaluate_mdn(self, model, model_id, samples=10000):
@@ -206,8 +234,8 @@ class Evaluator:
         print("Log results to file")
         # np.savetxt(self.directory +'/mdn_test_samples.out', sampled_test, delimiter=',')
         # np.savetxt(self.directory +'/mdn_train_samples.out', sampled_train, delimiter=',')
-        np.savetxt(self.directory +'/mdn_train_pis.out', pis_train, delimiter=',')
-        np.savetxt(self.directory +'/mdn_test_pis.out', pis_test, delimiter=',')
+        # np.savetxt(self.directory +'/mdn_train_pis.out', pis_train, delimiter=',')
+        # np.savetxt(self.directory +'/mdn_test_pis.out', pis_test, delimiter=',')
         # np.savetxt(self.directory +'/X_train.out', self.X_train, delimiter=',')
         # np.savetxt(self.directory +'/X_test.out', self.X_test, delimiter=',')
         # np.savetxt(self.directory +'/y_train.out', self.y_train, delimiter=',')
@@ -247,13 +275,15 @@ class Evaluator:
         self.generate_rank_hist(self.y_train, sampled_train, self.directory+"/mdn_rank_hist_train.png" , "MDN rank histogram on train set")
 
         print("Calculating rules on train set")
-        scores_train = self.mdn_rules(model, self.X_train, self.y_train, samples)
-        self.log_scores(model_id+"_test", scores_train, self.directory + "/rules_scores_train.csv", "Results of MDN on train set\n")
+        scores_train, scores_train_l = self.mdn_rules(model, self.X_train, self.y_train, samples)
+        self.log_scores(model_id+"_train", scores_train, self.directory + "/rules_scores_train.csv", "Results of MDN on train set\n")
+        self.log_scores_l(model_id+"_train", scores_train_l, self.directory + "/rules_scores_train_l.csv", "Results(list) of MDN on train set\n")
 
         
         print("Calculating rules on test set")
-        scores_test = self.mdn_rules(model, self.X_test, self.y_test, samples)
-        self.log_scores(model_id+"_train", scores_test, self.directory + "/rules_scores.csv", "Results of MDN on test set\n")
+        scores_test,scores_test_l = self.mdn_rules(model, self.X_test, self.y_test, samples)
+        self.log_scores(model_id+"_test", scores_test, self.directory + "/rules_scores.csv", "Results of MDN on test set\n")
+        self.log_scores_l(model_id+"_testl", scores_test_l, self.directory + "/rules_scores_l.csv", "Results(list) of MDN on test set\n")
 
 
         print("Calcualting feature importance on the test set")
@@ -271,20 +301,24 @@ class Evaluator:
         res_train = model.evaluate(X, samples)
         res_train = res_train.reshape(samples, X.shape[0])
         sampled = res_train.T
-
-
         
         
         log_scores = -np.log(np.array([gaussian_kde(sampled[j]).pdf(y)  for j, y in enumerate(y)]).clip(0.001)) #fixed    
-        crps_scores = np.array([ ps.crps_ensemble(y_val, sampled[j]) for j, y_val in enumerate(y.squeeze())]) #fixed    
+        # crps_scores = np.array([ ps.crps_ensemble(y_val, sampled[j]) for j, y_val in enumerate(y.squeeze())]) #fixed
+        crps_scores = np.array([ ps.crps_gaussian(y_val, mu=sampled[j].mean(), sig=sampled[j].std()) for j, y_val in enumerate(y.squeeze())]) #fixed    
         dss_scores = np.array([sc.dss_norm(y, loc=sampled[j].mean(), scale=sampled[j].std()) for j, y in enumerate(y)])
 
         scores = dict()
         scores['CRPS'] = crps_scores.mean()
         scores['LS'] = log_scores.mean()
-        scores['DSS'] = dss_scores.mean()
+        scores['DSS'] = dss_scores.mean()x
+
+        scores_l = dict()
+        scores_l['CRPS'] = crps_scores
+        scores_l['LS'] = log_scores
+        scores_l['DSS'] = dss_scores
         
-        return scores
+        return scores, scores_l
 
 
     def evaluate_bnn(self, model, model_id, samples=10000):
@@ -336,12 +370,14 @@ class Evaluator:
         self.generate_rank_hist(self.y_train, res_train.T, self.directory+"/bnn_rank_hist_train.png" , "BNN rank histogram on train set")
         
         print("Calculating rules on the test set")
-        scores_test = self.bnn_rules(model,self.X_test, self.y_test ,samples)
+        scores_test,scores_test_l = self.bnn_rules(model,self.X_test, self.y_test ,samples)
         self.log_scores(model_id+"_test", scores_test, self.directory + "/rules_scores.csv", "Results of BNN on test set\n")
+        self.log_scores_l(model_id+"_test", scores_test_l, self.directory + "/rules_scores_l.csv", "Results(list) of BNN on test set\n")
 
         print("Calculating rules on the test set")
-        scores_train = self.bnn_rules(model,self.X_train, self.y_train ,samples)
+        scores_train,scores_train_l = self.bnn_rules(model,self.X_train, self.y_train ,samples)
         self.log_scores(model_id+"_train", scores_train, self.directory + "/rules_scores_train.csv", "Results of BNN on train set\n")
+        self.log_scores_l(model_id+"_train", scores_train_l, self.directory + "/rules_scores_train_l.csv", "Results(list) of BNN on train set\n")
 
         print("Calcualting feature importance on the test set")
         feature_imp = self.calculate_feature_imp(self.X_test, lambda X: self.bnn_rules(model, X, self.y_test, samples), scores_test)
@@ -395,7 +431,13 @@ class Evaluator:
         scores['LS'] = log_scores.mean()
         scores['DSS'] = dss_scores.mean()
         
+        scores_l = dict()
+        scores_l['CRPS'] = crps_scores
+        scores_l['LS'] = log_scores
+        scores_l['DSS'] = dss_scores
+                
         self.log_scores("empirical", scores, self.directory + "/rules_scores.csv", "Results of Empirical on test set\n")
+        self.log_scores_l("empirical", scores_l, self.directory + "/rules_scores_l.csv", "Results of Empirical on test set\n")
 
         
         self.generate_rank_hist(self.y_test, res, self.directory+"/empirical_rank_hist_test.png" , "Empirical model rank histogram on test set")
