@@ -10,7 +10,6 @@
 \usepackage{bbm}
 \usepackage{mathtools}
 \usepackage{indentfirst}
-
 \begingroup
 \makeatletter
 \@for\theoremstyle:=definition,remark,plain\do{%
@@ -36,6 +35,7 @@
 \setlist[description]{font=\normalfont,topsep=0pt}
 \setlist[enumerate,1]{label=(\roman*)}
 
+\usepackage{float}
 \usepackage{tikz}
 \usetikzlibrary{calc}
 \usepackage{fancyhdr}
@@ -65,6 +65,7 @@
 \usepackage[pagebackref]{hyperref}
 \usepackage[all]{hypcap}
 \usepackage{cleveref}
+\usepackage[font=small,belowskip=6pt]{subcaption}
 
 \hypersetup{
   pdftitle={Creating and Evaluating Stochastic Regression Models on the Basis of Heterogeneous Sensor Networks}, %TODO
@@ -324,7 +325,7 @@ All of the sensors measure two types of air pollution data. The different naming
 \item \emph{PM2.5} - Particular matter up to 2.5 micrometers.
 \item \emph{PM10} - Particular matter up to 10 micrometers.
 \end{itemize}
-We found that those values are highly correlated - correlation of about 0.95 on average (see \refsec{sec:preprop-data} for details). For this reason the built models use either PM2.5 or PM10. That is, with PM2.5 data of all other sensors, we predict the PM2.5 values of a particular sensor or respectively with PM10 data we predict PM10 values.
+We found that those values are highly correlated - correlation of about 0.95 on average (see \refsec{sec:preprop-meth} for details). For this reason the built models use either PM2.5 or PM10. That is, with PM2.5 data of all other sensors, we predict the PM2.5 values of a particular sensor or respectively with PM10 data we predict PM10 values.
 
 The format of the data coming straight from the networks was not convenient for direct training of the models. The sensors from \emph{luftdaten} provide measurements for each minute over the whole year while the ones of LUBW integrate their measurements over thirty minutes. Because of this inconsistency we had to ``synchronize'' the both data sources in order to produce the final data sets. We've also found numerous problems with the data from \emph{luftdaten}. Some of them are:
 \begin{itemize}
@@ -765,13 +766,116 @@ where X\(^{\text{(n)}}\) is the feature vector of the \(n^{th}\) datapoint (i.e.
 
 \section{Results}
 \label{sec:res}
-\subsection{Data used}
-\label{sec:preprop-data} 
+\subsection{Methodology and data}
+\label{sec:meth}
+\noindent
+\emph{We first describe exactly what kind of datasets we use to train the model and what feature considerations we make.}
+As described in (section) the the data comes from different places and further more is in different formats. Therefore we are responsible for generating the final datasets on which we train the models. This allows us to be flexible in the used data and therefore be able to investigate how the different resolution of the data affects the performance of the models. We have generated three different datasets (see impl for details on the process):
+\begin{itemize}
+\item Daily average - For the whole considered period (the year of 2017) we take the average pollution value (PM10 and PM2.5) of each sensor for each day. We treat the vector of those values as a single entry in the dataset. Naturally this means that we have 365 entries in this dataset.
+\item 12 hour average - Analogous to the daily average but we take the average values over twelve hour periods over the entire year. 730 entries in the entire dataset.
+\item Hourly average - We consider the average pollution value of each sensor over each hour in the year. The count of entries in this dataset is 8760.
+\end{itemize}
+We look at the performance of the models over each set in the respective sections (sec, sec, sec). In (figure) we show plots of the values coming from a single sensor. On the size of the value vectors for entries in each datasets - after the data cleaning (described in sec) we are left with 16 sensors from luftdaten.info and we also have 3 LUBW sensors. This adds up to 19 sensors over all. For each of those we have PM10 and PM2.5 values. This means that for each day, 12 hours or one hour we have 38 values. We next describe how we choose subset of those to train models predicting a given another one of them.
+\\
+As said, we want to investigate how different data affects the performance of the models. For that, we consider several types of orthogonal criteria.
+\begin{itemize}
+\item \emph{Predicted LUBW sensor} - As mentioned, there are altogether three LUBW sensors\footnote{We use sensor and station interchangeably}. The names of those are \emph{SBC}, \emph{SNTR} and \emph{SAKP}. We want to see the predictive performance of the models based on which of these stations we are trying to predict. Plots of the data coming from these sensors can be seen in (figure).
+\item \emph{Pollution value type} - The air pollution values that all of the sensors measure are PM2.5 and PM10 (see section). In our implementation and considerations we call those P1 and P2 respectively (see impl). While preprocessing the data, we have found out that P1 and P2 are highly correlated. On average their correlation is about \(0.9 \). This means that they effectively measure the same thing and will only make the feature space overly complicated if both are considered as predictors. For this reason we either train on P1 or P2 values while predicting P1 or P2 respectively.
+\item \emph{Using the rest of the LUBW senors as predictor} -  We want to see the difference in predictive performance of the models based on including the rest of the LUBW stations as predictors. That it, how much better or worse become the models if we use values of the two other LUBW stations when we predict the values of the third one.
+\end{itemize}
+Each of this distinctions in the selection of the data used for training can be 1made independently of the other ones. We consider all possible combinations and we compare the results in (section).
+\\
+When it comes to evaluation of the models, we evaluate each one differently generated model with the three proper scoring rules (described in (section)). We apply the feature importance technique (see section) only with respect to the CRPS (as in \cite{lerch2018}). We look at the rank histograms (see section) of only some of the models.
+\\
+\emph{Note:} During the data preprocessing process we have found out that one of the LUBW sensors - SAKP  - has data only for the last three months of the year. We have tried to interpolate the data for the rest of the year. This, however, means that the data from the sensors is almost unusable. We have decided to continue considering the sensor as we would if this was not the fact. In the evaluation of the modes we hope to see results consistent with the made observation about the sensor. Namely:
+\begin{itemize}
+\item Predicting the values of SNTR is impossible as the values of the the sensor are generated independently of the values of the other sensors.
+\item The importance of this sensors as predictor is very low for the same reason as above
+\end{itemize}
+We reference back this considerations while discussing the observed results.
+
+\begin{figure}[H]
+  \centering
+
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}
+
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}      
+    \caption{LUBW Plots}
+  \end{figure}
+  
+\begin{figure}[H]
+  \centering
+
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}
+
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
+    \label{fig:y equals x}
+  \end{subfigure}      
+    \caption{Sensor Plots}
+  \end{figure}
+
+
 \subsection{Evaluation of the models}
 \label{sec:eval-model}
-
-
-
+As described in the previous section, we consider three different datasets based on the averaging period of the values. We look at the results on each of them in separate sections
+\subsubsection{One day period}
+\subsubsection{Twelve hour period}
+\subsubsection{One hour period}
+\subsection{Feature importance}
+\subsubsection{One day period}
+\subsubsection{Twelve hour period}
+\subsubsection{One hour period}
 \section{Implementation}
 \label{sec:impl}
 In order to enforce separation between the code and all of the data that the code act upon, we place all of the generated data in the \texttt{env} directory of the project. This directory is added to the \texttt{.gitignore} file so it the implantation in no way relies on it. The contents of the folder are fully generated with the execution of the implemented scripts. In the next section we explain exactly what is the generated content.
@@ -886,6 +990,20 @@ With the \texttt{evaluate} methods we can evaluate data with some trained model.
 The \texttt{save} and \texttt{load} methods of the class are similar to the ones in the Mdn class. One key difference is that here we use the \texttt{Saver} object from Tensorflow and not from GPFlow. This means that by serialization we are saving the whole Tensorflow graph and the values of all variables in it. By the loading of the model later, we only need to load the graph and not build anything at all (i.e.\ not call the \texttt{build} method). 
 \subsection{Model training}
 \label{sec:models-train}
+The script constructing the models and training them with certain data is in \emph{model_evaluation.py}.. The script takes various arguments that configure the type of data that gets used for training, the structure of the models themselves which model gets trained and where are the results stored. After training each models gets evaluated (see \refsec{sec:models-eval}). In this section we explain how the exactly set up the configuration of the training. We first go over the command line arguments of the script.
+\begin{itemize}
+\item \texttt{\-\-model} - the type of the model the script will train. Can be \emph{bnn} for (BNN), \emph{mdn} for (MDNs) or \emph{both} for training first BNN and then MDN.
+\item \texttt{\-\-config} - configuration file for the both models. We explain the setting in it later.
+\item \texttt{\-\-station} - the LUBW station which the trained model will try to predict
+\item \texttt{\-\-predictor} - the air pollution value(s) that should be used as features. Can be P1, P2 or P1P2(for using P1 as well as P2 as features)
+\item \texttt{\-\-period} - the averaging period used to generate the dataset. Can be 1D (for daily average), 12H (12 hour average) or 1H (1 hour average).
+\item \texttt{\-\-outvalue} - predicted air pollution value of the model. Can be either P1 or P2.
+\item \texttt{\-\-take_lubw} - a boolean flag whether or the other two LUBW sensors should be used as predictors.
+\item \texttt{\-\-dest} - a folder where the results of the training and from the models' evaluation should be stored
+\item \texttt{\-\-base-dir} - a directory where the final dataframes form the three datasets are present
+\item \texttt{\-\-load-mdn} - this argument is an optional directory with stored MDN-model (see \refsec{sec:impl-mdn}). If set, the MDN model will be loaded from there and a new one won't be trained.
+\item \texttt{\-\-load-bnn} - this argument is an optional directory with stored BNN-model (see \refsec{sec:impl-bnn}). If set, the BNN model will be loaded from there and a new one won't be trained.
+\end{itemize}
 \subsection{Models evaluation}
 \label{sec:models-eval}
 
