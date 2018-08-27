@@ -311,7 +311,7 @@ class Evaluator:
         scores = dict()
         scores['CRPS'] = crps_scores.mean()
         scores['LS'] = log_scores.mean()
-        scores['DSS'] = dss_scores.mean()x
+        scores['DSS'] = dss_scores.mean()
 
         scores_l = dict()
         scores_l['CRPS'] = crps_scores
@@ -391,6 +391,8 @@ class Evaluator:
 
 
     def evaluate_empirical(self,samples=10000):
+
+
         print("Evaluating empirical model")
         empirical_model = Emp("Empirical model")
 
@@ -442,24 +444,5 @@ class Evaluator:
         
         self.generate_rank_hist(self.y_test, res, self.directory+"/empirical_rank_hist_test.png" , "Empirical model rank histogram on test set")
                         
-
             
-        
-
-        
-
-
-
-
-def main():
-    pass
-
-
-
-
-
-
     
-
-if __name__ == '__main__':
-    main()

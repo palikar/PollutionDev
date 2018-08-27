@@ -211,10 +211,10 @@ def main():
     desc += "\nNumber of features: " + str(X_train.shape[1])
     desc += "\nTaking LU BW as feature: " + str(take_lu_bw)
     desc += "\nInput value: " + str(in_value)               
-    desc += "\nTarget station " + str(station)           
+    desc += "\nTarget station: " + str(station)           
     desc += "\nInput features: " + str(col_names)
-    desc += "\nOutpute value" + str(out_name)
-    desc += "\nTest-train split ratio" + str(train_per)    
+    desc += "\nOutpute value: " + str(out_name)
+    desc += "\nTest-train split ratio: " + str(train_per)    
     desc += "\n-------------\n"
 
     desc += "\nMDN Configuration: "
@@ -226,14 +226,12 @@ def main():
     desc += "\nBNN Configuration: "
     desc += "\nIterations: " + str(bnn_iter)
     desc += "\nLayers: " + str(bnn_layers)
-    desc += "\nSamples for vatiational inference " + str(bnn_samples)
+    desc += "\nSamples for vatiational inference: " + str(bnn_samples)
     desc += "\n-------------\n"
-
 
     desc += "\nEvaluation Configuration"
     desc += "\nSamples drawn from models for each observation: " + str(ev_samples_cnt)
     
-
 
 
     ev = Evaluator(dest, desc, out_value)

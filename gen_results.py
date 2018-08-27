@@ -1,7 +1,6 @@
 #!/home/arnaud/anaconda3/bin/python3
 
 
-import tabulate
 import os, sys, argparse
 
 import matplotlib as mpl
@@ -12,8 +11,11 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 
+
 import utils as ut
 import json, re
+
+from scipy import stats
 
 from collections import defaultdict
 
@@ -138,6 +140,42 @@ class ResSelector:
                 res[model_name] = value_model
                 if "Empirical" not in res.keys():
                    res["Empirical"] = value_emp
+
+        
+        return res
+
+    def query_l(self,station, lu_bw, value, rule, test=True):
+
+        res = dict()
+        for main_folder in self.folders:
+            sub_folders = [os.path.join(main_folder, f) for f in os.listdir(main_folder)
+                  if os.path.isdir(os.path.join(main_folder, f))]
+
+
+            
+            fold_filt = filter(lambda fold: self.isStation(fold, station) ,sub_folders)
+            fold_filt = filter(lambda fold: self.isValue(fold, value) ,fold_filt)
+            fold_filt = list(filter(lambda fold: lu_bw == self.isLUBW(fold) ,fold_filt))
+
+            
+            if len(fold_filt) == 0:
+                print("Something is wrong")
+                print(fold_filt)
+                return None
+
+            # folder = fold_filt[0]
+
+            for folder in fold_filt:
+                # print("Proc", folder)
+                df =  pd.read_csv(os.path.join(folder, "rules_scores_l.csv"), sep=';')
+                
+
+
+                
+                models = df["model_id"].unique()
+                for model in models:
+                    value_l = df[df.model_id == model][rule]
+                    res[model] = value_l.values
 
         
         return res
@@ -338,6 +376,121 @@ def gen_tables(sec, dest):
 
 
 
+
+
+
+
+def dm_test(p1, p2):
+    p1_m = p1.mean()
+    p2_m = p2.mean()
+    n = float(p1.shape[0])
+    sig = ((p1 - p2)**2).mean()
+    t = ((n**(-0.5))*(p1_m - p2_m))/np.sqrt(sig)
+    p = stats.norm.cdf(abs(t))
+    return (t,p)
+
+
+def predictive_check(sec, dest):
+
+    latex_table="\\begin{{tabular}}{{c|c|ccc||ccc}} \n\
+  \\hline \n\
+  \\hline \n\
+  &&\\multicolumn{{2}}{{c}}{{P1 with LUBW}} && \\multicolumn{{2}}{{c}}{{P1 without LUBW}} \\\\ \n\
+  \\hline \n\
+  &&{m1}&{m2}&{m3}&{m1}&{m2}&{m3} \\\\ \n\
+  \\hline \n\
+  \\hline \n\
+  \\textbf{{SBC}}&&&&&&& \\\\ \n\
+  P1&{m1}&{m1_d[m1_d][SBC][P1][True][True]}&{m1_d[m2_d][SBC][P1][True][True]}&{m1_d[m3_d][SBC][P1][True][True]}&{m1_d[m1_d][SBC][P1][False][True]}&{m1_d[m2_d][SBC][P1][False][True]}&{m1_d[m3_d][SBC][P1][False][True]} \\\\ \n\
+  with&{m2}&{m2_d[m1_d][SBC][P1][True][True]}&{m2_d[m2_d][SBC][P1][True][True]}&{m2_d[m3_d][SBC][P1][True][True]}&{m2_d[m1_d][SBC][P1][False][True]}&{m2_d[m2_d][SBC][P1][False][True]}&{m2_d[m3_d][SBC][P1][False][True]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SBC][P1][True][True]}&{m3_d[m2_d][SBC][P1][True][True]}&{m3_d[m3_d][SBC][P1][True][True]}&{m3_d[m1_d][SBC][P1][False][True]}&{m3_d[m2_d][SBC][P1][False][True]}&{m3_d[m3_d][SBC][P1][False][True]} \\\\ \n\
+  \\hline     \n\
+  P1&{m1}&{m1_d[m1_d][SBC][P1][True][False]}&{m1_d[m2_d][SBC][P1][True][False]}&{m1_d[m3_d][SBC][P1][True][False]}&{m1_d[m1_d][SBC][P1][False][False]}&{m1_d[m2_d][SBC][P1][False][False]}&{m1_d[m3_d][SBC][P1][False][False]} \\\\ \n\
+  without&{m2}&{m2_d[m1_d][SBC][P1][True][False]}&{m2_d[m2_d][SBC][P1][True][False]}&{m2_d[m3_d][SBC][P1][True][False]}&{m2_d[m1_d][SBC][P1][False][False]}&{m2_d[m2_d][SBC][P1][False][False]}&{m2_d[m3_d][SBC][P1][False][False]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SBC][P1][True][False]}&{m3_d[m2_d][SBC][P1][True][False]}&{m3_d[m3_d][SBC][P1][True][False]}&{m3_d[m1_d][SBC][P1][False][False]}&{m3_d[m2_d][SBC][P1][False][False]}&{m3_d[m3_d][SBC][P1][False][False]} \\\\ \n\
+  \\hline     \n\
+  \\hline     \n\
+\\textbf{{SNTR}}&&&&&&& \\\\ \n\
+  P1&{m1}&{m1_d[m1_d][SNTR][P1][True][True]}&{m1_d[m2_d][SNTR][P1][True][True]}&{m1_d[m3_d][SNTR][P1][True][True]}&{m1_d[m1_d][SNTR][P1][False][True]}&{m1_d[m2_d][SNTR][P1][False][True]}&{m1_d[m3_d][SNTR][P1][False][True]} \\\\ \n\
+  with&{m2}&{m2_d[m1_d][SNTR][P1][True][True]}&{m2_d[m2_d][SNTR][P1][True][True]}&{m2_d[m3_d][SNTR][P1][True][True]}&{m2_d[m1_d][SNTR][P1][False][True]}&{m2_d[m2_d][SNTR][P1][False][True]}&{m2_d[m3_d][SNTR][P1][False][True]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SNTR][P1][True][True]}&{m3_d[m2_d][SNTR][P1][True][True]}&{m3_d[m3_d][SNTR][P1][True][True]}&{m3_d[m1_d][SNTR][P1][False][True]}&{m3_d[m2_d][SNTR][P1][False][True]}&{m3_d[m3_d][SNTR][P1][False][True]} \\\\ \n\
+  \\hline     \n\
+  P1&{m1}&{m1_d[m1_d][SNTR][P1][True][False]}&{m1_d[m2_d][SNTR][P1][True][False]}&{m1_d[m3_d][SNTR][P1][True][False]}&{m1_d[m1_d][SNTR][P1][False][False]}&{m1_d[m2_d][SNTR][P1][False][False]}&{m1_d[m3_d][SNTR][P1][False][False]} \\\\ \n\
+  without&{m2}&{m2_d[m1_d][SNTR][P1][True][False]}&{m2_d[m2_d][SNTR][P1][True][False]}&{m2_d[m3_d][SNTR][P1][True][False]}&{m2_d[m1_d][SNTR][P1][False][False]}&{m2_d[m2_d][SNTR][P1][False][False]}&{m2_d[m3_d][SNTR][P1][False][False]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SNTR][P1][True][False]}&{m3_d[m2_d][SNTR][P1][True][False]}&{m3_d[m3_d][SNTR][P1][True][False]}&{m3_d[m1_d][SNTR][P1][False][False]}&{m3_d[m2_d][SNTR][P1][False][False]}&{m3_d[m3_d][SNTR][P1][False][False]} \\\\ \n\
+  \\hline     \n\
+  \\hline     \n\
+\\textbf{{SAKP}}&&&&&&& \\\\ \n\
+  P1&{m1}&{m1_d[m1_d][SAKP][P1][True][True]}&{m1_d[m2_d][SAKP][P1][True][True]}&{m1_d[m3_d][SAKP][P1][True][True]}&{m1_d[m1_d][SAKP][P1][False][True]}&{m1_d[m2_d][SAKP][P1][False][True]}&{m1_d[m3_d][SAKP][P1][False][True]} \\\\ \n\
+  with&{m2}&{m2_d[m1_d][SAKP][P1][True][True]}&{m2_d[m2_d][SAKP][P1][True][True]}&{m2_d[m3_d][SAKP][P1][True][True]}&{m2_d[m1_d][SAKP][P1][False][True]}&{m2_d[m2_d][SAKP][P1][False][True]}&{m2_d[m3_d][SAKP][P1][False][True]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SAKP][P1][True][True]}&{m3_d[m2_d][SAKP][P1][True][True]}&{m3_d[m3_d][SAKP][P1][True][True]}&{m3_d[m1_d][SAKP][P1][False][True]}&{m3_d[m2_d][SAKP][P1][False][True]}&{m3_d[m3_d][SAKP][P1][False][True]} \\\\ \n\
+  \\hline     \n\
+  P1&{m1}&{m1_d[m1_d][SAKP][P1][True][False]}&{m1_d[m2_d][SAKP][P1][True][False]}&{m1_d[m3_d][SAKP][P1][True][False]}&{m1_d[m1_d][SAKP][P1][False][False]}&{m1_d[m2_d][SAKP][P1][False][False]}&{m1_d[m3_d][SAKP][P1][False][False]} \\\\ \n\
+  without&{m2}&{m2_d[m1_d][SAKP][P1][True][False]}&{m2_d[m2_d][SAKP][P1][True][False]}&{m2_d[m3_d][SAKP][P1][True][False]}&{m2_d[m1_d][SAKP][P1][False][False]}&{m2_d[m2_d][SAKP][P1][False][False]}&{m2_d[m3_d][SAKP][P1][False][False]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SAKP][P1][True][False]}&{m3_d[m2_d][SAKP][P1][True][False]}&{m3_d[m3_d][SAKP][P1][True][False]}&{m3_d[m1_d][SAKP][P1][False][False]}&{m3_d[m2_d][SAKP][P1][False][False]}&{m3_d[m3_d][SAKP][P1][False][False]} \\\\ \n\
+  \\hline     \n\
+\end{{tabular}} \n\
+\\captionof{{table}}{{{m1} : \\texttt{{{m1_n}}} \\\\ {m2} : \\texttt{{{m2_n}}} \\\\ {m3} : \\texttt{{{m3_n}}} }}"
+    
+    stations = ['SBC', 'SAKP', 'SNTR']
+    values = ['P1']
+    lu_bws  = [True, False]
+    rules = ['CRPS']
+    formater = dict()
+    mod_names = defaultdict(dict)
+    i=1
+    mdn_i=1
+    bnn_i=1
+    for rule in rules:
+        for stat in stations:
+            for val in values:
+                for lu_bw1 in lu_bws:
+                    for lu_bw2 in lu_bws:
+                        res1 = sec.query_l(stat, lu_bw1, val, rule)
+                        res2 = sec.query_l(stat, lu_bw2, val, rule)
+                        for mod, value in res1.items():
+                            if mod not in mod_names.keys():
+                                if "mdn" in mod:
+                                    mod_names["m"+str(i)] = "MDN$_"+str(mdn_i)+"$"
+                                    mdn_i = mdn_i + 1
+                                elif "bnn" in mod:
+                                    mod_names["m"+str(i)] = "BNN$_"+str(bnn_i)+"$"
+                                    bnn_i = bnn_i + 1
+                                else:
+                                    mod_names["m"+str(i)] = "Emp."
+                                mod_names[mod] = "m"+str(i)                            
+                                i = i + 1 
+                                mod_name = mod_names[mod]
+                                mod_names[mod_name+"_n"] = mod.replace("_","\\_")                        
+                        for mod1, values1 in res1.items():
+                            for mod2, values2 in res2.items():
+                                test = dm_test(values1, values2)
+                                mod1_name = mod_names[mod1]
+                                mod2_name = mod_names[mod2]
+                                formater.setdefault(
+                                    mod1_name+"_d" ,{}).setdefault(
+                                        mod2_name+"_d",{}).setdefault(
+                                            stat, {}).setdefault(
+                                                val, {}).setdefault(
+                                                    str(lu_bw1), {}).setdefault(
+                                                        str(lu_bw2),str(round(test[0],3))+","+str(round(test[1],3)))
+
+    # [m1_d][m1_d][SBC][P1][True]
+    # res = sec.query_l("SBC",True,"P1","CRPS")
+    # print(mod_names)
+    # print("---------")
+    # print(formater)
+    print(latex_table.format_map({**formater, **mod_names}))
+    
+    
+
+    
+    pass 
+    
+
+
+
+
 def main():
 
     parser = argparse.ArgumentParser(description='Generate result plots')
@@ -365,20 +518,26 @@ def main():
     print("Processing fodlers: ", args.folders)
     sec = ResSelector(args.folders)
 
+    # print(sec.query_l("SBC",True, "P1", "CRPS"))
+
+    # if args.check:
+    #     print("Generating predictive checks")
+    predictive_check(sec, args.dest)
+
     if not os.path.isdir(args.dest):
         os.makedirs(args.dest)
     
-    if args.basic:
-        print("Generating results plots")
-        basic_res(sec, args.dest)
+    # if args.basic:
+    #     print("Generating results plots")
+    #     basic_res(sec, args.dest)
 
-    if args.imp:
-        print("Generating feature importance")
-        feat_importance(sec, args.dest)
+    # if args.imp:
+    #     print("Generating feature importance")
+    #     feat_importance(sec, args.dest)
 
-    if args.table:
-        print("Generating LaTeX Table")
-        gen_tables(sec, args.dest)
+    # if args.table:
+    #     print("Generating LaTeX Table")
+    #     gen_tables(sec, args.dest)
 
 
 if __name__ == '__main__':
