@@ -14,8 +14,6 @@ from gpflow.params import Parameter, ParamList
 from gpflow.training import AdamOptimizer, ScipyOptimizer
 from gpflow.decors import params_as_tensors, autoflow
 
-
-
 from scipy.stats import norm
 import numpy as np
 
@@ -26,19 +24,15 @@ from matplotlib import pyplot as plt
 
 float_type = gpflow.settings.float_type
 
-
-
-
 class Mdn(Model):
     
-    def __init__(self,model_id,X, Y, inner_dims=[10, 10,], activation=tf.nn.tanh, num_mixtures=5, model_file=None ):
+    def __init__(self,model_id, X, Y, inner_dims=[10, 10,], activation=tf.nn.tanh, num_mixtures=5, model_file=None ):
         Model.__init__(self)
         self.model_id = model_id
 
         self.Din = X.shape[1]
         self.dims = [self.Din, ] + list(inner_dims) + [3 * num_mixtures]
         self.activation = activation
-
         
 
         self.X = DataHolder(X)
@@ -51,9 +45,6 @@ class Mdn(Model):
         else:
             self.load(model_file)
 
-        
-
-        
 
         
     def _create_network(self):
@@ -136,59 +127,3 @@ class Mdn(Model):
         if callback is not None:
             callback(self, int(num_iter))
 
-
-
-
-def main():
-    
-    example_size = 1000
-    x_train_1 = np.linspace(0, 5, num=example_size)
-    x_train_2 = np.linspace(0, 5, num=example_size)
-    rand = norm.rvs(size=example_size, loc=0, scale=0.12)
-
-    x_train = np.array([x_train_1, x_train_2]).T
-
-
-    y_train = np.add(x_train_1,x_train_2)
-    y_train = np.sin(np.add(y_train, rand)).T.reshape(example_size,1)
-    
-    model = Mdn("name", x_train, y_train, inner_dims=[15,5], num_mixtures=5)
-
-    model.fit(num_iter=10000)
-
-
-    # model.save("/home/arnaud/code/pollution/env/models/my_model", "self")
-
-
-    pis, mus, sigmas = model.eval_network(x_train)
-
-    # r = norm.rvs(size=i, loc=0, scale=5)
-    plt.figure(figsize=(15,13), dpi=100)
-
-    # print((pis.T*mus.T).shape)
-    res = np.sum(pis.T*mus.T, axis=0)
-    res_1 = np.sum(pis.T*sigmas.T, axis=0)
-    # print(res.shape)
-    # print(res)
-
-
-    plt.plot(np.linspace(0, len(y_train), num=len(y_train)) ,res, '-g', color="green", linewidth=2.4,label='training data')
-    plt.fill_between(np.linspace(0, len(y_train), num=len(y_train)), res-res_1, res+res_1, color="red", alpha=0.5)
-    # plt.plot(np.linspace(0, len(y_train), num=len(y_train)) ,mus.T[0], '-r', color="red", linewidth=1.0)
-    # plt.plot(np.linspace(0, len(y_train), num=len(y_train)) ,mus.T[1], '-r', color="red", linewidth=1.0)
-    # plt.plot(np.linspace(0, len(y_train), num=len(y_train)) ,mus.T[2], '-r', color="red", linewidth=1.0)
-    # plt.plot(np.linspace(0, len(y_train), num=len(y_train)) ,mus.T[3], '-r', color="red", linewidth=1.0)
-    # plt.plot(np.linspace(0, len(y_train), num=len(y_train)) ,mus.T[4], '-r', color="red", linewidth=1.0)
-
-    
-    plt.plot(np.linspace(0, len(y_train), num=len(y_train)) ,y_train, '.b', color="blue", linewidth=0.3,label='training data')
-    plt.legend()
-    plt.title("GM: Model")
-    plt.xlabel("point[i]")
-    plt.ylabel("output")
-    plt.show()
-
-
-
-if __name__ == '__main__':
-    main()
