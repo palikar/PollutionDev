@@ -1,7 +1,7 @@
 {
     "mdn":
     {
-        "mdn_iter" : 30000,
+        "mdn_iter" : 3000,
         "mdn_layers" : [10],
         "mdn_mixture_cnt" : 2
     },
