@@ -19,7 +19,8 @@ ignored_sensors_files = None
 final_df_name = None
 
 def _read_config(config_data):
-    "Loading config variables"
+    """Reads the relevant for the script information from the configuration dictionary.
+    """
     global data_files_dir, period, freq, final_df_name, folder, ignored_sensors_files
 
 

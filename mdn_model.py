@@ -1,11 +1,9 @@
 #!/home/arnaud/anaconda3/bin/python3
 
 
+import os, sys
 import tensorflow as tf
 from scipy.stats import norm
-
-import os, sys
-
 import gpflow
 from gpflow.saver import Saver
 from gpflow.models.model import Model
@@ -13,7 +11,6 @@ from gpflow.params.dataholders import Minibatch, DataHolder
 from gpflow.params import Parameter, ParamList
 from gpflow.training import AdamOptimizer, ScipyOptimizer
 from gpflow.decors import params_as_tensors, autoflow
-
 from scipy.stats import norm
 import numpy as np
 

@@ -26,7 +26,8 @@ config_data_g = None
 
 
 def _read_config(config_data):
-
+    """Reads the relevant for the script information from the configuration dictionary.
+    """
     global base_url, download_dir, start_date, end_date, sensor_type, files_list_file_name
     global config_data_g
 
@@ -118,9 +119,6 @@ def _download_files():
                     break
                 except:
                     continue
-                        
-                
-
             
             print("\n")
             

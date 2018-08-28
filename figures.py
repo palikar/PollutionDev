@@ -9,7 +9,6 @@ import math
 from scipy.stats import norm
 import properscoring as ps
 import sklearn
-
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 

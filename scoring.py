@@ -1,6 +1,4 @@
 #!/home/arnaud/anaconda3/bin/python3.6
-
-
 import sys, os
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -9,22 +7,15 @@ from scipy.stats import norm
 from scipy.stats import gaussian_kde
 import properscoring as ps
 
-
 import numpy as np
-
-
-def nrd(x):
-    r = np.percentile(x, [0,25, 0.75])
-    h = (r[1] - r[0])/1.34
-    return 4 * 1.06 * min(math.sqrt(np.var(x)), h) * (x.shape[0])**(-1/5)
-
-def crps_edf_samples(y, data):
-    fun = lambda s: ps.crps_ensemble(s, data)
-    vfun = np.vectorize(fun)
-    return vfun(y)
 
         
 def dss_edf_samples(y, data):
+    """A functions calculating the Dawid Sebastiani score over some
+observations given samples drawn from arbitrary distribution.
+    y: the vector of realised obseravtions on which the scores are calculated
+    data: samples drawn from some distribution that models the observations
+    """
     m = data.mean()
     v = (data**2).mean() - m**2
     fun = lambda s: (((s - m)**2) / v) + 2*math.log(v)
@@ -32,6 +23,12 @@ def dss_edf_samples(y, data):
     return vfun(y) 
 
 def dss_norm(y, loc=0, scale=1):
+    """A functions calculating the Dawid Sebastiani score over some
+observations given some normal distribution.
+    y: the vector of realised obseravtions on which the scores are calculated
+    loc: the mean of the normal distribution modeling the data
+    scale: the variance of the normal distribution modeling the data
+    """
     yy = y
     if loc != 1:
         yy = yy - loc

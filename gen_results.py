@@ -2,21 +2,13 @@
 
 
 import os, sys, argparse
-
 import matplotlib as mpl
-# mpl.use('Agg')
 from matplotlib import pyplot as plt
-
-
 import numpy as np
 import pandas as pd
-
-
 import utils as ut
 import json, re
-
 from scipy import stats
-
 from collections import defaultdict
 
 
@@ -508,6 +500,10 @@ def main():
     parser.add_argument('--table-tex', dest='table', action='store_true',
                         help='Generate latex table with the results')
 
+    parser.add_argument('--pred-check', dest='check', action='store_true',
+                    help='Generate latex table with predictive checks between models acording to \
+the Diebold-Mariano test')
+
     parser.add_argument('--dest', dest='dest', action='store', default="./",
                         help='Folder for the results', required=False)
 
@@ -518,26 +514,25 @@ def main():
     print("Processing fodlers: ", args.folders)
     sec = ResSelector(args.folders)
 
-    # print(sec.query_l("SBC",True, "P1", "CRPS"))
-
-    # if args.check:
-    #     print("Generating predictive checks")
-    predictive_check(sec, args.dest)
-
+    
     if not os.path.isdir(args.dest):
         os.makedirs(args.dest)
     
-    # if args.basic:
-    #     print("Generating results plots")
-    #     basic_res(sec, args.dest)
+    if args.basic:
+        print("Generating results plots")
+        basic_res(sec, args.dest)
 
-    # if args.imp:
-    #     print("Generating feature importance")
-    #     feat_importance(sec, args.dest)
+    if args.imp:
+        print("Generating feature importance")
+        feat_importance(sec, args.dest)
 
-    # if args.table:
-    #     print("Generating LaTeX Table")
-    #     gen_tables(sec, args.dest)
+    if args.table:
+        print("Generating LaTeX Table")
+        gen_tables(sec, args.dest)
+
+    if args.check:
+        print("Generating predictive checks")
+        predictive_check(sec, args.dest)
 
 
 if __name__ == '__main__':

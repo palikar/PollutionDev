@@ -1,7 +1,4 @@
 #!/home/arnaud/anaconda3/bin/python3.6
-
-
-
 import argparse
 import sys, os
 import utils as ut
@@ -18,6 +15,8 @@ integration_type = None
 integration_freq = None
 
 def _read_config(config_data):
+    """Reads the relevant for the script information from the configuration dictionary.
+    """
     global lu_bw_data_files_dir, description_files_dir, time_column, reindex_period, integration_type, integration_freq
 
     lu_bw_data_files_dir = os.path.expanduser(config_data["lu_bw_data_files_dir"])

@@ -29,6 +29,8 @@ reindexed_frames_file = None
 missing_entries_threshold = None
 
 def _read_config(config_data):
+    """Reads the relevant for the script information from the configuration dictionary.
+    """
     global data_files_dir, bad_missing_data_sensors, description_files_dir,env_dir, reindex_period, generate_plots, value_colums, reindex_freq, time_column,reindexed_frames_file, missing_entries_threshold
 
     data_files_dir = os.path.expanduser(config_data["data_files_dir"])
@@ -144,12 +146,6 @@ def _main():
             plt.clf()
             df.rolling(100).mean().plot(linewidth=1.0, style = ['r-', 'b--'], grid = True,figsize=(13, 11), title="Rolling averages over P1 and P2 of " + id)
             plt.savefig(os.path.join(description_files_dir, "plots/" + id + "_rolling_plot_.png"), bbox_inches='tight')
-
-            
-
-        
-
-
 
         
         df.to_csv(f,sep=";",index_label=time_column)

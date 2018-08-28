@@ -13,7 +13,9 @@ import os
 
 
 class Bnn:
-
+    """
+    A class for abstracting the structure of Bayesian Neural Network
+    """
 
     def __init__(self, model_id):
         self.model_id = model_id
@@ -21,7 +23,9 @@ class Bnn:
         
 
     def build(self, input_dim, output_dim, layers_defs=[3,3], examples=50):
-
+        """
+        Constructs a Tensorflow graph for the the BNN.
+        """
 
         print("Generating prior Variables")
         self.priorWs, self.priorBs = self.generate_prior_vars(input_dim, output_dim, layers_defs)
@@ -63,6 +67,9 @@ class Bnn:
     
 
     def _neural_network(self,x, Ws, bs):
+        """
+        Constructs a Tensorflow operation for a neural network given weight matrices, biases and input for the network.
+        """
         h = tf.tanh(tf.matmul(x, Ws[0]) + bs[0])
         for W, b in zip(Ws[1:-1], bs[1:-1]):
             h = tf.tanh(tf.matmul(h, W) + b)
@@ -162,9 +169,22 @@ class Bnn:
 
 
     def reset(self):
-        ed.get_sessxion().run(self.init_op)
+        """Reinitialized all variables in the constructed graph with random
+        values. If the model is trained, callubg this method will
+        reset it.
+
+        """
+        ed.get_session().run(self.init_op)
     
+
     def fit(self, X, y, M=None, epochs=1, updates_per_batch=1, samples=30, callback=None):
+        """Trains the network with the given in X and y data.
+        epochs: The iteration count over the whole dataset
+        M: The size of the batch that should be itertated over for optimization
+        updates_per_batch: The count of consecetive interations over the same batch
+        samples: samples drawn from the mdoels for calucating grading descent
+        callback: a function to be called every 1000 epochs while training the model
+        """
         latent_vars = {}
         N = y.shape[0]
         for var, q_var in zip(self.priorWs, self.qWs):
@@ -205,7 +225,8 @@ class Bnn:
 
 
     def evaluate(self, x, samples_count):
-
+        """Draws a samples form the model given some unseen data.
+        """
         op = tf.get_default_graph().get_tensor_by_name("evaluation:0")
 
         x_evaluation = tf.get_default_graph().get_tensor_by_name("evaluation_placeholder:0")
@@ -223,6 +244,10 @@ class Bnn:
         
 
     def save(self, directory, name):
+        """Saves the graph and all variables to files on disk. Everything will
+        be put in a new direcotry given by the argument.
+
+        """
         directory_exp = os.path.expanduser(directory)
         if not os.path.isdir(directory_exp):
             os.makedirs(directory_exp)            
@@ -230,6 +255,8 @@ class Bnn:
     
 
     def load(self, directory, name):
+        """Loads a model from the disk that was saved beforehand.
+        """
         sess =  ed.get_session()
         directory_exp = os.path.expanduser(directory)
         self.saver = tf.train.import_meta_graph(directory_exp + name +".meta")
@@ -238,77 +265,3 @@ class Bnn:
     
         
         
-        
-def main():
-    print("Starting BNN")
-
-
-    
-    model = Bnn("bnn_3_3")
-    model.build(2,1,layers_defs=[5])
-
-    example_size = 50
-
-    x_train_1 = np.linspace(0, 2, num=example_size,dtype=np.float32)
-    x_train_2 = np.linspace(0, 2, num=example_size,dtype=np.float32)
-    x_train = np.array([x_train_1, x_train_2]).T
-
-    rand = norm.rvs(size=example_size, loc=0, scale=0.12)
-    y_train = np.add(x_train_1,x_train_2,dtype=np.float32)
-    y_train = np.sin(np.add(y_train, rand)).T
-
-
-    print("X shape: " + str(x_train.shape))
-    print("Y shape: " + str(y_train.shape))
-
-
-    # model.fit(x_train, y_train, epochs=5000, samples=40)
-
-    
-    
-    
-    samples=100
-    outputs = model.evaluate(x_train, samples)
-
-    # outputs = outputs.T
-
-    outputs = outputs.reshape(samples, example_size)
-    # print(outputs.shape)
-    # print(outputs)
-
-
-    
-    plt.figure(figsize=(15,13), dpi=100)
-    
-    outputs = outputs.reshape(samples,example_size)
-    
-    line, = plt.plot(np.arange(len(outputs[0].reshape(-1))), np.mean(outputs, 0).reshape(-1),'r', lw=2, label="posterior mean")
-
-    plt.fill_between(np.arange(len(outputs[0].reshape(-1))),
-                     np.percentile(outputs, 5, axis=0),
-                     np.percentile(outputs, 95, axis=0),
-                     color=line.get_color(), alpha = 0.3, label="confidence_region")
-    
-    plt.plot(np.linspace(0, example_size, example_size), y_train.T, '.b', color="blue", linewidth=0.3,label='training data')
-    
-    
-    plt.legend()
-    plt.title("Edward: Model")
-    plt.xlabel("point[i]")
-    plt.ylabel("output")
-
-    plt.show()
-
-    
-
-
-if __name__ == '__main__':
-    main()
-
-
-
-
-
-
-
-    

@@ -1,7 +1,4 @@
 #!/home/arnaud/anaconda3/bin/python3.6
-
-
-
 import argparse
 import sys, os
 import utils as ut
@@ -11,7 +8,6 @@ from matplotlib import pyplot as plt
 import re
 
 
-args = None
 
 files_dir = None
 raw_files_dir = None 
@@ -36,6 +32,8 @@ radius = None
 sensors_on_date = {}
 
 def _read_config(config_data):
+    """Reads the relevant for the script information from the configuration dictionary.
+    """
     global files_dir, raw_files_dir, keep_columns, time_column, duplicates_resolution, min_sensor_cnt, all_sensors_list_file, good_sensors_list_file, good_sensors_data_files_list, day_integration_period, day_integration_type, missing_data_cnt_threshold, missing_data_resolution, bad_missing_data_sensors, values_columns, id_column,id_columnreindex_period, center, radius
     print("Reading config data")
 

@@ -67,6 +67,7 @@
 \usepackage{cleveref}
 \usepackage[font=small,belowskip=6pt]{subcaption}
 
+
 \hypersetup{
   pdftitle={Creating and Evaluating Stochastic Regression Models on the Basis of Heterogeneous Sensor Networks}, %TODO
   pdfauthor={Stanislav Arnaudov}, %TODO
@@ -707,8 +708,7 @@ All of the examined model in the thesis can generate samples from their predicte
 \end{align}
 With this function we can also calculate the CRPS in straightforward manner following the definition in \refeq{eq:crps}.
 % With that we've covered all cases in the evaluation of our models.
-\subsection{Rank Histogram}
-\label{sec:rank-hist}
+\subsection{Rank Histogram}\label{sec:rank-hist}
 
 \emph{Rank histograms} (sometimes called \emph{verification rank histogram}) are a tool for evaluating ensemble forecasts (\cite{hamill2001}). In our work however we adapt them to evaluate forecasts in form of probability distributions. The underlying assumption is that the ensemble member forecasts are distributed so as to delineate ranges. Let \([y_1^p,..., y_M^p]\) be a \emph{sorted} ensemble where each \(y_i^p\) is a predicted value for the true observation \(y^t\). The rank of \(y^t\) according to the ensemble is an integer \(k\) such that
 \begin{equation}  
@@ -732,8 +732,7 @@ For a well calibrated forecast, the rank histogram should be uniform. U-shaped h
     \caption[Rank Histogram Example]{Histograms illustrating different types of distributions with respect to the actual observations. To note is that on left we give only one example of samples drawn form the distribution in respect to a given observation. We assume that the sample sets for the other observations are similar and that this will produce the respective histograms on the right. A rank histogram cannot be given for a single observation and a single set of drawn samples.}
   \end{figure}
 \end{center}
-\subsection{Feature Importance}
-\label{sec:feature-importance}
+\subsection{Feature Importance}\label{sec:feature-importance}
 
 In order to asses the relative importance of the features used by the build models we use a method called \emph{permutation importance}. It is first described in  \cite{breiman2001} and it was applied to random forests. The techniques is also successfully applied in assessing the feature importance of ensemble methods for forecasting (\cite{lerch2018}). We closely follow the approach of \cite{lerch2018} by randomly shuffling each feature in the test and training sets and then look at the mean value of a given scoring rule. For each feature we examine the difference in the mean value of the scoring rules between the permuted and regular datasets.
 
@@ -770,23 +769,100 @@ where X\(^{\text{(n)}}\) is the feature vector of the \(n^{th}\) datapoint (i.e.
 \label{sec:meth}
 \noindent
 \emph{We first describe exactly what kind of datasets we use to train the model and what feature considerations we make.}
-As described in (section) the the data comes from different places and further more is in different formats. Therefore we are responsible for generating the final datasets on which we train the models. This allows us to be flexible in the used data and therefore be able to investigate how the different resolution of the data affects the performance of the models. We have generated three different datasets (see impl for details on the process):
+As described in \refsec{sec:data} the data comes from different places and further more is in different formats. Therefore we are responsible for generating the final datasets on which we train the models. This allows us to be flexible in the used data and therefore be able to investigate how the different resolution of the data affects the performance of the models. We describe the generation process in details in \refsec{sec:prep-data}. We have generated three different datasets:
 \begin{itemize}
-\item Daily average - For the whole considered period (the year of 2017) we take the average pollution value (PM10 and PM2.5) of each sensor for each day. We treat the vector of those values as a single entry in the dataset. Naturally this means that we have 365 entries in this dataset.
+\item Daily average - For the whole considered period - the year of 2017 - we take the average pollution value (PM10 and PM2.5) of each sensor for each day. We treat the vector of those values as a single entry in the dataset. Naturally this means that we have 365 entries in this dataset.
 \item 12 hour average - Analogous to the daily average but we take the average values over twelve hour periods over the entire year. 730 entries in the entire dataset.
 \item Hourly average - We consider the average pollution value of each sensor over each hour in the year. The count of entries in this dataset is 8760.
 \end{itemize}
-We look at the performance of the models over each set in the respective sections (sec, sec, sec). In (figure) we show plots of the values coming from a single sensor. On the size of the value vectors for entries in each datasets - after the data cleaning (described in sec) we are left with 16 sensors from luftdaten.info and we also have 3 LUBW sensors. This adds up to 19 sensors over all. For each of those we have PM10 and PM2.5 values. This means that for each day, 12 hours or one hour we have 38 values. We next describe how we choose subset of those to train models predicting a given another one of them.
-\\
+We look at the performance of the models over each set in the respective sections. In \reffig{fig:sensor_plots} we show plots of the values coming from a single sensor. On the size of the value vectors for entries in each datasets - after the data cleaning (described in sec) we are left with 16 sensors from luftdaten.info and we also have 3 LUBW sensors. This adds up to 19 sensors over all. For each of those we have PM10 and PM2.5 values. This means that for each day, 12 hours or one hour we have 38 values. We next describe how we choose subset of those to train models predicting a given another one of them.
+
 As said, we want to investigate how different data affects the performance of the models. For that, we consider several types of orthogonal criteria.
 \begin{itemize}
 \item \emph{Predicted LUBW sensor} - As mentioned, there are altogether three LUBW sensors\footnote{We use sensor and station interchangeably}. The names of those are \emph{SBC}, \emph{SNTR} and \emph{SAKP}. We want to see the predictive performance of the models based on which of these stations we are trying to predict. Plots of the data coming from these sensors can be seen in (figure).
 \item \emph{Pollution value type} - The air pollution values that all of the sensors measure are PM2.5 and PM10 (see section). In our implementation and considerations we call those P1 and P2 respectively (see impl). While preprocessing the data, we have found out that P1 and P2 are highly correlated. On average their correlation is about \(0.9 \). This means that they effectively measure the same thing and will only make the feature space overly complicated if both are considered as predictors. For this reason we either train on P1 or P2 values while predicting P1 or P2 respectively.
 \item \emph{Using the rest of the LUBW senors as predictor} -  We want to see the difference in predictive performance of the models based on including the rest of the LUBW stations as predictors. That it, how much better or worse become the models if we use values of the two other LUBW stations when we predict the values of the third one.
 \end{itemize}
-Each of this distinctions in the selection of the data used for training can be 1made independently of the other ones. We consider all possible combinations and we compare the results in (section).
+Each of this distinctions in the selection of the data used for training can be 1made independently of the other ones. We consider all possible combinations and we compare the results in \refsec{sec:eval-model}.
 \\
-When it comes to evaluation of the models, we evaluate each one differently generated model with the three proper scoring rules (described in (section)). We apply the feature importance technique (see section) only with respect to the CRPS (as in \cite{lerch2018}). We look at the rank histograms (see section) of only some of the models.
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/1D_140_plot}%
+    \label{fig:y equals x}
+    \caption{}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/12H_140_plot}%
+    \label{fig:y equals x}
+    \caption{}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/1H_140_plot}%
+    \label{fig:y equals x}
+    \caption{}
+  \end{subfigure}
+
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/1D_140_rolling_plot_}%
+    \label{fig:y equals x}
+    \caption{}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/12H_140_rolling_plot_}%
+    \label{fig:y equals x}
+    \caption{}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/1H_140_rolling_plot_}%
+    \subcaption{}
+  \end{subfigure}      
+  \caption{Different views of the data from a single sensor. The P1 value is displayed in red and P2 in blue. The plots on the top row show the actual values over the entire year depending on the averaging period - daily averaged in (a), 12 hour average in (b) and hour average in (c). (d), (e) and (f) show a moving average of 100 values of the respective plot above.}\label{fig:sensor_plots}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/1D_SAKP_plot}%
+    \label{fig:y equals x}
+    \caption{}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/1D_SBC_plot}%
+    \label{fig:y equals x}
+    \caption{}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/1D_SNTR_plot}%
+    \label{fig:y equals x}
+    \caption{}
+  \end{subfigure}
+
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/1D_SAKP_rolling_plot_}%
+    \label{fig:y equals x}
+    \caption{}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/1D_SBC_rolling_plot_}%
+    \label{fig:y equals x}
+    \caption{}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}[t]{0.32\textwidth}
+    \includegraphics[width=\textwidth,height=6cm]{figures/1D_SNTR_rolling_plot_}%
+    \subcaption{}
+  \end{subfigure}      
+  \caption{The plots here show data from the tree LUBW sensors - SAKP, SBC and SNTR respectively - but only for the daily averaging period. The top row again shows the values for each day while the bottom is a moving average of 100 values. For explanation on the values of SAKP, see the note at the end of the chapter.}\label{fig:sensor_plots}
+\end{figure}
+When it comes to evaluation of the models, we evaluate each one differently generated model with the three proper scoring rules described in \refsec{sec:proper-scoring-rules}. We apply the feature importance technique from \refsec{sec:feature-importance} only with respect to the CRPS as in \cite{lerch2018}. We look at the rank histograms of only some of the models. For details on rank histograms see \refsec{sec:rank-hist}.
 \\
 \emph{Note:} During the data preprocessing process we have found out that one of the LUBW sensors - SAKP  - has data only for the last three months of the year. We have tried to interpolate the data for the rest of the year. This, however, means that the data from the sensors is almost unusable. We have decided to continue considering the sensor as we would if this was not the fact. In the evaluation of the modes we hope to see results consistent with the made observation about the sensor. Namely:
 \begin{itemize}
@@ -795,79 +871,7 @@ When it comes to evaluation of the models, we evaluate each one differently gene
 \end{itemize}
 We reference back this considerations while discussing the observed results.
 
-\begin{figure}[H]
-  \centering
-
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}
-
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}      
-    \caption{LUBW Plots}
-  \end{figure}
-  
-\begin{figure}[H]
-  \centering
-
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=7cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}
-
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\textwidth,height=6cm]{figures/forecast.png}%
-    \label{fig:y equals x}
-  \end{subfigure}      
-    \caption{Sensor Plots}
-  \end{figure}
-
-
-\subsection{Evaluation of the models}
-\label{sec:eval-model}
+\subsection{Evaluation of the models}\label{sec:eval-model}
 As described in the previous section, we consider three different datasets based on the averaging period of the values. We look at the results on each of them in separate sections
 \subsubsection{One day period}
 \subsubsection{Twelve hour period}
@@ -993,21 +997,21 @@ The \texttt{save} and \texttt{load} methods of the class are similar to the ones
 The script constructing the models and training them with certain data is in \texttt{model\_evaluation.py}.. The script takes various arguments that configure the type of data that gets used for training, the structure of the models themselves which model gets trained and where are the results stored. After training each models gets evaluated (see \refsec{sec:models-eval}). In this section we explain how the exactly set up the configuration of the training. We first go over the command line arguments of the script.
 \begin{itemize}
 \item \texttt{\-\-model} - the type of the model the script will train. Can be \emph{bnn} for (BNN), \emph{mdn} for (MDNs) or \emph{both} for training first BNN and then MDN.
-\item \texttt{\-\-config} - configuration file for the both models. We explain the setting in it later.
-\item \texttt{\-\-station} - the LUBW station which the trained model will try to predict
-\item \texttt{\-\-predictor} - the air pollution value(s) that should be used as features. Can be P1, P2 or P1P2(for using P1 as well as P2 as features)
-\item \texttt{\-\-period} - the averaging period used to generate the dataset. Can be 1D (for daily average), 12H (12 hour average) or 1H (1 hour average).
-\item \texttt{\-\-outvalue} - predicted air pollution value of the model. Can be either P1 or P2.
-\item \texttt{\-\-take_lubw} - a boolean flag whether or the other two LUBW sensors should be used as predictors.
-\item \texttt{\-\-dest} - a folder where the results of the training and from the models' evaluation should be stored
-\item \texttt{\-\-base-dir} - a directory where the final dataframes form the three datasets are present
-\item \texttt{\-\-load-mdn} - this argument is an optional directory with stored MDN-model (see \refsec{sec:impl-mdn}). If set, the MDN model will be loaded from there and a new one won't be trained.
+\item \texttt{-{}-config} - configuration file for the both models. We explain the setting in it later.
+\item \texttt{-{}-station} - the LUBW station which the trained model will try to predict
+\item \texttt{-{}-predictor} - the air pollution value(s) that should be used as features. Can be P1, P2 or P1P2(for using P1 as well as P2 as features)
+\item \texttt{-{}-period} - the averaging period used to generate the dataset. Can be 1D (for daily average), 12H (12 hour average) or 1H (1 hour average).
+\item \texttt{-{}-outvalue} - predicted air pollution value of the model. Can be either P1 or P2.
+\item \texttt{-{}-take\_lubw} - a boolean flag whether or the other two LUBW sensors should be used as predictors.
+\item \texttt{-{}-dest} - a folder where the results of the training and from the models' evaluation should be stored
+\item \texttt{-{}-base-dir} - a directory where the final dataframes form the three datasets are present
+\item \texttt{-{}-load-mdn} - this argument is an optional directory with stored MDN-model (see \refsec{sec:impl-mdn}). If set, the MDN model will be loaded from there and a new one won't be trained.
 \item \texttt{\-\-load-bnn} - this argument is an optional directory with stored BNN-model (see \refsec{sec:impl-bnn}). If set, the BNN  model will be loaded from there and a new one won't be trained.
 \end{itemize}
 When the script gets called it extracts the specified by the arguments data and creates the test-train split on it. A description string with all of the settings is created and logged in a file. With this we know exactly how the models were trained. The configuration of the models themselves is passed through a \emph{JSON}-file and it also being logged. For the BNNs this configuration files contains the definitions of hidden layers and number of neurons in them, the number of samples drawn when calculating the gradient during optimization as well as the iterations over the entire training set to be performed during the training. The configurations for the MDNs are again layer definitions, number of mixture components and maximum integration count over the data during training. The script creates the specified by the arguments models and trains them. After that, the models are passed for evaluation. In the next section we explain how the evaluation is performed.
 \subsection{Models evaluation}
 \label{sec:models-eval}
-In the file \texttt{model_evaluation.py} we define a \texttt{Evaluator} class that cat evaluate already trained models. The methods that are getting called form outside are \texttt{evaluate_mdn}, \texttt{evaluate_bnn} and \texttt{evaluate_empirical} for respectively generating evaluation information about MDNs, BNNs and empirical models. There are separate methods because the different objects representing different model type generate data in slightly different formats. The methods, however, perform essentially the same actions. First two plots are generated. The plots show the result of applying the model on the train and the test sets and comparing the generated values to the actual observed values. These are the plots like in (Figure). After this the rank histograms over the train and the test sets are generated. Rank histograms are explained in (section). The three proper scoring rules described in (section) are calculated on the train and test sets and the results are logged in \emph{CSV}-files. To note is that the results are saved as well as average value over the whole set as well as the individual scores of the individual observations. We later use the former one to compare the performance of the models based on average score value and the latter one to perform predictive performance checks between different models. Feature importance data based on the evaluated model is also generated in the respective method. This is done again for the test and the train sets. Each column of the considered set is first shuffled and then the scoring rules are calculated again. The difference in scores between the corresponding observations is calculated, summed and averaged exactly as explained in (section). At the end for each rule and for shuffled each feature we save the average difference in scoring rules in a \emph{CSV}-file.
+In the file \texttt{model\_evaluation.py} we define a \texttt{Evaluator} class that cat evaluate already trained models. The methods that are getting called form outside are \texttt{evaluate\_mdn}, \texttt{evaluate\_bnn} and \texttt{evaluate\_empirical} for respectively generating evaluation information about MDNs, BNNs and empirical models. There are separate methods because the different objects representing different model type generate data in slightly different formats. The methods, however, perform essentially the same actions. First two plots are generated. The plots show the result of applying the model on the train and the test sets and comparing the generated values to the actual observed values. These are the plots like in (Figure). After this the rank histograms over the train and the test sets are generated. Rank histograms are explained in (section). The three proper scoring rules described in (section) are calculated on the train and test sets and the results are logged in \emph{CSV}-files. To note is that the results are saved as well as average value over the whole set as well as the individual scores of the individual observations. We later use the former one to compare the performance of the models based on average score value and the latter one to perform predictive performance checks between different models. Feature importance data based on the evaluated model is also generated in the respective method. This is done again for the test and the train sets. Each column of the considered set is first shuffled and then the scoring rules are calculated again. The difference in scores between the corresponding observations is calculated, summed and averaged exactly as explained in (section). At the end for each rule and for shuffled each feature we save the average difference in scoring rules in a \emph{CSV}-file.
 \subsection{Auxiliary scripts}
 \label{sec:aux-scripts}
 \noindent\emph{Bash script that are aimed at automating some of the trivial tasks.} 

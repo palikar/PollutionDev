@@ -9,26 +9,29 @@ import pandas as pd
 from math import cos, sin, atan2, sqrt
 
 
-if __name__ == '__main__':
-    unittest.main()
-
 
 def get_config_data(config_file_name):
-    
+    """Reads the configuration file and returns dictionary with its contents
+    """
     with open(config_file_name, "r") as config_file:
         config_data = json.load(config_file)
         return config_data
 
 
-
 def sanity_cahecks(config):
+    """The function performs all necessary checks on the env direcotry and
+    creates the folders that are not there. Checks on the
+    configuration are also made. If certain direcoty needed for the
+    system is in not metioned in the configuration, it will be cought
+    here.
+    """
     # directory for the data of all scripts
     if not "env_dir" in config:
         print("Envinroment directory not set in the config file (env_dir)")
         sys.exit("Exiting with error")
-
-        if not os.path.isdir(os.path.expanduser(config["env_dir"])):
-            os.makedirs(os.path.expanduser(config["env_dir"]))
+        
+    if not os.path.isdir(os.path.expanduser(config["env_dir"])):
+        os.makedirs(os.path.expanduser(config["env_dir"]))
 
     if not "env_dir" in config:
         print("Download directory not set in the config file (raw_down_dir)")
@@ -36,13 +39,11 @@ def sanity_cahecks(config):
     if not os.path.isdir(os.path.expanduser(config["raw_down_dir"])):
         os.makedirs(os.path.expanduser(config["raw_down_dir"]))
 
-
     if not "data_files_dir" in config:
         print("Final data files directory not set in the config file (data_files_dir)")
         sys.exit("Exiting with error")
     if not os.path.isdir(os.path.expanduser(config["data_files_dir"])):
         os.makedirs(os.path.expanduser(config["data_files_dir"]))
-
 
     if not "description_files_dir" in config:
         print("Final description files directory not set in the config file (description_files_dir)")
@@ -78,12 +79,11 @@ def generator(arrays, batch_size):
         yield batches
 
 
-
-def degreesToRadians(degrees):
-  return degrees * 3.14159265359 / 180;
-
-
 def distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2):
+    """Calculates the distance in KM between two sets of coordinates.
+    """
+    def degreesToRadians(degrees):
+        return degrees * 3.14159265359 / 180;
     earthRadiusKm = 6371
 
     dLat = degreesToRadians(lat2-lat1)
@@ -97,8 +97,11 @@ def distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2):
     return earthRadiusKm * c
 
 
-
 def sensor_coord(s_id):
+    """Finds the coordinates of a sensor with given id. The function
+    searches through the direcotry with raw files and inspects the
+    CSV-files of the sensor.
+    """
     findCMD = 'find ./env/raw_files/*_'+ str(s_id)+".csv"
     out = subprocess.Popen(findCMD,shell=True,stdin=subprocess.PIPE, 
                            stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -111,29 +114,13 @@ def sensor_coord(s_id):
     return (lat, lon)
     
 
-
-def list_coordinates(sensors):
-
-    center_lat = 48.781342
-    center_lon = 9.173868
-    
-    for sen in sensors:
-        s_id = sen.split("_")[1]
-        findCMD = 'find ./env/raw_files/*_' + "" + str(s_id) + ".csv"
-        out = subprocess.Popen(findCMD,shell=True,stdin=subprocess.PIPE, 
-                               stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        (stdout, stderr) = out.communicate()
-        filelist = stdout.decode().split()
-
-        df = pd.read_csv(filelist[0],sep=';')
-        lat = float(df["lat"][0])
-        lon = float(df["lon"][0])
-        print(s_id + ";" + str(lat) + ";" + str(lon))
-
-
-
-
 def test_train_split(X, y, train_size=0.75, random=False):
+    """Splits tha data into train and test sets. This can be done either
+    randomly or not. The latter case preserves the time dependence of
+    the data and will generated train split form "the past" and test
+    split with "feature" values.
+    train_size: the ration of size of the train set to the whole data set.
+    """
     if random:
         return train_test_split(X, y, train_size=train_size)
     else:
@@ -142,6 +129,13 @@ def test_train_split(X, y, train_size=0.75, random=False):
     
 
 def select_data(station, value, period, include_lu_bw=False, output_value=None, base_dir=None):
+    """Given base directory with the final dataframes, this function can
+    select the apropriate data from them acoriding to the given
+    parameters. The function fully abstract away the selection of the
+    data used to training the models. It also return the feature name
+    of each column as well as the name of the target value that is to
+    be predicted .
+    """
     if output_value is None:
         output_value = "P1"
 
@@ -187,23 +181,4 @@ def select_data(station, value, period, include_lu_bw=False, output_value=None, 
     
     return X, y, names, out_name
 
-    
 
-
-
-    
-
-
-
-
-
-
-
-
-        
-
-if __name__ == '__main__':
-    print("This file is not to be executed from the command line")
-            
-
-    

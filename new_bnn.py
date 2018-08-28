@@ -1,6 +1,5 @@
 #!/home/arnaud/anaconda3/bin/python3
 
-
 import tensorflow as tf
 import numpy as np
 import edward as ed
@@ -13,7 +12,6 @@ from scipy.stats import norm
 from matplotlib import pyplot as plt
 import utils as ut
 import os
-
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from sklearn.preprocessing import normalize

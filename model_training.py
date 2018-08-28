@@ -1,19 +1,15 @@
 #!/home/arnaud/anaconda3/bin/python3
 
 import os, sys, argparse
-
-
 import matplotlib as mpl
 mpl.use('Agg')
 from matplotlib import pyplot as plt
 from scipy.stats import norm
 from sklearn import model_selection
-
 import numpy as np
 import pandas as pd
 import edward as ed
 import tensorflow as tf
-
 from model_evaluation import Evaluator
 from bnn_model import *
 from mdn_model import *
@@ -115,31 +111,31 @@ def plot_mdn(X_train, X_test, y_train, y_test, directory,  model, i):
     
 def main():
     
-    parser = argparse.ArgumentParser(description='tain model, save it, evaluate it!')
+    parser = argparse.ArgumentParser(description='A script for training model(s). It can select specific part fo the training dta and feed it for training to some model. At the end it evaluated the trained models with the proper scoring rules, generates rank historgams, calculated feature importance data as well as plots over the entire dataset in order to visually show the performance of the trained model(s)')
     
     parser.add_argument('--model', dest='model', action='store',
-                    help='the model to be trained')
+                    help='The model to be trained. This can be \'bnn\', \'mdn\' or \'bothn\'.')
 
     parser.add_argument('--config', dest='config', action='store', required=True,
-                    help='the configuration file with setting for the architecture of the models')
+                    help='The configuration file with setting for the architecture of the models')
 
     parser.add_argument('--station', dest='station', action='store', default="SBC",
-                        help='the model to be trained')
+                        help='The target LUBW station the trained model aims to predict')
 
     parser.add_argument('--predictor', dest='pred_value', action='store', default="P1",
-                        help='the value(s) that should be used as features (P1, P2 of P1P2)')
+                        help='The value(s) that should be used as features (P1, P2 of P1P2)')
 
     parser.add_argument('--period', dest='period', action='store', default="1D",
-                        help='integration period for the data (1D, 1H, 12H)')
+                        help='intEgration period for the data (1D, 1H, 12H)')
 
     parser.add_argument('--outvalue', dest='out_value', action='store', default="P1",
-                        help='output value of the model(P1 or P2)')
+                        help='Output air pollution value of the model(P1 or P2)')
 
     parser.add_argument('--take_lubw', dest='take_lu_bw', action='store_true', default=False,
-                        help='should the LU BW station be taken as feature')
+                        help='Should the LU BW station be taken as feature')
     
-    parser.add_argument('--random_split', dest='random_split', action='store_true', default=False,
-                        help='should the LU BW station be taken as feature')
+    # parser.add_argument('--random_split', dest='random_split', action='store_true', default=False,
+    #                     help='Should the data be split randomly for the test train split')
 
     parser.add_argument('--dest', dest='dest', action='store', required=False, default="/home/arnaud/code/pollution/test_eval",
                         help='destination for the evaluation and for the build models')
@@ -148,10 +144,10 @@ def main():
                         help='The directory where the data frames reside')
 
     parser.add_argument('--load-mdn', dest='load_mdn', action='store', required=False, default=None,
-                        help='Load the MDB model from specific folder and dont train a new one')
+                        help='Load the MDB model from specific folder and do not train a new one')
 
     parser.add_argument('--load-bnn', dest='load_bnn', action='store', required=False, default=None,
-                        help='Load the BNN model from specific folder and dont train a new one')
+                        help='Load the BNN model from specific folder and do not train a new one')
 
     
     args = parser.parse_args()
