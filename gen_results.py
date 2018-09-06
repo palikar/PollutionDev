@@ -98,7 +98,6 @@ class ResSelector:
         
 
     def query(self,station, lu_bw, value, rule, test=True):
-
         res = dict()
         for main_folder in self.folders:
             sub_folders = [os.path.join(main_folder, f) for f in os.listdir(main_folder)
@@ -135,6 +134,7 @@ class ResSelector:
 
         
         return res
+
 
     def query_l(self,station, lu_bw, value, rule, test=True):
 
@@ -239,8 +239,6 @@ def feat_importance(sec, dest):
     values = ['P1']
     lu_bws  = [True, False]
     rules = ['CRPS']
-
-
 
  
     for rule in rules:

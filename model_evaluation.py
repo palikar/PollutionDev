@@ -1,7 +1,5 @@
 #!/home/arnaud/anaconda3/bin/python3.6
 
-
-
 import sys, os
 import pandas as pd
 import numpy as np
