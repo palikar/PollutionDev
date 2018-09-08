@@ -1,5 +1,6 @@
+#!/usr/bin/env bash
 
 
-./gen_results.py ${1}/results_1D --dest  ${1}/results_1D_res --table-tex --basic-plots --feature-imp
-./gen_results.py ${1}/results_12H --dest ${1}/results_12H_res --table-tex --basic-plots --feature-imp
-./gen_results.py ${1}/results_1H --dest  ${1}/results_1H_res --table-tex --basic-plots --feature-imp
+./gen_results.py ~/core.d/thesis_results/1d_res* --dest  ~/core.d/thesis_results/figs_1d/ --table-tex --basic-plots --feature-imp
+./gen_results.py ~/core.d/thesis_results/12h_res* --dest  ~/core.d/thesis_results/figs_12h/ --table-tex --basic-plots --feature-imp
+./gen_results.py ~/core.d/thesis_results/1h_res* --dest  ~/core.d/thesis_results/figs_1h/ --table-tex --basic-plots --feature-imp

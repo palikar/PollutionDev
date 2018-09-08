@@ -1,0 +1,1 @@
+gio open thesis.pdf&

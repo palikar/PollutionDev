@@ -89,9 +89,9 @@ class ResSelector:
 
                 # print(df)
                 df = df.loc[ df['rule'] == rule]
-                df = df.sort_values(["diff_value"], ascending=False)
+                df = df.sort_values(["feature"], ascending=False)
                 model_name = df.iloc[0]["Model"]
-                df = df.iloc[0 : limit][["feature","diff_value"]]
+                df = df.iloc[0 : ][["feature","diff_value"]]
                 res[model_name] = df.to_dict('list')
         return res
             
@@ -236,7 +236,7 @@ def basic_res(sec, dest):
 
 def feat_importance(sec, dest):
     stations = ['SBC', 'SAKP', 'SNTR']
-    values = ['P1']
+    values = ['P1', 'P2']
     lu_bws  = [True, False]
     rules = ['CRPS']
 
@@ -250,6 +250,7 @@ def feat_importance(sec, dest):
                 
                     n_groups = 10
                     data = sec.importance(stat, lu_bw, val, rule, limit=n_groups)
+                    n_groups = len(next(iter(data.values()))["feature"])
 
                     index = np.arange(n_groups)
                     bar_width = 0.2
@@ -264,7 +265,13 @@ def feat_importance(sec, dest):
                                 bar_width,
                                 alpha=opacity,
                                 label=mod)
+
                         
+                    # for vla in data.values():
+                    #     print(vla)
+
+                    
+                    plt.xticks(rotation=45)
                     plt.xticks(index + bar_width, next(iter(data.values()))["feature"])
                     plt.legend()
                     if lu_bw:
@@ -357,7 +364,7 @@ def gen_tables(sec, dest):
                                     stat, {}).setdefault(
                                         val, {}).setdefault(str(lu_bw), round(value,3))
 
-    print("LaTex Talbe:")
+    
     with open(os.path.join(dest, "latex_res_table.tex"),"w") as tex_file:
         tex_file.write(latex_table.format_map({**formater, **mod_names}))
     #print(latex_table.format_map({**formater, **mod_names}))
@@ -525,7 +532,7 @@ the Diebold-Mariano test')
         feat_importance(sec, args.dest)
 
     if args.table:
-        print("Generating LaTeX Table")
+        print("Generating LaTeX Table with summery results")
         gen_tables(sec, args.dest)
 
     if args.check:
