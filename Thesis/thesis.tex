@@ -1,4 +1,3 @@
-
 \documentclass[12pt,a4paper,twoside]{scrartcl}
 \usepackage[ngerman,english]{babel}
 \usepackage[T1]{fontenc}
@@ -464,7 +463,7 @@ KL is a measure of how one probability distributions differs from another. A Kul
            &= \underset{\theta}{\arg\min}\, \int q_{\theta}(\omega) \log \frac{q_{\theta}(\omega)}{p(\omega | X, Y)}d\omega \\
            & = \underset{\theta}{\arg\min}\,  KL(q_{\theta}(\omega), p(\omega)) - \mathbb{E}_{q_{\theta}(\omega)}[\log\, p(Y|w)]
 \end{align}
-The last cost function is known the \emph{variational free energy} (\cite{neal1998},\cite{blundell2015}) or the \emph{expected lower bound} (\cite{fox2012}, \cite{saul1996}). Thus the function that we want to optimize is
+The last cost function is known as the \emph{variational free energy} (\cite{neal1998},\cite{blundell2015}) or as the \emph{expected lower bound} (\cite{fox2012},~\cite{saul1996}). Thus the function that we want to optimize is
 \begin{equation}
   \mathcal{L}(\theta, Y) = KL(q_{\theta}(\omega)||p(\theta)) + \mathbb{E}_{q_{\theta}(\omega)}[\log(p(Y|\omega))]
 \end{equation}
@@ -480,7 +479,7 @@ With those definitions we can now estimate the exception of some function \(f(x)
 \begin{equation}
   \mathbb{E}_{q_{\theta}(\omega)}[f(x)] = \mathbb[f(g_{\omega}(\epsilon , x))] \simeq \frac{1}{L}\sum_{l=1}^L f(g_{\omega}(\epsilon^{(l)} , x))
 \end{equation}
-We can apply this technique to our cost function and we get a tractable and differentiable estimate of it
+We can apply this technique to our cost function and we get a tractable and a differentiable estimate of it
 \begin{equation}
   \mathcal{L}(\theta, Y) \simeq \mathcal{L}(\theta,Y)^E = KL(q_{\theta}(\omega)||p_{\theta}(z))  + \frac{1}{L}\sum_{l=1}^L(\log(p_{\theta}(x|\omega)))
 \end{equation}
@@ -729,6 +728,26 @@ For a well calibrated forecast, the rank histogram should be uniform. U-shaped h
     \caption[Rank Histogram Example]{Histograms illustrating different types of distributions with respect to the actual observations. To note is that on left we give only one example of samples drawn form the distribution in respect to a given observation. We assume that the sample sets for the other observations are similar and that this will produce the respective histograms on the right. A rank histogram cannot be given for a single observation and a single set of drawn samples.}\label{fig:rank-hist}
   \end{figure}
 \end{center}
+\subsection{Predictive performance check}\label{sec:pred-check}
+\noindent\emph{In this section we explain how can we formally test if one forecasting model is better than another one.}
+
+In order to conclude which one of given models is batter than the other ones, we want something more than just their average score of some rule over a test set. We introduce a statistical test -- the \emph{Diebold–Mariano test} -- which can asses the predictive performance of two forecasting methods in respect to one another and conclude which of them is better at predicting some data. The use of this particular test is suggested in~\cite{gneiting2014} and we follow and explain the approach given there.
+
+Let \(F\) and \(G\) be two competing forecasting methods and let \(F_i \) and \(G_i \) be the forecasts each of the corresponding models produces for the actual observation \(y_i \). We can asses which of the methods has better predictive capabilities with the following approach. First we calculate the average values of some proper scoring rule over the entire test set with \(n\) observations
+\begin{equation}
+\bar{S}^F_n=\frac{1}{n}\sum_{i=1}^nS(F_i, y_i) \quad \text{and} \quad \bar{S}^G_n=\frac{1}{n}\sum_{i=1}^nS(G_i, y_i)
+\end{equation}
+where \(S \) is some proper scoring rule. Then we calculate the metric
+\begin{equation}
+t_n=\sqrt{n}\frac{\bar{S}_n^F-\bar{S}_n^G}{\hat{\sigma}_n}
+\end{equation}
+where
+\begin{equation}
+\hat{\sigma}_n^2=\frac{1}{n}\sum_{i=1}^n(S(F_i,y_i)-S(G_i,y_i))^2
+\end{equation}
+This approach is known as the Diebold–Mariano test and it is first introduced in~\cite{diebold95}. The method is a statistical test of equal forecast performance. The null hypothesis is that the two forecasting methods predict the data equally bad\textbackslash@good. If this is rejected, we can say which of the two is better than the other. Under the null hypothesis, the quantity \(t_n\) follows the standard normal distribution -- \(\mathcal{N}(0,1)\). This makes it particularly easy to calculate the \(p\)-value of the test. Given the \(p\)-value is small enough, the method \(F\) is preferred if \(t_n \) is negative, whereas \(G\) is preferred if \(t_n\) is positive (see~\cite{gneiting2014}).
+
+\noindent Detailed information on the Diebold–Mariano test can be found in~\cite{diebold2015}.
 \section{Results}\label{sec:res}
 \subsection{Methodology and data}\label{sec:preprop-meth}
 \noindent
@@ -753,32 +772,32 @@ Each of this distinctions in the selection of the data used for training can be 
   \centering
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/1D_140_plot}%
-    \caption{}
+    \caption{Senor-ID: 140, daily average}
   \end{subfigure}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/12H_140_plot}%
-    \caption{}
+    \caption{Senor-ID: 140, twelve hour average}
   \end{subfigure}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/1H_140_plot}%
-    \caption{}
+    \caption{Senor-ID: 140, hourly average}
   \end{subfigure}
 
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/1D_140_rolling_plot_}%
-    \caption{}
+    \caption{Senor-ID: 140, daily average, moving average}
   \end{subfigure}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/12H_140_rolling_plot_}%
-    \caption{}
+    \caption{Senor-ID: 140, twelve hour average, moving average}
   \end{subfigure}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/1H_140_rolling_plot_}%
-    \subcaption{}
+    \subcaption{Senor-ID: 140, hourly average, moving average}
   \end{subfigure}      
   \caption[Sensor Data Plots]{Different views of the data from a single sensor. The P1 value is displayed in red and P2 in blue. The plots on the top row show the actual values over the entire year depending on the averaging period -- daily averaged in (a), 12 hour average in (b) and hour average in (c). (d), (e) and (f) show a moving average of 100 values of the respective plot above.}\label{fig:sensor-plots}
 \end{figure}
@@ -787,32 +806,32 @@ Each of this distinctions in the selection of the data used for training can be 
   \centering
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/1D_SAKP_plot}%
-    \caption{}
+    \caption{Sensor-ID: SAKP}
   \end{subfigure}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/1D_SBC_plot}%
-    \caption{}
+    \caption{Sensor-ID: SBC}
   \end{subfigure}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/1D_SNTR_plot}%
-    \caption{}
+    \caption{Sensor-ID: SNTR}
   \end{subfigure}
 
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/1D_SAKP_rolling_plot_}%
-    \caption{}
+    \caption{Sensor-ID: SAKP, moving average}
   \end{subfigure}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/1D_SBC_rolling_plot_}%
-    \caption{}
+    \caption{Sensor-ID: SBC, moving average}
   \end{subfigure}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
   \begin{subfigure}[t]{0.32\textwidth}
     \includegraphics[width=\textwidth,height=6cm]{figures/1D_SNTR_rolling_plot_}%
-    \subcaption{}
+    \subcaption{Sensor-ID: SNTR, moving average}
   \end{subfigure}      
   \caption[LUBW Data Plots]{The plots here show data from the tree LUBW sensors -- SAKP, SBC and SNTR respectively -- but only for the daily averaging period. The top row again shows the values for each day while the bottom is a moving average of 100 values. For explanation on the values of SAKP, see the note at the end of the chapter.}\label{fig:lubw-plots}
 \end{figure}
@@ -880,7 +899,7 @@ As described in the previous section, we consider three different datasets based
   \end{figure}
 \end{center}
 
-\subsection{Feature importance}
+\subsection{Feature importance}\label{sec:model-feature-imp}
 \subsubsection{One day period}
 \subsubsection{Twelve hour period}
 \subsubsection{One hour period}
@@ -1001,7 +1020,7 @@ In the file \texttt{model\_evaluation.py} we define a \texttt{Evaluator} class t
 \subsection{Auxiliary scripts}\label{sec:aux-scripts}
 \noindent\emph{In this section we mention a couple of bash script used for automating some of the trivial tasks.} 
 \subsubsection{Run Generation pipeline}\label{sec:gen-pipe}
-\noindent\emph{File:}\texttt{run\_generation\_pipeline.sh}
+\noindent\emph{File: }\texttt{run\_generation\_pipeline.sh}
 
 The script performs the whole DataFrame generation with the current \texttt{config.json} from start to finish. The following steps are automatically executed:
 \begin{enumerate}
@@ -1021,7 +1040,7 @@ The result of running this script is a self-contained archive containing the gen
 
 Some of the steps are placed in separate bash scripts of their own. These scripts are with self expiatory names and we do not go over them in details. The scripts are: \texttt{preprocess\_new\_cache.sh} (step 3.), \texttt{preprocess\_with\_cached.sh} (step 4.), \texttt{save\_final\_dfs.sh} (step 10.), \texttt{archive\_data\_files.sh} (step 11.).
 \subsubsection{Clean \texttt{env}}\label{sec:script-clean}
-\noindent\emph{File:}\texttt{clean.sh}
+\noindent\emph{File: }\texttt{clean.sh}
 
 The scripts deletes all files generated during the generation process except the final data frame and the created archive. This prepares the \texttt{env} directory for a future execution of the preprocess pipeline.
 \subsubsection{Training MDN and Training BNN}\label{sec:script-train}
@@ -1030,14 +1049,24 @@ The scripts deletes all files generated during the generation process except the
 The two scripts execute \texttt{model\_training.py} for each model with all considered combinations of data types as described in \refsec{sec:preprop-meth}. If these two scripts are executed fully, all of the results discussed in this thesis will be generated.
 \section{Conclusion}\label{sec:conclusion}
 \subsection{Summary}
+In this thesis, we have looked at a concrete use of two probability forecast models -- Mixture density networks and Bayesian neural networks. We have considered a heterogeneous network of air pollution sensors in the vicinity of Stuttgart. Through the use of considered models we have tried to predict the air pollution values of a height quality sensors while using data from the rest of the network as a predictor. We aimed to see how reliably can such prediction be made given the fact that the majority of the sensors in the network are low quality ones. We have also tried to find out which of the sensors from the network have a higher information value for the prediction. This was done through the use of feature importance technique.
+
+In \refsec{sec:motivation} we have motivated the use of probability forecast models and in \refsec{sec:prob-regression} explained their basic principles by differentiating them from classical regression models. In \refsec{sec:data} we have gone over the nature of the used air pollution data and how exactly it was generated by the considered sensor network. The machine learning models were introduced in \refsec{sec:models} with a brief overview for each of them.
+
+In \refsec{sec:prob-modeling} we have given detailed look at the theoretical inner-workings of the BNNs and MDNs. We have first explained the idea behind Bayesian reasoning and how it can be used to preform regression. We have used the BNNs as example of a Bayesian regression model and we have explained them in detail in \refsec{sec:bnn}. Because BNNs are a type of neural networks we have also given a brief overview of NN in \refsec{sec:nn}. The training of BNNs was done through a variational inference technique, explained in \refsec{sec:var-inference}. The theory behind MDNs is separately looked at in \refsec{sec:mdn}.
+
+As motioned in a previous paragraph, for the evaluation of the models we have used methods specifically designed to evaluate a made probabilistic forecast against an observed value. All of the theory of these methods is explained in \refsec{sec:criticism}. A central part of the evaluation was the use of proper scoring rules as explained in \refsec{sec:proper-scoring-rules}. The theory behind the used feature importance technique is described in \refsec{sec:feature-importance}. For the evaluation of the predictive performance of the probabilistic forecasts generated by the models we have also considered rank histograms which are explained in \refsec{sec:rank-hist}.
+
+In \refsec{sec:res} we first gave a overview of our approach in the preprocessing of the data and how exactly the models were trained. Then, in \refsec{sec:eval-model} and \refsec{sec:eval-model}, we have looked at the results from the different evaluation methods for each differently trained model.
+
+All of the concrete implementations of the models, the data preprocessing scripts, and the training and evaluation scripts were gone over in \refsec{sec:impl}, where we also mentioned the used libraries.
 \subsection{Discussion}
 % The text ends here
 \clearpage
 
 
-
 \begin{interlude}
-
+  
   \begin{appendices}
     \chapter{Correlation between PM2.5 and PM10}\label{app:a}
     In this appendix we present plots outlining the strong correlation between the PM2.5 and PM10 values of all sensors. We give three separate plots for each averaging period of the data.
@@ -1088,7 +1117,5 @@ The two scripts execute \texttt{model\_training.py} for each model with all cons
   \bibliography{references}
   
 \end{interlude}
-
-
 
 \end{document}
