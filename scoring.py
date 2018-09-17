@@ -35,4 +35,4 @@ observations given some normal distribution.
     if scale == 1:
         return yy**2
     else:
-       return (y/scale) + 2*np.log(scale)
+       return (yy**2/scale) + 2*np.log(np.sqrt(scale))

@@ -150,6 +150,10 @@ def main():
                         help='Load the BNN model from specific folder and do not train a new one')
 
     
+    parser.add_argument('--emp', dest='emp', action='store_true', default=False,
+                        help='emp')
+
+    
     args = parser.parse_args()
 
     
@@ -249,7 +253,7 @@ def main():
         else:
             print("Loading MDN from file")
             mdn_model = Mdn("MDN Model", X_train, y_train, inner_dims=mdn_layers, num_mixtures=mdn_mixture_cnt, model_file=args.load_mdn)
-            mdn_model.save(dest + "/mdn_model")
+            # mdn_model.save(dest + "/mdn_model")
             return mdn_model
 
 
@@ -265,7 +269,7 @@ def main():
             print("Loading BNN from file")
             bnn_model = Bnn("BNN Model")
             bnn_model.load(args.load_bnn, name="bnn_model")
-            bnn_model.save(dest + "/bnn_model", "bnn_model")
+            # bnn_model.save(dest + "/bnn_model", "bnn_model")
             return bnn_model
 
 
@@ -289,8 +293,8 @@ def main():
         bnn_model = get_bnn()
         ev.evaluate_bnn(bnn_model,bnn_id, samples=ev_samples_cnt)
         
-
-    ev.evaluate_empirical(samples=ev_samples_cnt)
+    if arg.emp:
+        ev.evaluate_empirical(samples=ev_samples_cnt)
 
 
 

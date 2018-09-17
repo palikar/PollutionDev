@@ -634,7 +634,7 @@ A useful property of the CRPS is that it reduces to the \emph{mean absolute erro
   \end{figure}
 \end{center}
 \subsubsection{Dawid–Sebastiani score (DSS)}\label{sec:dss}
-For complex distributions even the CRPS can be hard to evaluated as it requires some estimate of the integral in \refeq{eq:crps}. The \emph{Dawid–Sebastiani score} (\emph{DSS}), introduced in \cite{dawid1999}, relies only on the first two central moments of a given predicted forecast \(F\). DSS is defined as
+For complex distributions even the CRPS can be hard to evaluated as it requires some estimate of the integral in \refeq{eq:crps}. The \emph{Dawid–Sebastiani score} (\emph{DSS}), introduced in~\cite{dawid1999}, relies only on the first two central moments of a given predicted forecast \(F\). DSS is defined as
 \begin{equation}
   DSS(F,y) =  \frac{(y-\mu_F)^2}{\sigma_F^2}+2\log(\sigma_F)
 \end{equation}
@@ -900,6 +900,8 @@ As described in the previous section, we consider three different datasets based
 \end{center}
 
 \subsection{Feature importance}\label{sec:model-feature-imp}
+As seen in the precious section, only models trained a certain way achieve acceptable results. For this reason, we only looked at the feature importance results only of selected models. We again make the differentiation based on averaging period and we look at the results from each in three separate sections. For each averaging period 
+
 \subsubsection{One day period}
 \subsubsection{Twelve hour period}
 \subsubsection{One hour period}
