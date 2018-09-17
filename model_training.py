@@ -134,8 +134,8 @@ def main():
     parser.add_argument('--take_lubw', dest='take_lu_bw', action='store_true', default=False,
                         help='Should the LU BW station be taken as feature')
     
-    # parser.add_argument('--random_split', dest='random_split', action='store_true', default=False,
-    #                     help='Should the data be split randomly for the test train split')
+    parser.add_argument('--random_split', dest='random_split', action='store_true', default=False,
+                        help='Should the data be split randomly for the test train split')
 
     parser.add_argument('--dest', dest='dest', action='store', required=False, default="/home/arnaud/code/pollution/test_eval",
                         help='destination for the evaluation and for the build models')
@@ -253,7 +253,7 @@ def main():
         else:
             print("Loading MDN from file")
             mdn_model = Mdn("MDN Model", X_train, y_train, inner_dims=mdn_layers, num_mixtures=mdn_mixture_cnt, model_file=args.load_mdn)
-            # mdn_model.save(dest + "/mdn_model")
+            mdn_model.save(dest + "/mdn_model")
             return mdn_model
 
 
@@ -269,7 +269,7 @@ def main():
             print("Loading BNN from file")
             bnn_model = Bnn("BNN Model")
             bnn_model.load(args.load_bnn, name="bnn_model")
-            # bnn_model.save(dest + "/bnn_model", "bnn_model")
+            bnn_model.save(dest + "/bnn_model", "bnn_model")
             return bnn_model
 
 

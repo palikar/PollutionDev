@@ -196,22 +196,20 @@ class Evaluator:
         res_mu = np.sum(pis.T*mus.T, axis=0)
         sampled = np.array([ self.sample_mixed(pis, mus, sigmas, j, size=samples) for j in range(y.shape[0])])
         
-        # log_scores = -np.log(np.array([self.mixed_desnity(pis, mus, sigmas, y, j) for j, y in enumerate(y)]).clip(0.001))
-
-        # crps_scores = np.array([ ps.crps_gaussian(y_val, mu=sampled[j].mean(), sig=sampled[j].std() ) for j, y_val in enumerate(y.squeeze())]) #fixed
-
+        log_scores = -np.log(np.array([self.mixed_desnity(pis, mus, sigmas, y, j) for j, y in enumerate(y)]).clip(0.001))
+        crps_scores = np.array([ ps.crps_gaussian(y_val, mu=sampled[j].mean(), sig=sampled[j].std() ) for j, y_val in enumerate(y.squeeze())]) #fixed
         dss_scores = np.array([sc.dss_norm(y, loc=res_mu[j], scale=sampled[j,:].std()) for j, y in enumerate(y)])
 
         scores = dict()
         scores['DSS'] = dss_scores.mean()
-        # scores['CRPS'] = crps_scores.mean()
-        # scores['LS'] = log_scores.mean()
+        scores['CRPS'] = crps_scores.mean()
+        scores['LS'] = log_scores.mean()
 
         scores_l = dict()
-        # scores_l['CRPS'] = crps_scores
-        # scores_l['LS'] = log_scores
+        scores_l['CRPS'] = crps_scores
+        scores_l['LS'] = log_scores
         scores_l['DSS'] = dss_scores
-        # print(scores['DSS'])
+        print(scores['DSS'])
         
         return scores,scores_l
 
@@ -219,13 +217,13 @@ class Evaluator:
     def evaluate_mdn(self, model, model_id, samples=10000):
         print("Evaluating MDN model")
 
-        # pis_train, mus_train, sigmas_train = model.eval_network(self.X_train)
-        # res_train_mu = np.sum(pis_train.T*mus_train.T, axis=0)
-        # sampled_train = np.array([ self.sample_mixed(pis_train, mus_train, sigmas_train, j, size=samples) for j in range(self.y_train.shape[0])])
+        pis_train, mus_train, sigmas_train = model.eval_network(self.X_train)
+        res_train_mu = np.sum(pis_train.T*mus_train.T, axis=0)
+        sampled_train = np.array([ self.sample_mixed(pis_train, mus_train, sigmas_train, j, size=samples) for j in range(self.y_train.shape[0])])
         
-        # pis_test, mus_test, sigmas_test = model.eval_network(self.X_test)
-        # res_test_mu = np.sum(pis_test.T*mus_test.T, axis=0)
-        # sampled_test = np.array([ self.sample_mixed(pis_test, mus_test, sigmas_test, j, size=samples) for j in range(self.y_test.shape[0])])
+        pis_test, mus_test, sigmas_test = model.eval_network(self.X_test)
+        res_test_mu = np.sum(pis_test.T*mus_test.T, axis=0)
+        sampled_test = np.array([ self.sample_mixed(pis_test, mus_test, sigmas_test, j, size=samples) for j in range(self.y_test.shape[0])])
         
         print("Log results to file")
         # np.savetxt(self.directory +'/mdn_test_samples.out', sampled_test, delimiter=',')
@@ -237,43 +235,43 @@ class Evaluator:
         # np.savetxt(self.directory +'/y_train.out', self.y_train, delimiter=',')
         # np.savetxt(self.directory +'/y_test.out', self.y_test, delimiter=',')
 
-        # print("Generating plots")
-        # plt.figure(figsize=(15,13), dpi=100)
-        # plt.subplot(2,1,1)
-        # plt.plot(np.arange(self.y_train.shape[0]), self.y_train, '-b', linewidth=1.0,label='Station ' + self.res_name)
-        # plt.plot(np.arange(self.y_train.shape[0]), res_train_mu, '-r', color="green", linewidth=2.4,label='Distribution mean')        
-        # plt.fill_between(np.arange(self.y_train.shape[0]),
-        #                  np.percentile(sampled_train, 5, axis=1),
-        #                  np.percentile(sampled_train, 95, axis=1),
-        #                  color="red", alpha=0.5, label="90 confidence region")
-        # plt.ylim(self.y_train.min() - 10, self.y_train.max() + 10)
-        # plt.legend()
-        # plt.title("Mixture Density Network(train set)")
-        # plt.xlabel("t")
-        # plt.ylabel(self.res_name)
-        # plt.subplot(2,1,2)
-        # plt.plot(np.arange(self.y_test.shape[0]), self.y_test, '-b', linewidth=1.0,label='Station ' + self.res_name)
-        # plt.plot(np.arange(self.y_test.shape[0]), res_test_mu, '-r', color="green", linewidth=2.4,label='Distribution mean')
-        # plt.fill_between(np.arange(self.y_test.shape[0]),
-        #                  np.percentile(sampled_test, 5, axis=1),
-        #                  np.percentile(sampled_test, 95, axis=1),
-        #                  color="red", alpha=0.5, label="90 confidence region")
-        # plt.ylim(self.y_test.min() - 10, self.y_test.max() + 10)
-        # plt.legend()
-        # plt.title("Mixture Density Network(test set)")
-        # plt.xlabel("t")
-        # plt.ylabel(self.res_name)
-        # plt.savefig(self.directory + "/mdn_data_plot.png", bbox_inches='tight')
+        print("Generating plots")
+        plt.figure(figsize=(15,13), dpi=100)
+        plt.subplot(2,1,1)
+        plt.plot(np.arange(self.y_train.shape[0]), self.y_train, '-b', linewidth=1.0,label='Station ' + self.res_name)
+        plt.plot(np.arange(self.y_train.shape[0]), res_train_mu, '-r', color="green", linewidth=2.4,label='Distribution mean')        
+        plt.fill_between(np.arange(self.y_train.shape[0]),
+                         np.percentile(sampled_train, 5, axis=1),
+                         np.percentile(sampled_train, 95, axis=1),
+                         color="red", alpha=0.5, label="90 confidence region")
+        plt.ylim(self.y_train.min() - 10, self.y_train.max() + 10)
+        plt.legend()
+        plt.title("Mixture Density Network(train set)")
+        plt.xlabel("t")
+        plt.ylabel(self.res_name)
+        plt.subplot(2,1,2)
+        plt.plot(np.arange(self.y_test.shape[0]), self.y_test, '-b', linewidth=1.0,label='Station ' + self.res_name)
+        plt.plot(np.arange(self.y_test.shape[0]), res_test_mu, '-r', color="green", linewidth=2.4,label='Distribution mean')
+        plt.fill_between(np.arange(self.y_test.shape[0]),
+                         np.percentile(sampled_test, 5, axis=1),
+                         np.percentile(sampled_test, 95, axis=1),
+                         color="red", alpha=0.5, label="90 confidence region")
+        plt.ylim(self.y_test.min() - 10, self.y_test.max() + 10)
+        plt.legend()
+        plt.title("Mixture Density Network(test set)")
+        plt.xlabel("t")
+        plt.ylabel(self.res_name)
+        plt.savefig(self.directory + "/mdn_data_plot.png", bbox_inches='tight')
 
 
-        # print("Generating rank histograms")
-        # self.generate_rank_hist(self.y_test, sampled_test, self.directory+"/mdn_rank_hist_test.png" , "MDN rank histogram on test set")
-        # self.generate_rank_hist(self.y_train, sampled_train, self.directory+"/mdn_rank_hist_train.png" , "MDN rank histogram on train set")
+        print("Generating rank histograms")
+        self.generate_rank_hist(self.y_test, sampled_test, self.directory+"/mdn_rank_hist_test.png" , "MDN rank histogram on test set")
+        self.generate_rank_hist(self.y_train, sampled_train, self.directory+"/mdn_rank_hist_train.png" , "MDN rank histogram on train set")
 
-        # print("Calculating rules on train set")
-        # scores_train, scores_train_l = self.mdn_rules(model, self.X_train, self.y_train, samples)
-        # self.log_scores(model_id+"_train", scores_train, self.directory + "/rules_scores_train.csv", "Results of MDN on train set\n")
-        # self.log_scores_l(model_id+"_train", scores_train_l, self.directory + "/rules_scores_train_l.csv", "Results(list) of MDN on train set\n")
+        print("Calculating rules on train set")
+        scores_train, scores_train_l = self.mdn_rules(model, self.X_train, self.y_train, samples)
+        self.log_scores(model_id+"_train", scores_train, self.directory + "/rules_scores_train.csv", "Results of MDN on train set\n")
+        self.log_scores_l(model_id+"_train", scores_train_l, self.directory + "/rules_scores_train_l.csv", "Results(list) of MDN on train set\n")
 
         
         print("Calculating rules on test set")
@@ -281,14 +279,13 @@ class Evaluator:
         self.log_scores(model_id+"_test", scores_test, self.directory + "/rules_scores_fix.csv", "Results of MDN on test set\n")
         self.log_scores_l(model_id+"_testl", scores_test_l, self.directory + "/rules_scores_l_fix.csv", "Results(list) of MDN on test set\n")
 
+        print("Calcualting feature importance on the test set")
+        feature_imp = self.calculate_feature_imp(self.X_test, lambda X: self.mdn_rules(model, X, self.y_test, samples), scores_test)
+        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, model_id + "_test")
 
-        # print("Calcualting feature importance on the test set")
-        # feature_imp = self.calculate_feature_imp(self.X_test, lambda X: self.mdn_rules(model, X, self.y_test, samples), scores_test)
-        # self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, model_id + "_test")
-
-        # print("Calcualting feature importance on the train set")
-        # feature_imp = self.calculate_feature_imp(self.X_train, lambda X: self.mdn_rules(model, X, self.y_train, samples), scores_train)
-        # self.log_feature_importance(self.directory+"/feature_importance_train.csv", feature_imp, model_id + "_test")
+        print("Calcualting feature importance on the train set")
+        feature_imp = self.calculate_feature_imp(self.X_train, lambda X: self.mdn_rules(model, X, self.y_train, samples), scores_train)
+        self.log_feature_importance(self.directory+"/feature_importance_train.csv", feature_imp, model_id + "_test")
 
         
                 
@@ -299,19 +296,19 @@ class Evaluator:
         sampled = res_train.T
         
         
-        # log_scores = -np.log(np.array([gaussian_kde(sampled[j]).pdf(y)  for j, y in enumerate(y)]).clip(0.001)) #fixed    
-        # crps_scores = np.array([ ps.crps_ensemble(y_val, sampled[j]) for j, y_val in enumerate(y.squeeze())]) #fixed
-        # crps_scores = np.array([ ps.crps_gaussian(y_val, mu=sampled[j].mean(), sig=sampled[j].std()) for j, y_val in enumerate(y.squeeze())]) #fixed    
+        log_scores = -np.log(np.array([gaussian_kde(sampled[j]).pdf(y)  for j, y in enumerate(y)]).clip(0.001)) #fixed    
+        crps_scores = np.array([ ps.crps_ensemble(y_val, sampled[j]) for j, y_val in enumerate(y.squeeze())]) #fixed
+        crps_scores = np.array([ ps.crps_gaussian(y_val, mu=sampled[j].mean(), sig=sampled[j].std()) for j, y_val in enumerate(y.squeeze())]) #fixed    
         dss_scores = np.array([sc.dss_norm(y, loc=sampled[j].mean(), scale=sampled[j].std()) for j, y in enumerate(y)])
 
         scores = dict()
-        # scores['CRPS'] = crps_scores.mean()
-        # scores['LS'] = log_scores.mean()
+        scores['CRPS'] = crps_scores.mean()
+        scores['LS'] = log_scores.mean()
         scores['DSS'] = dss_scores.mean()
 
         scores_l = dict()
-        # scores_l['CRPS'] = crps_scores
-        # scores_l['LS'] = log_scores
+        scores_l['CRPS'] = crps_scores
+        scores_l['LS'] = log_scores
         scores_l['DSS'] = dss_scores
         
         return scores, scores_l
@@ -319,69 +316,69 @@ class Evaluator:
 
     def evaluate_bnn(self, model, model_id, samples=10000):
 
-        # res_train = model.evaluate(self.X_train, samples)
-        # res_train = res_train.reshape(samples, self.X_train.shape[0])
+        res_train = model.evaluate(self.X_train, samples)
+        res_train = res_train.reshape(samples, self.X_train.shape[0])
 
-        # res_test = model.evaluate(self.X_test, samples)
-        # res_test = res_test.reshape(samples, self.X_test.shape[0])
+        res_test = model.evaluate(self.X_test, samples)
+        res_test = res_test.reshape(samples, self.X_test.shape[0])
 
-        # print("Log results to file")
-        # np.savetxt(self.directory + '/bnn_test_samples.out', res_test, delimiter=',')
-        # np.savetxt(self.directory + '/bnn_train_samples.out', res_train, delimiter=',')
-        # np.savetxt(self.directory + '/X_train.out', self.X_train, delimiter=',')
-        # np.savetxt(self.directory + '/X_test.out', self.X_test, delimiter=',')
-        # np.savetxt(self.directory + '/y_train.out', self.y_train, delimiter=',')
-        # np.savetxt(self.directory + '/y_test.out', self.y_test, delimiter=',')
+        print("Log results to file")
+        np.savetxt(self.directory + '/bnn_test_samples.out', res_test, delimiter=',')
+        np.savetxt(self.directory + '/bnn_train_samples.out', res_train, delimiter=',')
+        np.savetxt(self.directory + '/X_train.out', self.X_train, delimiter=',')
+        np.savetxt(self.directory + '/X_test.out', self.X_test, delimiter=',')
+        np.savetxt(self.directory + '/y_train.out', self.y_train, delimiter=',')
+        np.savetxt(self.directory + '/y_test.out', self.y_test, delimiter=',')
         
-        # print("Generating plots")
-        # plt.figure(figsize=(15,13), dpi=100)
-        # plt.subplot(2,1,1)
-        # plt.plot(np.arange(self.y_train.shape[0]), self.y_train, '-b', linewidth=1.0,label='Station ' + self.res_name)
-        # plt.plot(np.arange(self.y_train.shape[0]), np.mean(res_train, 0).reshape(-1), 'r-', lw=2, label="Posterior mean")
-        # plt.fill_between(np.arange(self.y_train.shape[0]),
-        #                  np.percentile(res_train, 5, axis=0),
-        #                  np.percentile(res_train, 95, axis=0),
-        #                  color = "red", alpha = 0.5, label="90% confidence region")
-        # plt.ylim(self.y_train.min() - 10, self.y_train.max() + 10)
-        # plt.legend()
-        # plt.title("Bayesian Neural Network(train set)")
-        # plt.xlabel("t")
-        # plt.ylabel(self.res_name)        
-        # plt.subplot(2,1,2)
-        # plt.plot(np.arange(self.y_test.shape[0]), self.y_test, '-b', linewidth=1.0,label='Station ' + self.res_name)
-        # plt.plot(np.arange(self.y_test.shape[0]), np.mean(res_test, 0).reshape(-1), 'r-', lw=2, label="Posterior mean")
-        # plt.fill_between(np.arange(self.y_test.shape[0]),
-        #                  np.percentile(res_test, 5, axis=0),
-        #                  np.percentile(res_test, 95, axis=0),
-        #                  color = "red", alpha = 0.5, label="90% confidence region")
-        # plt.ylim(self.y_test.min() - 10, self.y_test.max() + 10)
-        # plt.legend()
-        # plt.title("Bayesian Neural Network(test set)")
-        # plt.xlabel("t")
-        # plt.ylabel(self.res_name)
-        # plt.savefig(self.directory+"/bnn_data_plot.png", bbox_inches='tight')
+        print("Generating plots")
+        plt.figure(figsize=(15,13), dpi=100)
+        plt.subplot(2,1,1)
+        plt.plot(np.arange(self.y_train.shape[0]), self.y_train, '-b', linewidth=1.0,label='Station ' + self.res_name)
+        plt.plot(np.arange(self.y_train.shape[0]), np.mean(res_train, 0).reshape(-1), 'r-', lw=2, label="Posterior mean")
+        plt.fill_between(np.arange(self.y_train.shape[0]),
+                         np.percentile(res_train, 5, axis=0),
+                         np.percentile(res_train, 95, axis=0),
+                         color = "red", alpha = 0.5, label="90% confidence region")
+        plt.ylim(self.y_train.min() - 10, self.y_train.max() + 10)
+        plt.legend()
+        plt.title("Bayesian Neural Network(train set)")
+        plt.xlabel("t")
+        plt.ylabel(self.res_name)        
+        plt.subplot(2,1,2)
+        plt.plot(np.arange(self.y_test.shape[0]), self.y_test, '-b', linewidth=1.0,label='Station ' + self.res_name)
+        plt.plot(np.arange(self.y_test.shape[0]), np.mean(res_test, 0).reshape(-1), 'r-', lw=2, label="Posterior mean")
+        plt.fill_between(np.arange(self.y_test.shape[0]),
+                         np.percentile(res_test, 5, axis=0),
+                         np.percentile(res_test, 95, axis=0),
+                         color = "red", alpha = 0.5, label="90% confidence region")
+        plt.ylim(self.y_test.min() - 10, self.y_test.max() + 10)
+        plt.legend()
+        plt.title("Bayesian Neural Network(test set)")
+        plt.xlabel("t")
+        plt.ylabel(self.res_name)
+        plt.savefig(self.directory+"/bnn_data_plot.png", bbox_inches='tight')
         
-        # print("Generating rank histograms")
-        # self.generate_rank_hist(self.y_test, res_test.T, self.directory+"/bnn_rank_hist_test.png" , "BNN rank histogram on test set")
-        # self.generate_rank_hist(self.y_train, res_train.T, self.directory+"/bnn_rank_hist_train.png" , "BNN rank histogram on train set")
+        print("Generating rank histograms")
+        self.generate_rank_hist(self.y_test, res_test.T, self.directory+"/bnn_rank_hist_test.png" , "BNN rank histogram on test set")
+        self.generate_rank_hist(self.y_train, res_train.T, self.directory+"/bnn_rank_hist_train.png" , "BNN rank histogram on train set")
         
         print("Calculating rules on the test set")
         scores_test,scores_test_l = self.bnn_rules(model,self.X_test, self.y_test ,samples)
         self.log_scores(model_id+"_test", scores_test, self.directory + "/rules_scores_fix.csv", "Results of BNN on test set\n")
         self.log_scores_l(model_id+"_test", scores_test_l, self.directory + "/rules_scores_l_fix.csv", "Results(list) of BNN on test set\n")
 
-        # print("Calculating rules on the train set")
-        # scores_train,scores_train_l = self.bnn_rules(model,self.X_train, self.y_train ,samples)
-        # self.log_scores(model_id+"_train", scores_train, self.directory + "/rules_scores_train.csv", "Results of BNN on train set\n")
-        # self.log_scores_l(model_id+"_train", scores_train_l, self.directory + "/rules_scores_train_l.csv", "Results(list) of BNN on train set\n")
+        print("Calculating rules on the train set")
+        scores_train,scores_train_l = self.bnn_rules(model,self.X_train, self.y_train ,samples)
+        self.log_scores(model_id+"_train", scores_train, self.directory + "/rules_scores_train.csv", "Results of BNN on train set\n")
+        self.log_scores_l(model_id+"_train", scores_train_l, self.directory + "/rules_scores_train_l.csv", "Results(list) of BNN on train set\n")
 
-        # print("Calcualting feature importance on the test set")
-        # feature_imp = self.calculate_feature_imp(self.X_test, lambda X: self.bnn_rules(model, X, self.y_test, samples), scores_test)
-        # self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, model_id+"_test")
+        print("Calcualting feature importance on the test set")
+        feature_imp = self.calculate_feature_imp(self.X_test, lambda X: self.bnn_rules(model, X, self.y_test, samples), scores_test)
+        self.log_feature_importance(self.directory+"/feature_importance.csv", feature_imp, model_id+"_test")
 
-        # print("Calcualting feature importance on the train set")
-        # feature_imp = self.calculate_feature_imp(self.X_train, lambda X: self.bnn_rules(model, X, self.y_train, samples), scores_train)
-        # self.log_feature_importance(self.directory+"/feature_importance_train.csv", feature_imp, model_id+"_test")
+        print("Calcualting feature importance on the train set")
+        feature_imp = self.calculate_feature_imp(self.X_train, lambda X: self.bnn_rules(model, X, self.y_train, samples), scores_train)
+        self.log_feature_importance(self.directory+"/feature_importance_train.csv", feature_imp, model_id+"_test")
         
         
 
@@ -406,39 +403,39 @@ class Evaluator:
 
         # np.savetxt(self.directory+"/empirical_result.txt", res)
 
-        # print("Generating plot")
-        # #generate plot
-        # plt.figure(figsize=(15,13), dpi=100)
-        # plt.title("Empirical Model")
-        # plt.xlabel("t")
-        # plt.ylabel(self.out_val)
-        # plt.plot(np.arange(y.shape[0]), y , '-b' , linewidth=1.0, label="Station: " + self.res_name)
-        # plt.plot(np.arange(start_pos, end_pos) ,mus , '-r', linewidth=1.1, label='mean of posterior')
-        # plt.fill_between(np.arange(start_pos, end_pos), np.percentile(res, 5, axis=1), np.percentile(res, 95, axis=1) , color="red", alpha=0.2, label="90% confidence region")
-        # plt.legend()
-        # plt.savefig(self.directory+"/epirical_data_plot.png", bbox_inches='tight')
+        print("Generating plot")
+        #generate plot
+        plt.figure(figsize=(15,13), dpi=100)
+        plt.title("Empirical Model")
+        plt.xlabel("t")
+        plt.ylabel(self.out_val)
+        plt.plot(np.arange(y.shape[0]), y , '-b' , linewidth=1.0, label="Station: " + self.res_name)
+        plt.plot(np.arange(start_pos, end_pos) ,mus , '-r', linewidth=1.1, label='mean of posterior')
+        plt.fill_between(np.arange(start_pos, end_pos), np.percentile(res, 5, axis=1), np.percentile(res, 95, axis=1) , color="red", alpha=0.2, label="90% confidence region")
+        plt.legend()
+        plt.savefig(self.directory+"/epirical_data_plot.png", bbox_inches='tight')
         
         
         print("Calculating scoring rules")
-        # log_scores = -np.log(np.array([norm.pdf(y, loc=mus[j], scale=sigmas[j]) for j, y in enumerate(self.y_test)]))
-        # crps_scores = np.array([ ps.crps_gaussian(y, mu=mus[j], sig=sigmas[j]) for j, y in enumerate(self.y_test)])
+        log_scores = -np.log(np.array([norm.pdf(y, loc=mus[j], scale=sigmas[j]) for j, y in enumerate(self.y_test)]))
+        crps_scores = np.array([ ps.crps_gaussian(y, mu=mus[j], sig=sigmas[j]) for j, y in enumerate(self.y_test)])
         dss_scores = np.array([sc.dss_norm(y, loc=mus[j], scale=sigmas[j]) for j, y in enumerate(self.y_test)])
 
         scores = dict()
-        # scores['CRPS'] = crps_scores.mean()
-        # scores['LS'] = log_scores.mean()
+        scores['CRPS'] = crps_scores.mean()
+        scores['LS'] = log_scores.mean()
         scores['DSS'] = dss_scores.mean()
         
         scores_l = dict()
-        # scores_l['CRPS'] = crps_scores
-        # scores_l['LS'] = log_scores
+        scores_l['CRPS'] = crps_scores
+        scores_l['LS'] = log_scores
         scores_l['DSS'] = dss_scores
         
         self.log_scores("empirical", scores, self.directory + "/rules_scores_fix.csv", "Results of Empirical on test set\n")
         self.log_scores_l("empirical", scores_l, self.directory + "/rules_scores_l_fix.csv", "Results of Empirical on test set\n")
 
         
-        # self.generate_rank_hist(self.y_test, res, self.directory+"/empirical_rank_hist_test.png" , "Empirical model rank histogram on test set")
+        self.generate_rank_hist(self.y_test, res, self.directory+"/empirical_rank_hist_test.png" , "Empirical model rank histogram on test set")
                         
             
     
