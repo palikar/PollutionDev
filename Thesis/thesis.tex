@@ -70,6 +70,20 @@
 
 \usepackage[toc,page]{appendix}
 \usepackage{pdfpages}
+\usepackage[export]{adjustbox}
+
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage{lmodern}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{boldline}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{varwidth}
+\usepackage{threeparttablex}
+\usepackage{rotating}
+
 
 \hypersetup{
   pdftitle={Creating and Evaluating Stochastic Regression Models on the Basis of Heterogeneous Sensor Networks}, %TODO
@@ -122,12 +136,12 @@
   \setcounter{mypagecount}{\value{page}}% use the new counter we created to hold the page count at the start of the unnumbered section
   \thispagestyle{empty}% we want this page to be empty (adjust to use a modified page style)
   \pagestyle{empty}% use the same style for subsequent pages in the unnumbered section
-  }{%
+}{%
   \clearpage
   \setcounter{page}{\value{mypagecount}}% restore the incremented value to the official tally of pages so the page numbering continues correctly
-  }
+}
 
-%Package for inserting pseudo codes in the document.
+% Package for inserting pseudo codes in the document.
 \usepackage[ruled,vlined,linesnumbered,norelsize]{algorithm2e}
 \DontPrintSemicolon
 \def\NlSty#1{\textnormal{\fontsize{8}{10}\selectfont{}#1}}
@@ -179,49 +193,49 @@
 %     Handover Date: 30.09.2018
 %     \vspace*{10mm}
 
-    
+
 %     \begin{tabular}{p{5.5cm}l}
-%       First Reviewer: &Prof. Dr. Michael Beigl\\
-%       Supervisors: &Dr. Johannes Riesterer\(^1\) \\
-%                       &Dr. Sebastian Lerch\(^{2,3}\)
-%     \end{tabular}
-    
-%     \vspace*{8mm}
+        %         First Reviewer: &Prof. Dr. Michael Beigl\\
+        %         Supervisors: &Dr. Johannes Riesterer\(^1\) \\
+        %                                   &Dr. Sebastian Lerch\(^{2,3}\)
+                                              %       \end{tabular}
+
+                                              %                                               \vspace*{8mm}
 
 
-%     \(^1\)Chair for Pervasive Computing Systems / TECO, Institute of Telematics, Karlsruhe Institute of Technology\\
-%     \(^2\)Institute for Stochastics, Karlsruhe Institute of Technology\\
-%     \(^3\)Heidelberg Institute for Theoretical Studies
+                                              %                                               \(^1\)Chair for Pervasive Computing Systems / TECO, Institute of Telematics, Karlsruhe Institute of Technology\\
+        %         \(^2\)Institute for Stochastics, Karlsruhe Institute of Technology\\
+        %         \(^3\)Heidelberg Institute for Theoretical Studies
 
-    
-%   \end{center}
 
-% \end{titlepage}
+        %         \end{center}
+
+        %         \end{titlepage}
 \includepdf[pages=-]{Deckblatt_Arnaudov.pdf}
 
 
 
 \selectlanguage{english}
 
-% \centerline{\bf Statement of Authorship}
-% \vfill
+        %         \centerline{\bf Statement of Authorship}
+        %         \vfill
 
-% I hereby declare that I am the sole author of this bachelor thesis and that I have not used any sources other than those listed in the bibliography and identified as references. I further declare that I have not submitted this thesis at any other institution in order to obtain a degree.
+        %         I hereby declare that I am the sole author of this bachelor thesis and that I have not used any sources other than those listed in the bibliography and identified as references. I further declare that I have not submitted this thesis at any other institution in order to obtain a degree.
 
-% \vfill
-% \noindent
-
-
-% \selectlanguage{ngerman}
-% \vfill
-% Ich versichere wahrheitsgemäß, die Arbeit selbstständig angefertigt, keine anderen als die angegebenen Quellen und Hilfsmittel benutzt zu haben, die wörtlich oder inhaltlich übernommenen Stellen als solche kenntlich gemacht zu haben und die Satzung der Universität Karlsruhe (TH) zur Sicherung guter wissenschaftlicher Praxis beachtet zu haben.
-% \vfill
-% \noindent
-% Karlsruhe, 31.09.2018
-% \hrule
+        %         \vfill
+        %         \noindent
 
 
-% \vspace*{5cm}
+        %         \selectlanguage{ngerman}
+        %         \vfill
+        %         Ich versichere wahrheitsgemäß, die Arbeit selbstständig angefertigt, keine anderen als die angegebenen Quellen und Hilfsmittel benutzt zu haben, die wörtlich oder inhaltlich übernommenen Stellen als solche kenntlich gemacht zu haben und die Satzung der Universität Karlsruhe (TH) zur Sicherung guter wissenschaftlicher Praxis beachtet zu haben.
+        %         \vfill
+        %         \noindent
+        %         Karlsruhe, 31.09.2018
+        %         \hrule
+
+
+        %         \vspace*{5cm}
 
 \clearpage
 
@@ -244,7 +258,7 @@
 \pagestyle{plain}
 \pagenumbering{roman}
 
-% markiere sections im Seitenkopf links und subsections rechts
+        %         markiere sections im Seitenkopf links und subsections rechts
 \renewcommand\sectionmark[1]{\markboth{\thesection\quad\MakeUppercase{#1}}{\thesection\quad\MakeUppercase{#1}}}
 \renewcommand\subsectionmark[1]{\markright{\thesubsection\quad\MakeUppercase{#1}}}
 
@@ -256,7 +270,7 @@
 
 \pagestyle{normal}
 \pagenumbering{arabic}
-% here comes the text!
+        %         here comes the text!
 \section{Introduction}\label{sec:intoduction}
 \subsection{Motivation}\label{sec:motivation}
 There are a lot of cases where a network of sensors is used to measure a certain quantity over time in different places. Some of the measurements can have better \emph{quality} than other as not all sensors are manufactured equally. With quality we mean the reliability that the measured value indeed reflects the reality. The difference in the quality of the sensors makes the measured data \emph{heterogeneous} and brings certain difficulties in the modeling process. For a machine learning application only some of the data maybe relevant for building a reliable predictive model. One of our goals is to asses which part of the input is useful data and to what extend. From another point of view we can also set another goal. We consider the case where only a few of the sensors are known to produce reliable measurements. In this sense we try to expand a network of \emph{homogeneous} and high reliability sensors with sensors of unknown quality and thus making the network heterogeneous. In this case we increase the spatial resolution of the network and thus we bring the possibility to make more accurate predictions on the basis of data coming from the whole network. On the other hand, heterogeneity in quality of the different sources in the network introduces uncertainty in the measurements. It thus becomes necessary to build appropriate model that predicts the measured values from given sensor but also respects the inherent uncertainty in the data and also models it properly.
@@ -283,11 +297,11 @@ Probability forecasts are for classification models are well established. Throug
   \end{figure}
 \end{center}
 \vfill
-  \begin{figure}[ht]
-    \centering
-    \includegraphics[height=0.5\textwidth, width=1\textwidth]{figures/probabilistic_regression.png}
-    \caption[Probabilistic regression example model]{A probabilistic regression model (in red) that tries to model the \(\sin\)-function (in blue). The big blue circles are the observations of the function that the models becomes as training set. On the basis of those observations we construct a probabilistic model that can evaluate the whole input space. The model knows about the given observations of the modeled function so it predicts their values with high certainty. The places where there is no observed data, however, the model cannot make precise prediction and the distributions is wider. We notice, however, that true value of the function lies in the distribution so in sense the model predicts the function somewhat accurately.}\label{fig:prob-regression}
-  \end{figure}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[height=0.5\textwidth, width=1\textwidth]{figures/probabilistic_regression.png}
+  \caption[Probabilistic regression example model]{A probabilistic regression model (in red) that tries to model the \(\sin\)-function (in blue). The big blue circles are the observations of the function that the models becomes as training set. On the basis of those observations we construct a probabilistic model that can evaluate the whole input space. The model knows about the given observations of the modeled function so it predicts their values with high certainty. The places where there is no observed data, however, the model cannot make precise prediction and the distributions is wider. We notice, however, that true value of the function lies in the distribution so in sense the model predicts the function somewhat accurately.}\label{fig:prob-regression}
+\end{figure}
 \vspace{-2cm}
 \begin{definition}{Probabilistic forecast:}\label{def:prob-for}
   Output of a probabilistic regression model for a single datapoint where the output represents some probability distribution. The distribution determines the probability of each point in space to be the regression value for the given considered input of the model. The distribution can be represented through certain amount of samples drawn from it, its density function or its cumulative distribution function. In the thesis we use probabilistic forecast, predicted distribution, distribution forecast, predictive distribution and forecast interchangeably.
@@ -350,7 +364,7 @@ The other focus of our work are BNNs. As models that tie Bayesian reasoning and 
 MDNs have also found popularity as an another alternative to combine neural networks with distribution forecast models. \cite{schittenkopf1998} uses MDNs as a general framework for identifying stochastic processes and apply them in modeling stock exchange index data. \cite{zen2014} brings MDNs to use in order to improve deep neural networks for acoustic modeling. MDNs have their own variant of recurrent models as described in \cite{miazhynskaia2003}. We like to note that MDNs have similar structure to other models such as \emph{Adaptive mixture of local experts} -- proposed by \cite{jacobs1991}) -- and \emph{Infinite Mixtures of Gaussian Process Experts} -- proposed by \cite{rasmussen2002}. MDNs, however, model the data differently. We explain the approach in \refsec{sec:mdn}.
 
 The use of proper scoring rules is standard in probability forecast setting. \cite{jordan2017} discusses the \textbf{scoringRules} package for \emph{R}\footnote{programming language} and its usage details by presenting case studies where proper scoring rules find application. \cite{clements2004} uses probability integral transform in order to evaluate the UK Monetary Policy Committee's inflation density forecasts. We describe probability integral transform in \refsec{sec:disp-sharp}.
-% \cite{friederichs2012} deals specifically with verifying predicted probability distributions under the use of proper scoring rules.
+        %         \cite{friederichs2012} deals specifically with verifying predicted probability distributions under the use of proper scoring rules.
 \section{Probabilistic Modeling}\label{sec:prob-modeling}
 \subsection{Bayesian regression modeling}\label{sec:bayesian-inference}
 In a probabilistic modeling setting we aim to estimate the parameters of a given model by first defining some \emph{prior} on them. The prior distribution describes how likely values of the parameter are without considering any observed data. Then a \emph{conditional likelihood} for the output based on the parameters and the input data is defined. This probability distribution describes the probability of observing certain data given the parameters of the model. The assumption here is that that the model has generated the data. The two distributions are then combined in order to produce the final \emph{posterior} probability distribution on the parameters of the model. A good overview of Bayesian models can be found in \cite{mitchell97}. We can summarize:
@@ -367,15 +381,15 @@ be the set of input data. The corresponding output is given by the set \(Y = \{y
 
 We can now write out the posterior by using the Bayes' theorem:
 \begin{equation}
-p(\omega|X,Y) = \frac{p(Y|X, \omega)p(\omega)}{p(Y|X)}
+  p(\omega|X,Y) = \frac{p(Y|X, \omega)p(\omega)}{p(Y|X)}
 \end{equation}
 This distribution describes the most likely model parameters given the observed data. If we draw parameters from this distribution, the observed data will be most likely. For prediction of new data point \(x^*\) we use
 \begin{equation}
-p(y^{\text{*}}|x^{\text{*}},X,Y) = \displaystyle\int p(Y|X, \omega)p(\omega)d \omega
+  p(y^{\text{*}}|x^{\text{*}},X,Y) = \displaystyle\int p(Y|X, \omega)p(\omega)d \omega
 \end{equation}
 This integration is called \emph{inference} (\cite{gal2016}). The quantity
 \begin{equation}
- p(Y|X) = \displaystyle\int (Y|X, \omega)p( \omega )d \omega
+  p(Y|X) = \displaystyle\int (Y|X, \omega)p( \omega )d \omega
 \end{equation}
 is called marginal likelihood or sometimes ``model evidence''. The first name comes from the fact that we are marginalizing the likelihood over \(\omega\). This factor is independent of the parameters so no matter how we choose them, it does not change. Marginalization plays central part in Bayesian modeling and in the prefect case we would want to marginalize over all possible parameter values \(\omega\) with respective weight \(p(\omega)\). In complex models this is not possible and we resort to approximations.
 
@@ -421,7 +435,7 @@ In order to be useful we have to ``teach'' the neural network our desired mappin
 \end{equation}
 In other words, the network have \emph{learned} the exact mapping between \(X\) and \(Y\) and can predict the output value based on the input one. This is done by choosing appropriate parameter set \(\Omega\). In general, finding parameters realising the exact mapping will not be possible but we want to at least approximate this case. This leads us naturally to a definition of measurement of just how wrong the network is. We call this quantity \emph{error function} (also called \emph{loss function}). The error function is a function of the parameter space and it gets closer to zero as the parameters define a network that better models the data. There are lot of possible choices for loss function but the most common is the \emph{squared error difference}:
 \begin{equation}
- E(\omega) =  \sum_{i=0}^N (f_{net}(x_i;\omega) - y_i)^2
+  E(\omega) =  \sum_{i=0}^N (f_{net}(x_i;\omega) - y_i)^2
 \end{equation}
 where \(\omega\) is some choice for the parameters for the networks, namely \(m\) weight matrices and \(m\) bias terms for network with \(m\) layers. The squared error difference is a simple sum of all differences between predicted by the network value and the actual value. If the defined function is zero, the network essentially predicts all values correctly. Minimizing this \emph{error function} is what we call \emph{learning} the data or \emph{training} the network. The actual method trough which learning occurs is backpropagation. This involves calculating the derivatives of the loss function with the respect to each parameters of the network \(\frac{\partial E}{\partial W_i }\). The corresponding parameters are then updated through some gradient descent technique. An overview of different gradient descent techniques can be found in~\cite{ruder2016}. Some state of the art optimization methods are \emph{LM-BFGS} (Limited Memory Broyden–Fletcher–Goldfarb–Shanno algorithm, \cite{byrd1995}), Adam optimization algorithm (see~\cite{kingma2014}) and \emph{SGD} (Stochastic gradient descent,\cite{robbins1951}). To note is that the last motioned method -- the SGD -- does not calculate the gradient of the loss function using all of the training examples rather it uses only a small subset of the training set.
 
@@ -433,7 +447,7 @@ BNNs place a prior distribution over the parameters of a neural network. As desc
 
 The basic structure of the BNNs is the same as the one of regular neural networks. For this reason we will use the notations from the previous section. The output of the network for a given input \(x\) and parameters \(\omega\) is
 \begin{equation}
-   f_{net}(x;\omega)
+  f_{net}(x;\omega)
 \end{equation}
 We have now defined what the basic structure of our considered model is (a neural network) and we know what the priors over the parameters of the model are. As in the previous section we now define a likelihood for each data point. We consider a set of data \(\{(x_i, y_i), i\in\{1,\ldots ,n\} \}\) where each data point has some features \(x_i\in\mathbb{R}^M\) of dimension \(M\) and real valued output \(y_i\in\mathcal{R}\). We define the likelihood for the BNNs as:
 \begin{equation}
@@ -489,13 +503,11 @@ Now that we have a function for which the gradients can be given analytically, w
 \end{equation}
 It is known that SGD leads to faster convergence with less computations (\cite{robbins1951}). It is also proven and observed (\cite{shapiro1996}) that SGD converges to the result of regular gradient descent. For those reasons, the usage of SGD is almost always advisable.
 
-There is also a somewhat simpler approach of estimating the gradient of the loss function as described in \cite{paisley2012}. Under some regularity conditions, a gradient of the form \(\nabla_{\theta}\mathbb{E}_qf \) where \(f \) is some untraceable function, \(q\) is some distribution and we take the gradient with respect to \(\theta\) which can be rewritten as:
-\begin{align}
-  \nabla_{\theta}\mathbb{E}_qf(\theta) &= \nabla_{\theta}\int_{\theta} f(\theta)q(\theta)d\theta \\
-                                       &= \int_{\theta} f(\theta) \nabla_{\theta}q(\theta)d\theta \\
-                                       &= \int_{\theta} f(\theta)q(\theta) \nabla_{\theta}\ln(q(\theta)) d\theta
-\end{align}
-The last integral can then be estimated through Monte Carlo integration (\cite{hammersley1964}). This approach can be used to replace the \(\mathbb{E}_{q_{\theta}(\omega)}[\log(p(Y|\omega))]\) in the cost function. We can then again apply stochastic gradient descent in order to spare some computations and accelerate convergence. For more detail on the method see \cite{paisley2012}.
+There is also a somewhat simpler approach of estimating the gradient of the loss function as described in~\cite{paisley2012}. Under some regularity conditions, a gradient of the form \(\nabla_{\theta}\mathbb{E}_qf \) where \(f \) is some untraceable function, \(q\) is some distribution and we take the gradient with respect to \(\theta\) which can be rewritten as:
+\begin{equation}
+  \nabla_{\theta}\mathbb{E}_qf(\theta) = \int_{\theta} f(\theta)q(\theta) \nabla_{\theta}\ln(q(\theta)) d\theta
+\end{equation}
+Details on how this equation is derived can be found in~\cite{paisley2012}. The integral can then be estimated through Monte Carlo integration (\cite{hammersley1964}). This approach can be used to replace the \(\mathbb{E}_{q_{\theta}(\omega)}[\log(p(Y|\omega))]\) in the cost function. We can then again apply stochastic gradient descent in order to spare some computations and accelerate convergence. For more detail on the method see~\cite{paisley2012}.
 
 Other techniques for posterior estimation rely on sampling from the posterior. This can be done for example by \emph{Gibbs sampling} (\cite{geman1984}), \emph{Metropolis-Hastings} (\cite{metropolis1953}, \cite{hastings1970}) or \emph{Hybrid Monte Carlo} (\cite{duane1987}). These are all so called \emph{Markov Chain Monte Carlo} (\emph{MCMC}) methods and are popular techniques for sampling from some posterior distribution. We, however, do not consider them here.
 \subsection{Mixture Density Networks}\label{sec:mdn}
@@ -503,11 +515,11 @@ Other techniques for posterior estimation rely on sampling from the posterior. T
 
 We first explain the MDNs' approach in modeling the data. MDNs try to describe each data point \((x,y)\in X\times Y\) with a feature vector \(x\in\mathbb{R}^R\) and a value \(y\in\mathbb{R}\) directly through some mixture model.
 \begin{equation}
-p(y|x)=\sum_{m=1}^M \alpha_m(x)\phi_m(y|x)
+  p(y|x)=\sum_{m=1}^M \alpha_m(x)\phi_m(y|x)
 \end{equation}
 where \(M\) is the number of mixture components and \(\phi_m(y|x)\) is the conditional density of the \(m^{th}\) kernel. The parameters (or weights) \(\alpha_m(x)\) are called \emph{mixing coefficients} (\cite{bishop1994}). To note is that everything in the model depends on the concrete input data \(x\). In this sense the parameters for the mixture change for every data point. We choose mixture of Gaussians as with appropriate weights it can model any arbitrary distribution. This means that theoretically MDNs with Gaussian mixture can be universal distribution estimators Similar to regular neural networks which are universal real valued function estimators. Thus all of the density functions become:
 \begin{equation}
-\phi_m(y|x) = \frac{1}{2\pi^{c/2}\sigma_m(x)^c}\exp\{-\frac{\left\lVert y - \mu_m(x) \right\rVert^2}{2\sigma_m(x)^2}\}
+  \phi_m(y|x) = \frac{1}{2\pi^{c/2}\sigma_m(x)^c}\exp\{-\frac{\left\lVert y - \mu_m(x) \right\rVert^2}{2\sigma_m(x)^2}\}
 \end{equation}
 Again, the parameters of each mixture component, \(\mu_m(x)\) and \(\sigma_m^2(x)\), depend on the input data. The last equation assumes that the components of the output vector are statistically independent within each component of the distribution, and can be described by a common variance (\cite{bishop1994}). As we deal with regression in this thesis, the output vector is one dimensional and thus the assumption holds true.
 
@@ -524,11 +536,11 @@ With MDNs we again use the nice property of neural networks as universal functio
 
 Now we give the exact relationships between the outputs and the mixture's parameters. The mixing coefficients of the mixture obviously must sum up to one as they are to be treated as probabilities:
 \begin{equation}
-\sum_{m=1}^M\alpha_m(x)=1
+  \sum_{m=1}^M\alpha_m(x)=1
 \end{equation}
 We can achieve that by placing \emph{softmax} function on the respective outputs \(z_m^{\alpha} \) of the network 
 \begin{equation}
- \alpha_m = \frac{e^{z_m^{\alpha}}}{\sum_{j=1}^M e^{z_j^{\alpha}}}
+  \alpha_m = \frac{e^{z_m^{\alpha}}}{\sum_{j=1}^M e^{z_j^{\alpha}}}
 \end{equation}
 where \(z_i^{\alpha}\) are the outputs of the networks ``responsible'' for the mixing coefficients \(\alpha_i\). Transforming the outputs of a network into a probabilities in this manner was introduced in~\cite{bridle1990}.
 
@@ -591,7 +603,7 @@ As explained in~\cite{gneiting2014} the sharpness of a given forecast describes 
 In next section we'll explain a certain class of scoring rules that can evaluate a predicted forecast against the observed value with respect to the dispersion and sharpness properties i.e.\ they assign ``better'' score to forecast with ``better'' dispersion and sharpness.
 \subsection{Proper Scoring rules}\label{sec:proper-scoring-rules}
 Proper scoring rules allow us to measure the predictive capability of a given probabilistic forecast. Those rules can consider the sharpness as well as the concentration of the distribution. The generated scores are measurement of differences between a desired and generated distributions and thus we strive to minimize those scores. Proper scoring rules are explained in details in~\cite{gneiting2007}.
-% We'll briefly look at the essence of the proper scoring rules.
+                                         %                                          We'll briefly look at the essence of the proper scoring rules.
 A scoring rule assigns a numerical score \(S(F, y)\) to each pair \((F, y)\) of probabilistic forecast F in a form of probability distribution and an observed value \(y \in \mathbb{R}\). In general a scoring rule is some function \(S:\mathcal{F} \times \mathbb{R} \rightarrow \mathbb{R}\) where \(\mathcal{F}\) is some class of probability distributions. A scoring rules generally evaluates a predicted distribution against an realized observation. Let the desired distribution be \(G\in\mathcal{F}\). Then we write
 \begin{equation}
   S(F,G) =\mathbb{E}_G[S(F,Y)]
@@ -602,7 +614,7 @@ The rule \(S: \mathcal{F} \times \mathbb{R} \rightarrow \mathbb{R}\) where \(\ma
   S(G,G) \leq S(F,G),\quad \forall G,F \in \mathcal{F}
 \end{equation}
 This means that a proper scoring rules yields a minimal score for the true distribution of the observation.
-% when the forecast and the true distribution are the same.
+                                         %                                          when the forecast and the true distribution are the same.
 We consider three proper scoring rules. The following section discuss those.
 \subsubsection{Logarithmic score (LS)}\label{sec:ls}
 The most straight forward scoring rule is probably the \emph{logarithmic score}. This scoring rule is well established (\cite{good1952}). For a given density function \(f^p(x)\) that belongs to a predicted forecast, the LS is given by
@@ -621,18 +633,16 @@ The mentioned disadvantage of the LS is addressed by the so called \emph{continu
   CRPS(F,y)  &= \int_{-\infty}^{\infty}(F(x) - \mathbbm{1}\{y \leq x \})^2dx \\
              &= \mathbb{E}_F|Y - y| - \frac{1}{2}\mathbb{E}_F|Y - Y'|
 \end{align}
-where \(Y\) and \(Y'\) are are independent random variables with CDF \(F\) and finite first moment (\cite{rafteryg2007}, \cite{matheson1976}) and \(\mathbbm{1}\{y \leq x \}\) is the probability for \(y\) to be less than or equal to \(x \). In plain words the definition says that the CRPS is a quadratic measure of the difference between the forecast's CDF and the empirical CDF of the observation. In contrast to the LS, the CRPS considers the distribution as a whole and doesn't focus on one specific point. CRPS is well studied and it finds application in a lot of cases (see \cite{ranjan2011} for weighted variant and \cite{grimit2007} for usage for circular variables). \reffig{fig:crps} gives visual intuition of the CRPS. From the figure one can clearly see that if the variance of the predicted distribution is big, the CDF will have values different form \(0\) and \(1\) in bigger interval and thus the CRPS will be higher. This shows how the CRPS too encourages forecasts to be sharper with their distribution.
-
-
-A useful property of the CRPS is that it reduces to the \emph{mean absolute error} (\emph{MAE}) if the forecast is deterministic. This allows us to compare probabilistic forecasts with point estimates in consistent manner (\cite{gneiting2014}).
-
+where \(Y\) and \(Y'\) are are independent random variables with CDF \(F\) and finite first moment (\cite{rafteryg2007}, \cite{matheson1976}) and \(\mathbbm{1}\{y \leq x \}\) is the probability for \(y\) to be less than or equal to \(x \). In plain words the definition says that the CRPS is a quadratic measure of the difference between the forecast's CDF and the empirical CDF of the observation. In contrast to the LS, the CRPS considers the distribution as a whole and doesn't focus on one specific point. CRPS is well studied and it finds application in a lot of cases (see \cite{ranjan2011} for weighted variant and \cite{grimit2007} for usage for circular variables). \reffig{fig:crps} gives visual intuition of the CRPS. From the figure one can clearly see that if the variance of the predicted distribution is big, the CDF will have values different form \(0\) and \(1\) in bigger interval and thus the CRPS will be higher. This shows how the CRPS  encourages forecasts to be sharper with their distribution.
+\vfill
 \begin{center}
-  \begin{figure}[htbp]
+  \begin{figure}[H]
     \centering
-    \includegraphics[height=0.5\textwidth, width=1\textwidth]{figures/crps.png}
+    \includegraphics[height=0.41\textwidth, width=1\textwidth]{figures/crps.png}
     \caption[Continuous Rank Probability Score Intuition]{The square of the blue area is the value of the CRPS. Notice how if the predicted CDF were a step function (the case when the prediction is deterministic point estimate), the CRPS will be nothing more than the squared differnece between the observation and the prediction.}\label{fig:crps}
   \end{figure}
 \end{center}
+A useful property of the CRPS is that it reduces to the \emph{mean absolute error} (\emph{MAE}) if the forecast is deterministic. This allows us to compare probabilistic forecasts with point estimates in consistent manner (\cite{gneiting2014}).
 \subsubsection{Dawid–Sebastiani score (DSS)}\label{sec:dss}
 For complex distributions even the CRPS can be hard to evaluated as it requires some estimate of the integral in \refeq{eq:crps}. The \emph{Dawid–Sebastiani score} (\emph{DSS}), introduced in~\cite{dawid1999}, relies only on the first two central moments of a given predicted forecast \(F\). DSS is defined as
 \begin{equation}
@@ -666,20 +676,20 @@ When it comes to calculating the rules themselves on concrete observations there
     \hline
   \end{tabular}
   \captionof{table}{Closed forms of the scoring rules for normal distribution}\label{tab:rules-table}
- \end{center}
+\end{center}
 
 All of the examined model in the thesis can generate samples from their predicted forecasts. The DSS can thus be trivially calculated just through the empirical mean and variance of the generated samples. The predicted density function of the MDN is a sum of density functions of the mixture components (see \refsec{sec:mdn}) so it can easily be evaluated with the LS. For the BNN we use density estimation methods described in \cite{silverman1986} and \cite{scott2015} to calculate the LS. Empirical CDFs are trivially computable with sample data. For sample set \(\{x_i\}_i=1^n\) the empirical CDF is
 \begin{align}
   &\bar{F_n}(t)=\frac{1}{n}\sum_{i=1}^n1_{x_i\leq t} \\
   &\text{wehre} \\
   &1_{a\leq t} =
-        \begin{cases}
-          1 &,\text{if}\, a \leq t \\
-          0 &,\text{if}\, a > t 
-        \end{cases}
+    \begin{cases}
+      1 &,\text{if}\, a \leq t \\
+      0 &,\text{if}\, a > t 
+    \end{cases}
 \end{align}
 With this function we can also calculate the CRPS in straightforward manner following the definition in \refeq{eq:crps}.
-% With that we've covered all cases in the evaluation of our models.
+          %           With that we've covered all cases in the evaluation of our models.
 \subsection{Feature Importance}\label{sec:feature-importance}
 In order to asses the relative importance of the features used by the build models we use a method called \emph{permutation importance}. It is first described in~\cite{breiman2001} and it was applied to random forests. The techniques is also successfully applied in assessing the feature importance of ensemble forecasting\footnote{Ensemble forecasting is a method used in numerical weather prediction. Instead of making a single forecast of the most likely weather, a set (or an ensemble) of forecasts is produced~\cite{ensemble}.} methods for forecasting (\cite{lerch2018}). We closely follow the approach of \cite{lerch2018} by randomly shuffling each feature in the test and training sets and then look at the mean value of a given scoring rule. For each feature we examine the difference in the mean value of the scoring rules between the permuted and regular datasets.
 
@@ -735,15 +745,15 @@ In order to conclude which one of given models is batter than the other ones, we
 
 Let \(F\) and \(G\) be two competing forecasting methods and let \(F_i \) and \(G_i \) be the forecasts each of the corresponding models produces for the actual observation \(y_i \). We can asses which of the methods has better predictive capabilities with the following approach. First we calculate the average values of some proper scoring rule over the entire test set with \(n\) observations
 \begin{equation}
-\bar{S}^F_n=\frac{1}{n}\sum_{i=1}^nS(F_i, y_i) \quad \text{and} \quad \bar{S}^G_n=\frac{1}{n}\sum_{i=1}^nS(G_i, y_i)
+  \bar{S}^F_n=\frac{1}{n}\sum_{i=1}^nS(F_i, y_i) \quad \text{and} \quad \bar{S}^G_n=\frac{1}{n}\sum_{i=1}^nS(G_i, y_i)
 \end{equation}
 where \(S \) is some proper scoring rule. Then we calculate the metric
 \begin{equation}
-t_n=\sqrt{n}\frac{\bar{S}_n^F-\bar{S}_n^G}{\hat{\sigma}_n}
+  t_n=\sqrt{n}\frac{\bar{S}_n^F-\bar{S}_n^G}{\hat{\sigma}_n}
 \end{equation}
 where
 \begin{equation}
-\hat{\sigma}_n^2=\frac{1}{n}\sum_{i=1}^n(S(F_i,y_i)-S(G_i,y_i))^2
+  \hat{\sigma}_n^2=\frac{1}{n}\sum_{i=1}^n(S(F_i,y_i)-S(G_i,y_i))^2
 \end{equation}
 This approach is known as the Diebold–Mariano test and it is first introduced in~\cite{diebold95}. The method is a statistical test of equal forecast performance. The null hypothesis is that the two forecasting methods predict the data equally bad\textbackslash@good. If this is rejected, we can say which of the two is better than the other. Under the null hypothesis, the quantity \(t_n\) follows the standard normal distribution -- \(\mathcal{N}(0,1)\). This makes it particularly easy to calculate the \(p\)-value of the test. Given the \(p\)-value is small enough, the method \(F\) is preferred if \(t_n \) is negative, whereas \(G\) is preferred if \(t_n\) is positive (see~\cite{gneiting2014}).
 
@@ -767,7 +777,9 @@ As said, we want to investigate how different data affects the performance of th
 \item \emph{Pollution value type} -- The air pollution values that all of the sensors measure are PM2.5 and PM10. See \refsec{sec:data} for more information on the meaning of these values. In our implementation and considerations we call those P1 and P2 respectively (see impl). While preprocessing the data, we have found out that P1 and P2 are highly correlated. On average their correlation is about \(0.9 \). This means that they effectively measure the same thing and will only make the feature space overly complicated if both are considered as predictors. For this reason we either train on P1 or P2 values while predicting P1 or P2 respectively.
 \item \emph{Using the rest of the LUBW senors as predictor} -- We want to see the difference in predictive performance of the models based on including the rest of the LUBW stations as predictors. That it, how much better or worse become the models if we use values of the two other LUBW stations when we predict the values of the third one.
 \end{itemize}
-Each of this distinctions in the selection of the data used for training can be 1made independently of the other ones. We consider all possible combinations and we compare the results in \refsec{sec:eval-model}.
+The final distinction about the models that we make is based on hyper-parameters of each of them. For the MDNs we can choose mixture components count and the definitions of the hidden layers. For the BNNs those hyper-parameters are again the definitions of the hidden layers as well as the drawn samples from the model while calculation the stochastic gradient descent. We consider two MDN-models -- one with one hidden layer with \(512\) neurons and three mixture components and one with one hidden layer but with \(1024\) neurons in it and again three mixture components. Both of the models were trained for maximum of six million and three thousand iterations so we give those models the names \texttt{mdn\_l[512]\_i6300000\_mc3}\footnote{The \texttt{l} signifies the layers, the \texttt{i} the iterations and \texttt{mc} the mixture components} and \texttt{mdn\_l[1024]\_i6300000\_mc3} respectively. When it comes to the BNNs, we only trained one model with one hidden layer and \(512\) neurons in it, where the drawn samples for the gradient calculation were \(800\). The BNNs were trained for maximum of \(3200\) iterations. The id of the BNNs is therefore \texttt{bnn\_l[512]\_i3200\_s800}.
+
+Each of these distinctions in the construction of the models can be made independently of the other ones. We consider all possible combinations and we compare the results in \refsec{sec:eval-model}.
 \begin{figure}[H]
   \centering
   \begin{subfigure}[t]{0.32\textwidth}
@@ -835,7 +847,7 @@ Each of this distinctions in the selection of the data used for training can be 
   \end{subfigure}      
   \caption[LUBW Data Plots]{The plots here show data from the tree LUBW sensors -- SAKP, SBC and SNTR respectively -- but only for the daily averaging period. The top row again shows the values for each day while the bottom is a moving average of 100 values. For explanation on the values of SAKP, see the note at the end of the chapter.}\label{fig:lubw-plots}
 \end{figure}
-When it comes to evaluation of the models, we evaluate each one differently generated model with the three proper scoring rules described in \refsec{sec:proper-scoring-rules}. We apply the feature importance technique from \refsec{sec:feature-importance} only with respect to the CRPS as in \cite{lerch2018}. We look at the rank histograms of only some of the models. For details on rank histograms see \refsec{sec:rank-hist}.
+When it comes to evaluation of the models, we evaluate each one differently generated model with the three proper scoring rules described in \refsec{sec:proper-scoring-rules}. We apply the feature importance technique from \refsec{sec:feature-importance} only with respect to the CRPS as in~\cite{lerch2018}. We look at the rank histograms of only some of the models. For details on rank histograms see \refsec{sec:rank-hist}.
 
 \emph{Note:} During the data preprocessing process we have found out that one of the LUBW sensors -- SAKP -- has data only for the last three months of the year. We have tried to interpolate the data for the rest of the year. This, however, means that the data from the sensors is almost unusable. We have decided to continue considering the sensor as we would if this was not the fact. In the evaluation of the modes we hope to see results consistent with the made observation about the sensor. Namely:
 \begin{itemize}
@@ -847,63 +859,29 @@ We reference back this considerations while discussing the observed results.
 As described in the previous section, we consider three different datasets based on the averaging period of the values. We look at the results on each of them in separate sections
 \subsubsection{One day period}
 
-\begin{center}
-  \begin{figure}[htbp]
-    \centering
-    \includegraphics[height=0.75\textwidth, width=0.9\textwidth]{figures/mdn_1d}
-    \caption[MDN one day plot]{}\label{fig:mdn-1d-plot}
-  \end{figure}
-\end{center}
 
-\begin{center}
-  \begin{figure}[htbp]
-    \centering
-    \includegraphics[height=0.75\textwidth, width=0.9\textwidth]{figures/results_plot_CRPS_1d}
-    \caption[CRPS one day results]{}\label{fig:crps-1d}
-  \end{figure}
-\end{center}
 
 \subsubsection{Twelve hour period}
 
-\begin{center}
-  \begin{figure}[htbp]
-    \centering
-    \includegraphics[height=0.75\textwidth, width=0.9\textwidth]{figures/mdn_12h}
-    \caption[MDN twelve hours plot]{}\label{fig:mdn-12h-plot}
-  \end{figure}
-\end{center}
-
-\begin{center}
-  \begin{figure}[htbp]
-    \centering
-    \includegraphics[height=0.75\textwidth, width=0.9\textwidth]{figures/results_plot_CRPS_12h}
-    \caption[CRPS twelve hours results]{}\label{fig:crps-12h}
-  \end{figure}
-\end{center}
 
 \subsubsection{One hour period}
 
-\begin{center}
-  \begin{figure}[htbp]
-    \centering
-    \includegraphics[height=0.75\textwidth, width=0.9\textwidth]{figures/mdn_1h}
-    \caption[MDN one hour plot]{}\label{fig:mdn-1h-plot}
-  \end{figure}
-\end{center}
-
-\begin{center}
-  \begin{figure}[htbp]
-    \centering
-    \includegraphics[height=0.75\textwidth, width=0.9\textwidth]{figures/results_plot_CRPS_1h}
-    \caption[CRPS one hour results]{}\label{fig:crps-1h}
-  \end{figure}
-\end{center}
+% \begin{center}
+%   \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[height=0.75\textwidth, width=0.9\textwidth]{figures/results_plot_CRPS_1h}
+%     \caption[CRPS one hour results]{}\label{fig:crps-1h}
+%   \end{figure}
+% \end{center}
 
 \subsection{Feature importance}\label{sec:model-feature-imp}
-As seen in the precious section, only models trained a certain way achieve acceptable results. For this reason, we only looked at the feature importance results only of selected models. We again make the differentiation based on averaging period and we look at the results from each in three separate sections. For each averaging period 
+As seen in the previous section, only models trained a certain way achieve acceptable results. For this reason, we only looked at the feature importance results only of selected models. We again make the differentiation based on averaging period and we look at the results from each in three separate sections. We consider only the feature importance only with respect to the CRPS.
 
 \subsubsection{One day period}
+
+
 \subsubsection{Twelve hour period}
+
 \subsubsection{One hour period}
 \section{Implementation}\label{sec:impl}
 In order to enforce separation between the code and all of the data that the code acts upon, we place all of the generated data in the \texttt{env} directory of the project. This directory is added to the \texttt{.gitignore} file and the implantation in no way relies on its contents. The contents of the folder are fully generated by the implemented scripts. In the next sections we explain exactly what the generated content is and how it is generated.
@@ -1062,8 +1040,7 @@ As motioned in a previous paragraph, for the evaluation of the models we have us
 In \refsec{sec:res} we first gave a overview of our approach in the preprocessing of the data and how exactly the models were trained. Then, in \refsec{sec:eval-model} and \refsec{sec:eval-model}, we have looked at the results from the different evaluation methods for each differently trained model.
 
 All of the concrete implementations of the models, the data preprocessing scripts, and the training and evaluation scripts were gone over in \refsec{sec:impl}, where we also mentioned the used libraries.
-\subsection{Discussion}
-% The text ends here
+        %         The text ends here
 \clearpage
 
 
@@ -1075,42 +1052,186 @@ All of the concrete implementations of the models, the data preprocessing script
     \begin{center}
 
       \begin{figure}[H]
-        \centerline{\includegraphics[width=1\textwidth]{figures/1D_P1_P2_correlation}}
+        \centerline{\includegraphics[width=1\textwidth]{figures/data_files_changes/1D_P1_P2_correlation}}
         \caption[PM2.5-PM10 correlation (one day average)]{Daily average}
       \end{figure}
 
       \begin{figure}[H]
-        \centerline{\includegraphics[width=1\textwidth]{figures/12H_P1_P2_correlation}}
+        \centerline{\includegraphics[width=1\textwidth]{figures/data_files_changes/12H_P1_P2_correlation}}
         \caption[PM2.5-PM10 correlation (twelve hour average)]{Twelve hour average}
       \end{figure}
 
       \begin{figure}[H]
-        \centerline{\includegraphics[width=1\textwidth]{figures/1H_P1_P2_correlation}}
+        \centerline{\includegraphics[width=1\textwidth]{figures/data_files_changes/1H_P1_P2_correlation}}
         \caption[PM2.5-PM10 correlation (one hour average)]{One hour average}
       \end{figure}
       
     \end{center}
+    \clearpage
     \chapter{Data-metrics changes}\label{app:b}
-    In this appendix we presen plots outlining how the used data was changed during the preprocessing. We compare statistical metrics of the values of all sensors before and after the applied techniques for missing data filling. The techniques are described in \refsec{sec:desc-module}. We examine the data from different averaging periods in separate sets of plots. The considered metrics are minimum value, maximum value, mean value and standard deviation.
+    In this appendix we present plots outlining how the used data was changed during the preprocessing. We compare statistical metrics of the values of all sensors before and after the applied techniques for missing data filling. The techniques are described in \refsec{sec:desc-module}. We examine the data from different averaging periods in separate sets of plots. The considered metrics are minimum value, maximum value, mean value and standard deviation.
     \begin{center}
-
-      \begin{figure}[H]
-        \centerline{\includegraphics[width=1.1\textwidth,height=1.3\textwidth]{figures/1D_sensor_metrics}}
+      \begin{figure}[h!] \centerline{\includegraphics[width=1.1\textwidth,height=1.1\textwidth]{figures/data_files_changes/1D_sensor_metrics}}
         \caption[Metrics change during preprocessing (one day average)]{Daily average}
       \end{figure}
 
       \begin{figure}[H]
-        \centerline{\includegraphics[width=1.1\textwidth,height=1.3\textwidth]{figures/12H_sensor_metrics}}
+        \centerline{\includegraphics[width=1.1\textwidth,height=1.3\textwidth]{figures/data_files_changes/12H_sensor_metrics}}
         \caption[Metrics change during preprocessing (twelve hour average)]{Twelve hour average}
       \end{figure}
 
       \begin{figure}[H]
-        \centerline{\includegraphics[width=1.1\textwidth,height=1.3\textwidth]{figures/1H_sensor_metrics}}
+        \centerline{\includegraphics[width=1.1\textwidth,height=1.3\textwidth]{figures/data_files_changes/1H_sensor_metrics}}
         \caption[Metrics change during preprocessing (one hour average)]{One hour average}
       \end{figure}
       
     \end{center}
+    \clearpage
+    \chapter{Results tables}
+    In this appendix we summarize the results shown with the plots in \refsec{sec:eval-model} by giving them in tabular form. We give three tables, one for each averaging period of the data used. The respective tables are \reftab{tab:res-1d}, \reftab{tab:res-12h} and \reftab{tab:res-1h}.
+
+    The tables are split row-wise in three sections for each of the scoring rules - CRPS, DSS, LS. Each row in these sections is separate model. The type of the data that was used to train each models is given through the titles of the corresponding columns. The ``with LUBW'' we imply the corresponding model uses values of LUBW-senors as features while ``without LUBW'' implies the opposite.
     
+    
+    \renewcommand\theadalign{bc}
+    \renewcommand\theadfont{\bfseries}
+    \renewcommand\theadgape{\Gape[4pt]}
+    \renewcommand\cellgape{\Gape[4pt]}
+
+    \newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+    \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+    \newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+    \begin{sidewaystable}
+      \centering
+      \input{figures/figs_1d/latex_res_table.tex}\label{tab:res-1d}
+    \end{sidewaystable}
+
+    \begin{sidewaystable}
+      \centering
+      \input{figures/figs_12h/latex_res_table.tex}\label{tab:res-12h}
+    \end{sidewaystable}
+
+    \begin{sidewaystable}
+      \centering
+      \input{figures/figs_1h/latex_res_table.tex}\label{tab:res-1h}
+    \end{sidewaystable}
+    
+    \clearpage
+    
+    \chapter{Predictive checks results tables}
+    In this appendix we give tables with the results of the predictive checks over the models, as mentioned in \refsec{sec:preprop-meth}. We again give three separate tables for the three averaging periods. The tables are \reftab{tab:pred-1d}, \reftab{tab:pred-12h} and \reftab{tab:pred-1h}. The format compares every pair of models. We only consider models that predict the PM10 value of each LUBW sensor and the predictive check is calculated with respect to the CRPS. 
+    The tables are split row-wise in three big sections for each LUBW-station - \textbf{SBC}, \textbf{SNTR}, \textbf{SAKP}. Each of this sections is further divided in two smaller ones in which we consider models trained either with or without the use of values from the other two LUBW-stations as features. The column-wise division is only based on the latter concentration. This defines grid of columns and rows where in each column and each row represents a model trained e certain way. At the cell where two models intersect, we give the value of the predictive check between them. It is important to note that the predicted station of each column model chages depending on the context in which it is compared. For example, the first column model predicts values of SBC when compared with models from the \textbf{SBC} section of the table but it predicts values of SNTR when compared with models from the \textbf{SNTR} section of the table. The names of the models are given through aliases that are explained in the caption of each table.
+    
+    The values given in the tables are the actual metric of the Diebold-Mariano test. The marked with start (\(^* \)) entries are the ones that we consider as statistically significant. For these entries the corresponding \(p\)-value is smaller than \(0.05\). If the given metric is negative, the model in the corresponding row is considered better in its predictive capabilities. If the metric is positive -- the model in the corresponding column is to be considered as the better one.
+    \begin{sidewaystable}
+      \centering
+      \input{figures/figs_1d/latex_pred_table.tex}\label{tab:pred-1d}
+    \end{sidewaystable}
+    \begin{sidewaystable}
+      \centering
+      \input{figures/figs_12h/latex_pred_table.tex}\label{tab:pred-12h}
+    \end{sidewaystable}
+    \begin{sidewaystable}
+      \centering
+      \input{figures/figs_1h/latex_pred_table.tex}\label{tab:pred-1h}
+    \end{sidewaystable}
+
+    \clearpage
+    \chapter{Models plots}
+    In this appendix we present plots that compare the predicted by the models values and the actual observations. We do not give plot for every single model. We have selected plots illustrating the predictive performance of the relatively good models. We have plotted the results of the predictions both on the training and on the test set fro each plot. As with previous result considerations, we distinguish between the averaging period of the data with which the models were trained. The first two plots -- \reffig{fig:mdn-plot-1d} and \reffig{fig:bnn-plot-1d} -- show plots of models trained on daily averaged data. The next two figures -- \reffig{fig:mdn-plot-12h} and \reffig{fig:bnn-plot-12h} -- show plots from models trained on twelve hourly averaged data and final two plots -- \reffig{fig:mdn-plot-1h} and \reffig{fig:bnn-plot-1h} -- models trained on one hourly averaged data.
+    \begin{center}
+      \begin{figure}[h!]
+        \centering
+        \includegraphics[height=0.75\textwidth, width=0.9\textwidth]{figures/model_plots/mdn_1d}
+        \caption[MDN one day plot]{A MDN model with good performance trained on daily averaged data}\label{fig:mdn-plot-1d}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[h!]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/bnn_1d}
+        \caption[BNN one day plot]{A BNN model with good performance trained on daily averaged data}\label{fig:bnn-plot-1d}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[h!]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/mdn_12h}
+        \caption[MDN twelve hours plot]{A MDN model with good performance trained on twelve hourly averaged data}\label{fig:mdn-plot-12h}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[h!]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/bnn_12h}
+        \caption[BNN twelve hours plot]{A BNN model with good performance trained on twelve hourly averaged data}\label{fig:bnn-plot-12h}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[h!]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/mdn_1h}
+        \caption[MDN one hour plot]{A MDN model with good performance trained on one hourly averaged data}\label{fig:mdn-plot-1h}
+      \end{figure}
+    \end{center} 
+    \begin{center}
+      \begin{figure}[htpb]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/bnn_1h}
+        \caption[BNN one hour plot]{A BNN model with good performance trained on one hourly averaged data. To note is, however, that even though this BNN is considered to have good performance, BNNs struggled to predict the data in the context of one hour average. This plot illustrates this.}\label{fig:bnn-plot-1h}
+      \end{figure}
+    \end{center}
+    \clearpage
+    
+    \chapter{Models rank histograms}
+    In this appendix we present the rank histograms of some of the models. As discussed in \refsec{}, the rank histograms given here are representative of the rest and illustrate one of the problems of the built models. From all given rank histograms we can see that they are \texttt{U}-shaped which means that the models often miss the actual observation they are trying to predict.
+    
+    We give one histogram for the BNNs and MDNs per averaging period. \reffig{fig:mdn-rank-1d} and \reffig{fig:bnn-rank-1d} illustrate the rank histograms of models trained with daily averaged data, \reffig{fig:mdn-rank-12h} and \reffig{fig:bnn-rank-12h} -- models trained with twelve hourly averaged data and finally \reffig{fig:mdn-rank-1h} and \reffig{fig:bnn-rank-1h} -- models trained with hourly averaged data.
+    \begin{center}
+      \begin{figure}[htpb]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/mdn-rank-1d}
+        \caption[BNN one day rank histogram]{}\label{fig:mdn-rank-1d}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[htpb]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/bnn-rank-1d}
+        \caption[BNN one day rank histogram]{}\label{fig:bnn-rank-1d}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[htpb]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/mdn-rank-12h}
+        \caption[BNN one day rank histogram]{}\label{fig:mdn-rank-12h}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[htpb]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/bnn-rank-12h}
+        \caption[BNN one day rank histogram]{}\label{fig:bnn-rank-12h}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[htpb]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/mdn-rank-1h}
+        \caption[BNN one day rank histogram]{}\label{fig:mdn-rank-1h}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[htpb]
+        \centering
+        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/bnn-rank-1h}
+        \caption[BNN one day rank histogram]{}\label{fig:bnn-rank-1h}
+      \end{figure}
+    \end{center}
+
+    \clearpage
 
   \end{appendices}
   
@@ -1121,3 +1242,8 @@ All of the concrete implementations of the models, the data preprocessing script
 \end{interlude}
 
 \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "late"
+%%% End:

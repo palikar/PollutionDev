@@ -1,0 +1,29 @@
+\captionsetup{width=0.7\linewidth,justification=raggedright}
+    \begin{tabular}{c V{2.6}c V{0.3}cc||cc||cc||cc||cc||cc} 
+    \hline 
+    \hline 
+    && \multicolumn{2}{c||}{SBC PM10}& \multicolumn{2}{c||}{SBC PM2.5}& \multicolumn{2}{c||}{SNTR PM10}& \multicolumn{2}{c||}{SNTR PM2.5}&\multicolumn{2}{c||}{SAKP PM10}& \multicolumn{2}{c}{SAKP PM2.5}\\ 
+    \Xhline{2.3\arrayrulewidth} 
+    &&with&without&with&without&with&without&with&without&with&without&with&without\\ 
+    &&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW\\ 
+    \Xhline{2.6\arrayrulewidth} 
+    CRPS&&&&&&&&&&&\\ 
+    &Emp.&6.451&6.451&5.482&5.481&11.645&11.65&6.199&6.203&5.891&5.888&3.585&3.586\\ 
+    &BNN$_1$&5.565&9.558&2.186&5.727&8.863&12.417&3.362&5.004&7.34&7.518&4.086&4.401\\ 
+    &MDN$_1$&4.115&4.86&1.743&4.278&9.505&10.163&1.903&4.242&5.935&5.577&2.928&3.311\\ 
+    &MDN$_2$&4.722&5.138&2.008&4.76&16.477&11.291&2.206&4.367&6.814&5.83&2.978&3.363\\ 
+    \Xhline{2.6\arrayrulewidth} 
+    LS&&&&&&&&&&&\\ 
+    &Emp.&3.916&3.916&3.794&3.793&4.515&4.515&3.931&3.932&4.15&4.148&3.345&3.346\\ 
+    &BNN$_1$&4.723&5.236&3.351&5.233&5.379&5.58&3.949&4.535&5.793&5.972&5.068&5.548\\ 
+    &MDN$_1$&3.678&4.353&3.258&4.193&4.442&5.226&3.007&3.98&3.882&4.068&3.158&3.349\\ 
+    &MDN$_2$&3.902&4.306&3.644&3.738&4.693&5.33&3.209&3.912&4.116&4.068&3.227&3.416\\ 
+    \Xhline{2.6\arrayrulewidth} 
+    DSS&&&&&&&&&&&\\ 
+        &Emp.&10.308&6.385&6.008&8.588&16.816&16.838&6.338&9.047&6.433&6.433&9.777&9.778\\ 
+    &BNN$_1$&10.319&10.267&8.266&7.828&15.233&17.845&9.246&9.604&13.905&16.741&8.912&9.559\\ 
+    &MDN$_1$&38.828&35.154&59.36&201.865&42.364&91.931&41.296&58.132&45.138&59.779&11.901&16.055\\ 
+    &MDN$_2$&43.439&38.79&121.177&762.176&45.287&118.649&72.676&41.84&66.884&49.566&44.0&24.608\\ 
+    \Xhline{2.6\arrayrulewidth} 
+  \end{tabular} 
+  \captionof{table}{Table with results from scoring rules over models trained with twelve hourly averaged data.\\Emp. : \texttt{Empirical} \\ BNN$_1$ : \texttt{bnn\_l[512]\_i3200\_s800\_test} \\ MDN$_1$ : \texttt{mdn\_l[1024]\_i6300000\_mc3\_test} \\ MDN$_2$ : \texttt{mdn\_l[512]\_i6300000\_mc3\_test} }

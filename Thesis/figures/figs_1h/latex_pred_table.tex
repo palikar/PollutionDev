@@ -1,0 +1,46 @@
+\begin{tabular}{c|c|cccc||cccc} 
+  \hline 
+  \hline 
+  &&\multicolumn{3}{c}{PM10 with LUBW} && \multicolumn{3}{c}{PM10 without LUBW} \\ 
+  \hline 
+  &&Emp.&BNN$_1$&MDN$_1$&MDN$_2$&Emp.&BNN$_1$&MDN$_1$&MDN$_2$ \\ 
+  \hline 
+  \hline 
+  \textbf{SBC}&&&&&&& \\ 
+  PM10&Emp.&\texttt{\--}&3.54$^*$&27.9$^*$&24.85$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  with&BNN$_1$&-3.54$^*$&\texttt{\--}&21.08$^*$&19.45$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  LUBW&MDN$_1$&-27.9$^*$&-21.08$^*$&\texttt{\--}&-11.58$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  &MDN$_2$&-24.85$^*$&-19.45$^*$&11.58$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  \hline     
+  PM10&Emp.&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&-4.26$^*$&18.59$^*$&10.34$^*$ \\ 
+  without&BNN$_1$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&4.26$^*$&\texttt{\--}&18.51$^*$&13.11$^*$ \\ 
+  LUBW&MDN$_1$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&-18.59$^*$&-18.51$^*$&\texttt{\--}&-5.49$^*$ \\ 
+  &MDN$_2$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&-10.34$^*$&-13.11$^*$&5.49$^*$&\texttt{\--} \\ 
+  \hline     
+  \hline     
+\textbf{SNTR}&&&&&&& \\ 
+  PM10&Emp.&\texttt{\--}&-0.68&19.11$^*$&15.78$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  with&BNN$_1$&0.68&\texttt{\--}&16.47$^*$&13.7$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  LUBW&MDN$_1$&-19.11$^*$&-16.47$^*$&\texttt{\--}&-3.34$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  &MDN$_2$&-15.78$^*$&-13.7$^*$&3.34$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  \hline     
+  PM10&Emp.&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&-26.57$^*$&-7.0$^*$&-18.48$^*$ \\ 
+  without&BNN$_1$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&26.57$^*$&\texttt{\--}&-5.96$^*$&6.49$^*$ \\ 
+  LUBW&MDN$_1$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&7.0$^*$&5.96$^*$&\texttt{\--}&6.28$^*$ \\ 
+  &MDN$_2$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&18.48$^*$&-6.49$^*$&-6.28$^*$&\texttt{\--} \\ 
+  \hline     
+  \hline     
+\textbf{SAKP}&&&&&&& \\ 
+  PM10&Emp.&\texttt{\--}&-33.78$^*$&3.84$^*$&0.72&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  with&BNN$_1$&33.78$^*$&\texttt{\--}&22.9$^*$&20.66$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  LUBW&MDN$_1$&-3.84$^*$&-22.9$^*$&\texttt{\--}&-5.02$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  &MDN$_2$&-0.72&-20.66$^*$&5.02$^*$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--} \\ 
+  \hline     
+  PM10&Emp.&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&-34.62$^*$&0.38&-4.41$^*$ \\ 
+  without&BNN$_1$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&34.62$^*$&\texttt{\--}&23.79$^*$&21.71$^*$ \\ 
+  LUBW&MDN$_1$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&-0.38&-23.79$^*$&\texttt{\--}&-8.2$^*$ \\ 
+  &MDN$_2$&\texttt{\--}&\texttt{\--}&\texttt{\--}&\texttt{\--}&4.41$^*$&-21.71$^*$&8.2$^*$&\texttt{\--} \\ 
+  \hline     
+  \hline     
+\end{tabular} 
+\captionof{table}{Table with results of predictive checks between models trained with one hourly averaged data.\\Emp. : \texttt{Empirical} \\ BNN$_1$ : \texttt{bnn\_l[512]\_i3200\_s800\_test} \\ MDN$_1$ : \texttt{mdn\_l[1024]\_i6300000\_mc3\_testl}\\ MDN$_2$ : \texttt{mdn\_l[512]\_i6300000\_mc3\_testl} }

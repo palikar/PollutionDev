@@ -10,6 +10,7 @@ import utils as ut
 import json, re
 from scipy import stats
 from collections import defaultdict
+import collections
 
 
 
@@ -61,6 +62,7 @@ class ResSelector:
             return False
         pass
 
+
     def importance(self, station, lu_bw, value, rule, test=True, limit=10):
         res = dict()
         for main_folder in self.folders:
@@ -93,7 +95,8 @@ class ResSelector:
                 model_name = df.iloc[0]["Model"]
                 df = df.iloc[0 : ][["feature","diff_value"]]
                 res[model_name] = df.to_dict('list')
-        return res
+        return collections.OrderedDict(sorted(res.items()))
+        # return res
             
         
 
@@ -132,8 +135,9 @@ class ResSelector:
                 if "Empirical" not in res.keys():
                    res["Empirical"] = value_emp
 
-        
-        return res
+        # print(collections.OrderedDict(sorted(res.items())))
+        return collections.OrderedDict(sorted(res.items()))
+        # return res
 
 
     def query_l(self,station, lu_bw, value, rule, test=True):
@@ -160,17 +164,17 @@ class ResSelector:
             for folder in fold_filt:
                 # print("Proc", folder)
                 df =  pd.read_csv(os.path.join(folder, "rules_scores_l.csv"), sep=';')
-                
 
-
-                
                 models = df["model_id"].unique()
                 for model in models:
                     value_l = df[df.model_id == model][rule]
-                    res[model] = value_l.values
+                    model_capt = model.capitalize() if "empi" in model else model
+                    res[model_capt] = value_l.values
 
-        
-        return res
+        # print(collections.OrderedDict(sorted(res.items())).keys())
+        return collections.OrderedDict(sorted(res.items()))
+    
+        # return res
 
 
 
@@ -225,7 +229,8 @@ def basic_res(sec, dest):
                 
                 plt.xticks(index + bar_width, ('With LU BW', 'Without LU BW'))
                 plt.legend(loc='upper left')
-                plt.title("Station: "+ stat + ", Predicted value:" + val)
+                val_t = "PM10" if val is "P1" else "PM2.5"
+                plt.title("Station: "+ stat + ", Predicted value:" + val_t)
                 plt.ylabel(rule)
 
                 
@@ -234,6 +239,17 @@ def basic_res(sec, dest):
         plt.savefig(os.path.join(dest, "results_plot_"+rule+".png"))      
             
 
+
+
+def translate(value, leftMin, leftMax, rightMin, rightMax):
+    leftSpan = leftMax - leftMin
+    rightSpan = rightMax - rightMin
+ 
+    valueScaled = float(value - leftMin) / float(leftSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    return rightMin + (valueScaled * rightSpan)
+        
 def feat_importance(sec, dest):
     stations = ['SBC', 'SAKP', 'SNTR']
     values = ['P1', 'P2']
@@ -252,6 +268,8 @@ def feat_importance(sec, dest):
                     data = sec.importance(stat, lu_bw, val, rule, limit=n_groups)
                     n_groups = len(next(iter(data.values()))["feature"])
 
+                    # print(data)
+                    
                     index = np.arange(n_groups)
                     bar_width = 0.2
                     opacity = 0.75
@@ -260,8 +278,17 @@ def feat_importance(sec, dest):
                     i = i +1
                     
                     for j,mod in enumerate(data.keys()):
+                        max_d = max(data[mod]["diff_value"])
+                        min_d = min(data[mod]["diff_value"])
+
+                        # map_l = 0 if min_d > 0 else 10
+                        map_l = 0
+                        map_u = 100
+
+                        vals = list(map(lambda x: translate(x,min_d,max_d,map_l,map_u), data[mod]["diff_value"]))
+                        data[mod]["diff_value"] = vals
                         plt.bar(index + j*bar_width, 
-                                data[mod]["diff_value"],
+                                vals,
                                 bar_width,
                                 alpha=opacity,
                                 label=mod)
@@ -274,10 +301,11 @@ def feat_importance(sec, dest):
                     plt.xticks(rotation=45)
                     plt.xticks(index + bar_width, next(iter(data.values()))["feature"])
                     plt.legend()
+                    val_t = "PM10" if val is "P1" else "PM2.5"
                     if lu_bw:
-                        plt.title("Feature importance. Predicted value - " + val + ", Station - " + stat + ", with LUBW")
+                        plt.title("Feature importance. Predicted value - " + val_t + ", Station - " + stat + ", with LUBW")
                     else:
-                        plt.title("Feature importance. Predicted value - " + val + ", Station - " + stat + ", without LUBW")
+                        plt.title("Feature importance. Predicted value - " + val_t + ", Station - " + stat + ", without LUBW")
                     
                     plt.ylabel("Avrg. diff. in " + rule)
                 
@@ -303,28 +331,34 @@ def feat_importance(sec, dest):
 
 def gen_tables(sec, dest):
     latex_table = "\\captionsetup{{width=0.7\\linewidth,justification=raggedright}}\n\
-    \\begin{{tabular}}{{c V{{2.6}}c V{{0.3}}cc||cc||cc||cc}} \n\
+    \\begin{{tabular}}{{c V{{2.6}}c V{{0.3}}cc||cc||cc||cc||cc||cc}} \n\
     \hline \n\
     \hline \n\
-    && \multicolumn{{2}}{{c||}}{{SBC P1}}& \multicolumn{{2}}{{c||}}{{SBC P2}}& \multicolumn{{2}}{{c||}}{{SNTR P1}}& \multicolumn{{2}}{{c}}{{SNTR P2}}\\\\ \n\
+    && \multicolumn{{2}}{{c||}}{{SBC PM10}}& \multicolumn{{2}}{{c||}}{{SBC PM2.5}}& \multicolumn{{2}}{{c||}}{{SNTR PM10}}& \multicolumn{{2}}{{c||}}{{SNTR PM2.5}}&\multicolumn{{2}}{{c||}}{{SAKP PM10}}& \multicolumn{{2}}{{c}}{{SAKP PM2.5}}\\\\ \n\
     \Xhline{{2.3\\arrayrulewidth}} \n\
-    &&with&without&with&without&with&without&with&without\\\\ \n\
-    &&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW\\\\ \n\
+    &&with&without&with&without&with&without&with&without&with&without&with&without\\\\ \n\
+    &&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW&LUBW\\\\ \n\
     \Xhline{{2.6\\arrayrulewidth}} \n\
-    CRPS&&&&&&&&&\\\\ \n\
-    &{m1}&{m1_d[CRPS][SBC][P1][True]}&{m1_d[CRPS][SBC][P1][False]}&{m1_d[CRPS][SBC][P2][True]}&{m1_d[CRPS][SBC][P2][False]}&{m1_d[CRPS][SNTR][P1][True]}&{m1_d[CRPS][SNTR][P1][False]}&{m1_d[CRPS][SNTR][P2][True]}&{m1_d[CRPS][SNTR][P2][False]}\\\\ \n\
-    &{m2}&{m2_d[CRPS][SBC][P1][True]}&{m2_d[CRPS][SBC][P1][False]}&{m2_d[CRPS][SBC][P2][True]}&{m2_d[CRPS][SBC][P2][False]}&{m2_d[CRPS][SNTR][P1][True]}&{m2_d[CRPS][SNTR][P1][False]}&{m2_d[CRPS][SNTR][P2][True]}&{m2_d[CRPS][SNTR][P2][False]}\\\\ \n\
+    CRPS&&&&&&&&&&&\\\\ \n\
+    &{m1}&{m1_d[CRPS][SBC][P1][True]}&{m1_d[CRPS][SBC][P1][False]}&{m1_d[CRPS][SBC][P2][True]}&{m1_d[CRPS][SBC][P2][False]}&{m1_d[CRPS][SNTR][P1][True]}&{m1_d[CRPS][SNTR][P1][False]}&{m1_d[CRPS][SNTR][P2][True]}&{m1_d[CRPS][SNTR][P2][False]}&{m1_d[CRPS][SAKP][P1][True]}&{m1_d[CRPS][SAKP][P1][False]}&{m1_d[CRPS][SAKP][P2][True]}&{m1_d[CRPS][SAKP][P2][False]}\\\\ \n\
+    &{m2}&{m2_d[CRPS][SBC][P1][True]}&{m2_d[CRPS][SBC][P1][False]}&{m2_d[CRPS][SBC][P2][True]}&{m2_d[CRPS][SBC][P2][False]}&{m2_d[CRPS][SNTR][P1][True]}&{m2_d[CRPS][SNTR][P1][False]}&{m2_d[CRPS][SNTR][P2][True]}&{m2_d[CRPS][SNTR][P2][False]}&{m2_d[CRPS][SAKP][P1][True]}&{m2_d[CRPS][SAKP][P1][False]}&{m2_d[CRPS][SAKP][P2][True]}&{m2_d[CRPS][SAKP][P2][False]}\\\\ \n\
+    &{m3}&{m3_d[CRPS][SBC][P1][True]}&{m3_d[CRPS][SBC][P1][False]}&{m3_d[CRPS][SBC][P2][True]}&{m3_d[CRPS][SBC][P2][False]}&{m3_d[CRPS][SNTR][P1][True]}&{m3_d[CRPS][SNTR][P1][False]}&{m3_d[CRPS][SNTR][P2][True]}&{m3_d[CRPS][SNTR][P2][False]}&{m3_d[CRPS][SAKP][P1][True]}&{m3_d[CRPS][SAKP][P1][False]}&{m3_d[CRPS][SAKP][P2][True]}&{m3_d[CRPS][SAKP][P2][False]}\\\\ \n\
+    &{m4}&{m4_d[CRPS][SBC][P1][True]}&{m4_d[CRPS][SBC][P1][False]}&{m4_d[CRPS][SBC][P2][True]}&{m4_d[CRPS][SBC][P2][False]}&{m4_d[CRPS][SNTR][P1][True]}&{m4_d[CRPS][SNTR][P1][False]}&{m4_d[CRPS][SNTR][P2][True]}&{m4_d[CRPS][SNTR][P2][False]}&{m4_d[CRPS][SAKP][P1][True]}&{m4_d[CRPS][SAKP][P1][False]}&{m4_d[CRPS][SAKP][P2][True]}&{m4_d[CRPS][SAKP][P2][False]}\\\\ \n\
     \Xhline{{2.6\\arrayrulewidth}} \n\
-    LS&&&&&&&&&\\\\ \n\
-    &{m1}&{m1_d[LS][SBC][P1][True]}&{m1_d[LS][SBC][P1][False]}&{m1_d[LS][SBC][P2][True]}&{m1_d[LS][SBC][P2][False]}&{m1_d[LS][SNTR][P1][True]}&{m1_d[LS][SNTR][P1][False]}&{m1_d[LS][SNTR][P2][True]}&{m1_d[LS][SNTR][P2][False]}\\\\ \n\
-    &{m2}&{m2_d[LS][SBC][P1][True]}&{m2_d[LS][SBC][P1][False]}&{m2_d[LS][SBC][P2][True]}&{m2_d[LS][SBC][P2][False]}&{m2_d[LS][SNTR][P1][True]}&{m2_d[LS][SNTR][P1][False]}&{m2_d[LS][SNTR][P2][True]}&{m2_d[LS][SNTR][P2][False]}\\\\ \n\
+    LS&&&&&&&&&&&\\\\ \n\
+    &{m1}&{m1_d[LS][SBC][P1][True]}&{m1_d[LS][SBC][P1][False]}&{m1_d[LS][SBC][P2][True]}&{m1_d[LS][SBC][P2][False]}&{m1_d[LS][SNTR][P1][True]}&{m1_d[LS][SNTR][P1][False]}&{m1_d[LS][SNTR][P2][True]}&{m1_d[LS][SNTR][P2][False]}&{m1_d[LS][SAKP][P1][True]}&{m1_d[LS][SAKP][P1][False]}&{m1_d[LS][SAKP][P2][True]}&{m1_d[LS][SAKP][P2][False]}\\\\ \n\
+    &{m2}&{m2_d[LS][SBC][P1][True]}&{m2_d[LS][SBC][P1][False]}&{m2_d[LS][SBC][P2][True]}&{m2_d[LS][SBC][P2][False]}&{m2_d[LS][SNTR][P1][True]}&{m2_d[LS][SNTR][P1][False]}&{m2_d[LS][SNTR][P2][True]}&{m2_d[LS][SNTR][P2][False]}&{m2_d[LS][SAKP][P1][True]}&{m2_d[LS][SAKP][P1][False]}&{m2_d[LS][SAKP][P2][True]}&{m2_d[LS][SAKP][P2][False]}\\\\ \n\
+    &{m3}&{m3_d[LS][SBC][P1][True]}&{m3_d[LS][SBC][P1][False]}&{m3_d[LS][SBC][P2][True]}&{m3_d[LS][SBC][P2][False]}&{m3_d[LS][SNTR][P1][True]}&{m3_d[LS][SNTR][P1][False]}&{m3_d[LS][SNTR][P2][True]}&{m3_d[LS][SNTR][P2][False]}&{m3_d[LS][SAKP][P1][True]}&{m3_d[LS][SAKP][P1][False]}&{m3_d[LS][SAKP][P2][True]}&{m3_d[LS][SAKP][P2][False]}\\\\ \n\
+    &{m4}&{m4_d[LS][SBC][P1][True]}&{m4_d[LS][SBC][P1][False]}&{m4_d[LS][SBC][P2][True]}&{m4_d[LS][SBC][P2][False]}&{m4_d[LS][SNTR][P1][True]}&{m4_d[LS][SNTR][P1][False]}&{m4_d[LS][SNTR][P2][True]}&{m4_d[LS][SNTR][P2][False]}&{m4_d[LS][SAKP][P1][True]}&{m4_d[LS][SAKP][P1][False]}&{m4_d[LS][SAKP][P2][True]}&{m4_d[LS][SAKP][P2][False]}\\\\ \n\
     \Xhline{{2.6\\arrayrulewidth}} \n\
-    DSS&&&&&&&&&\\\\ \n\
-        &{m1}&{m1_d[DSS][SBC][P1][True]}&{m1_d[DSS][SBC][P1][False]}&{m1_d[DSS][SBC][P2][True]}&{m1_d[DSS][SBC][P2][False]}&{m1_d[DSS][SNTR][P1][True]}&{m1_d[DSS][SNTR][P1][False]}&{m1_d[DSS][SNTR][P2][True]}&{m1_d[DSS][SNTR][P2][False]}\\\\ \n\
-    &{m2}&{m2_d[DSS][SBC][P1][True]}&{m2_d[DSS][SBC][P1][False]}&{m2_d[DSS][SBC][P2][True]}&{m2_d[DSS][SBC][P2][False]}&{m2_d[DSS][SNTR][P1][True]}&{m2_d[DSS][SNTR][P1][False]}&{m2_d[DSS][SNTR][P2][True]}&{m2_d[DSS][SNTR][P2][False]}\\\\ \n\
+    DSS&&&&&&&&&&&\\\\ \n\
+        &{m1}&{m1_d[DSS][SBC][P1][True]}&{m1_d[DSS][SBC][P1][False]}&{m1_d[DSS][SBC][P2][True]}&{m1_d[DSS][SBC][P2][False]}&{m1_d[DSS][SNTR][P1][True]}&{m1_d[DSS][SNTR][P1][False]}&{m1_d[DSS][SNTR][P2][True]}&{m1_d[DSS][SNTR][P2][False]}&{m1_d[DSS][SAKP][P1][True]}&{m1_d[DSS][SAKP][P1][False]}&{m1_d[DSS][SAKP][P2][True]}&{m1_d[DSS][SAKP][P2][False]}\\\\ \n\
+    &{m2}&{m2_d[DSS][SBC][P1][True]}&{m2_d[DSS][SBC][P1][False]}&{m2_d[DSS][SBC][P2][True]}&{m2_d[DSS][SBC][P2][False]}&{m2_d[DSS][SNTR][P1][True]}&{m2_d[DSS][SNTR][P1][False]}&{m2_d[DSS][SNTR][P2][True]}&{m2_d[DSS][SNTR][P2][False]}&{m2_d[DSS][SAKP][P1][True]}&{m2_d[DSS][SAKP][P1][False]}&{m2_d[DSS][SAKP][P2][True]}&{m2_d[DSS][SAKP][P2][False]}\\\\ \n\
+    &{m3}&{m3_d[DSS][SBC][P1][True]}&{m3_d[DSS][SBC][P1][False]}&{m3_d[DSS][SBC][P2][True]}&{m3_d[DSS][SBC][P2][False]}&{m3_d[DSS][SNTR][P1][True]}&{m3_d[DSS][SNTR][P1][False]}&{m3_d[DSS][SNTR][P2][True]}&{m3_d[DSS][SNTR][P2][False]}&{m3_d[DSS][SAKP][P1][True]}&{m3_d[DSS][SAKP][P1][False]}&{m3_d[DSS][SAKP][P2][True]}&{m3_d[DSS][SAKP][P2][False]}\\\\ \n\
+    &{m4}&{m4_d[DSS][SBC][P1][True]}&{m4_d[DSS][SBC][P1][False]}&{m4_d[DSS][SBC][P2][True]}&{m4_d[DSS][SBC][P2][False]}&{m4_d[DSS][SNTR][P1][True]}&{m4_d[DSS][SNTR][P1][False]}&{m4_d[DSS][SNTR][P2][True]}&{m4_d[DSS][SNTR][P2][False]}&{m4_d[DSS][SAKP][P1][True]}&{m4_d[DSS][SAKP][P1][False]}&{m4_d[DSS][SAKP][P2][True]}&{m4_d[DSS][SAKP][P2][False]}\\\\ \n\
     \Xhline{{2.6\\arrayrulewidth}} \n\
   \end{{tabular}} \n\
-  \\captionof{{table}}{{{m1} : \\texttt{{{m1_n}}} \\\\ {m2} : \\texttt{{{m2_n}}} }}"
+  \\captionof{{table}}{{{m1} : \\texttt{{{m1_n}}} \\\\ {m2} : \\texttt{{{m2_n}}} \\\\ {m3} : \\texttt{{{m3_n}}} \\\\ {m4} : \\texttt{{{m4_n}}} }}"
 
     
 
@@ -372,62 +406,64 @@ def gen_tables(sec, dest):
 
 
 
-
-
-
-
-
 def dm_test(p1, p2):
     p1_m = p1.mean()
     p2_m = p2.mean()
     n = float(p1.shape[0])
     sig = ((p1 - p2)**2).mean()
-    t = ((n**(-0.5))*(p1_m - p2_m))/np.sqrt(sig)
-    p = stats.norm.cdf(abs(t))
+    t = ((np.sqrt(n))*(p1_m - p2_m))/np.sqrt(sig)
+    p = stats.norm.pdf(abs(t))
     return (t,p)
 
 
 def predictive_check(sec, dest):
 
-    latex_table="\\begin{{tabular}}{{c|c|ccc||ccc}} \n\
+    latex_table="\\begin{{tabular}}{{c|c|cccc||cccc}} \n\
   \\hline \n\
   \\hline \n\
-  &&\\multicolumn{{2}}{{c}}{{P1 with LUBW}} && \\multicolumn{{2}}{{c}}{{P1 without LUBW}} \\\\ \n\
+  &&\\multicolumn{{3}}{{c}}{{PM10 with LUBW}} && \\multicolumn{{3}}{{c}}{{PM10 without LUBW}} \\\\ \n\
   \\hline \n\
-  &&{m1}&{m2}&{m3}&{m1}&{m2}&{m3} \\\\ \n\
+  &&{m1}&{m2}&{m3}&{m4}&{m1}&{m2}&{m3}&{m4} \\\\ \n\
   \\hline \n\
   \\hline \n\
   \\textbf{{SBC}}&&&&&&& \\\\ \n\
-  P1&{m1}&{m1_d[m1_d][SBC][P1][True][True]}&{m1_d[m2_d][SBC][P1][True][True]}&{m1_d[m3_d][SBC][P1][True][True]}&{m1_d[m1_d][SBC][P1][False][True]}&{m1_d[m2_d][SBC][P1][False][True]}&{m1_d[m3_d][SBC][P1][False][True]} \\\\ \n\
-  with&{m2}&{m2_d[m1_d][SBC][P1][True][True]}&{m2_d[m2_d][SBC][P1][True][True]}&{m2_d[m3_d][SBC][P1][True][True]}&{m2_d[m1_d][SBC][P1][False][True]}&{m2_d[m2_d][SBC][P1][False][True]}&{m2_d[m3_d][SBC][P1][False][True]} \\\\ \n\
-  LUBW&{m3}&{m3_d[m1_d][SBC][P1][True][True]}&{m3_d[m2_d][SBC][P1][True][True]}&{m3_d[m3_d][SBC][P1][True][True]}&{m3_d[m1_d][SBC][P1][False][True]}&{m3_d[m2_d][SBC][P1][False][True]}&{m3_d[m3_d][SBC][P1][False][True]} \\\\ \n\
+  PM10&{m1}&{m1_d[m1_d][SBC][P1][True][True]}&{m1_d[m2_d][SBC][P1][True][True]}&{m1_d[m3_d][SBC][P1][True][True]}&{m1_d[m4_d][SBC][P1][True][True]}&{m1_d[m1_d][SBC][P1][False][True]}&{m1_d[m2_d][SBC][P1][False][True]}&{m1_d[m3_d][SBC][P1][False][True]}&{m1_d[m4_d][SBC][P1][False][True]} \\\\ \n\
+  with&{m2}&{m2_d[m1_d][SBC][P1][True][True]}&{m2_d[m2_d][SBC][P1][True][True]}&{m2_d[m3_d][SBC][P1][True][True]}&{m2_d[m4_d][SBC][P1][True][True]}&{m2_d[m1_d][SBC][P1][False][True]}&{m2_d[m2_d][SBC][P1][False][True]}&{m2_d[m3_d][SBC][P1][False][True]}&{m2_d[m4_d][SBC][P1][False][True]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SBC][P1][True][True]}&{m3_d[m2_d][SBC][P1][True][True]}&{m3_d[m3_d][SBC][P1][True][True]}&{m3_d[m4_d][SBC][P1][True][True]}&{m3_d[m1_d][SBC][P1][False][True]}&{m3_d[m2_d][SBC][P1][False][True]}&{m3_d[m3_d][SBC][P1][False][True]}&{m3_d[m4_d][SBC][P1][False][True]} \\\\ \n\
+  &{m4}&{m4_d[m1_d][SBC][P1][True][True]}&{m4_d[m2_d][SBC][P1][True][True]}&{m4_d[m3_d][SBC][P1][True][True]}&{m4_d[m4_d][SBC][P1][True][True]}&{m4_d[m1_d][SBC][P1][False][True]}&{m3_d[m2_d][SBC][P1][False][True]}&{m4_d[m3_d][SBC][P1][False][True]}&{m4_d[m4_d][SBC][P1][False][True]} \\\\ \n\
   \\hline     \n\
-  P1&{m1}&{m1_d[m1_d][SBC][P1][True][False]}&{m1_d[m2_d][SBC][P1][True][False]}&{m1_d[m3_d][SBC][P1][True][False]}&{m1_d[m1_d][SBC][P1][False][False]}&{m1_d[m2_d][SBC][P1][False][False]}&{m1_d[m3_d][SBC][P1][False][False]} \\\\ \n\
-  without&{m2}&{m2_d[m1_d][SBC][P1][True][False]}&{m2_d[m2_d][SBC][P1][True][False]}&{m2_d[m3_d][SBC][P1][True][False]}&{m2_d[m1_d][SBC][P1][False][False]}&{m2_d[m2_d][SBC][P1][False][False]}&{m2_d[m3_d][SBC][P1][False][False]} \\\\ \n\
-  LUBW&{m3}&{m3_d[m1_d][SBC][P1][True][False]}&{m3_d[m2_d][SBC][P1][True][False]}&{m3_d[m3_d][SBC][P1][True][False]}&{m3_d[m1_d][SBC][P1][False][False]}&{m3_d[m2_d][SBC][P1][False][False]}&{m3_d[m3_d][SBC][P1][False][False]} \\\\ \n\
+  PM10&{m1}&{m1_d[m1_d][SBC][P1][True][False]}&{m1_d[m2_d][SBC][P1][True][False]}&{m1_d[m3_d][SBC][P1][True][False]}&{m1_d[m4_d][SBC][P1][True][False]}&{m1_d[m1_d][SBC][P1][False][False]}&{m1_d[m2_d][SBC][P1][False][False]}&{m1_d[m3_d][SBC][P1][False][False]}&{m1_d[m4_d][SBC][P1][False][False]} \\\\ \n\
+  without&{m2}&{m2_d[m1_d][SBC][P1][True][False]}&{m2_d[m2_d][SBC][P1][True][False]}&{m2_d[m3_d][SBC][P1][True][False]}&{m2_d[m4_d][SBC][P1][True][False]}&{m2_d[m1_d][SBC][P1][False][False]}&{m2_d[m2_d][SBC][P1][False][False]}&{m2_d[m3_d][SBC][P1][False][False]}&{m2_d[m4_d][SBC][P1][False][False]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SBC][P1][True][False]}&{m3_d[m2_d][SBC][P1][True][False]}&{m3_d[m3_d][SBC][P1][True][False]}&{m3_d[m4_d][SBC][P1][True][False]}&{m3_d[m1_d][SBC][P1][False][False]}&{m3_d[m2_d][SBC][P1][False][False]}&{m3_d[m3_d][SBC][P1][False][False]}&{m3_d[m4_d][SBC][P1][False][False]} \\\\ \n\
+  &{m4}&{m4_d[m1_d][SBC][P1][True][False]}&{m4_d[m2_d][SBC][P1][True][False]}&{m4_d[m3_d][SBC][P1][True][False]}&{m4_d[m4_d][SBC][P1][True][False]}&{m4_d[m1_d][SBC][P1][False][False]}&{m4_d[m2_d][SBC][P1][False][False]}&{m4_d[m3_d][SBC][P1][False][False]}&{m4_d[m4_d][SBC][P1][False][False]} \\\\ \n\
   \\hline     \n\
   \\hline     \n\
 \\textbf{{SNTR}}&&&&&&& \\\\ \n\
-  P1&{m1}&{m1_d[m1_d][SNTR][P1][True][True]}&{m1_d[m2_d][SNTR][P1][True][True]}&{m1_d[m3_d][SNTR][P1][True][True]}&{m1_d[m1_d][SNTR][P1][False][True]}&{m1_d[m2_d][SNTR][P1][False][True]}&{m1_d[m3_d][SNTR][P1][False][True]} \\\\ \n\
-  with&{m2}&{m2_d[m1_d][SNTR][P1][True][True]}&{m2_d[m2_d][SNTR][P1][True][True]}&{m2_d[m3_d][SNTR][P1][True][True]}&{m2_d[m1_d][SNTR][P1][False][True]}&{m2_d[m2_d][SNTR][P1][False][True]}&{m2_d[m3_d][SNTR][P1][False][True]} \\\\ \n\
-  LUBW&{m3}&{m3_d[m1_d][SNTR][P1][True][True]}&{m3_d[m2_d][SNTR][P1][True][True]}&{m3_d[m3_d][SNTR][P1][True][True]}&{m3_d[m1_d][SNTR][P1][False][True]}&{m3_d[m2_d][SNTR][P1][False][True]}&{m3_d[m3_d][SNTR][P1][False][True]} \\\\ \n\
+  PM10&{m1}&{m1_d[m1_d][SNTR][P1][True][True]}&{m1_d[m2_d][SNTR][P1][True][True]}&{m1_d[m3_d][SNTR][P1][True][True]}&{m1_d[m4_d][SNTR][P1][True][True]}&{m1_d[m1_d][SNTR][P1][False][True]}&{m1_d[m2_d][SNTR][P1][False][True]}&{m1_d[m3_d][SNTR][P1][False][True]}&{m1_d[m4_d][SNTR][P1][False][True]} \\\\ \n\
+  with&{m2}&{m2_d[m1_d][SNTR][P1][True][True]}&{m2_d[m2_d][SNTR][P1][True][True]}&{m2_d[m3_d][SNTR][P1][True][True]}&{m2_d[m4_d][SNTR][P1][True][True]}&{m2_d[m1_d][SNTR][P1][False][True]}&{m2_d[m2_d][SNTR][P1][False][True]}&{m2_d[m3_d][SNTR][P1][False][True]}&{m2_d[m4_d][SNTR][P1][False][True]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SNTR][P1][True][True]}&{m3_d[m2_d][SNTR][P1][True][True]}&{m3_d[m3_d][SNTR][P1][True][True]}&{m3_d[m4_d][SNTR][P1][True][True]}&{m3_d[m1_d][SNTR][P1][False][True]}&{m3_d[m2_d][SNTR][P1][False][True]}&{m3_d[m3_d][SNTR][P1][False][True]}&{m3_d[m4_d][SNTR][P1][False][True]} \\\\ \n\
+  &{m4}&{m4_d[m1_d][SNTR][P1][True][True]}&{m4_d[m2_d][SNTR][P1][True][True]}&{m4_d[m3_d][SNTR][P1][True][True]}&{m4_d[m4_d][SNTR][P1][True][True]}&{m4_d[m1_d][SNTR][P1][False][True]}&{m3_d[m2_d][SNTR][P1][False][True]}&{m4_d[m3_d][SNTR][P1][False][True]}&{m4_d[m4_d][SNTR][P1][False][True]} \\\\ \n\
   \\hline     \n\
-  P1&{m1}&{m1_d[m1_d][SNTR][P1][True][False]}&{m1_d[m2_d][SNTR][P1][True][False]}&{m1_d[m3_d][SNTR][P1][True][False]}&{m1_d[m1_d][SNTR][P1][False][False]}&{m1_d[m2_d][SNTR][P1][False][False]}&{m1_d[m3_d][SNTR][P1][False][False]} \\\\ \n\
-  without&{m2}&{m2_d[m1_d][SNTR][P1][True][False]}&{m2_d[m2_d][SNTR][P1][True][False]}&{m2_d[m3_d][SNTR][P1][True][False]}&{m2_d[m1_d][SNTR][P1][False][False]}&{m2_d[m2_d][SNTR][P1][False][False]}&{m2_d[m3_d][SNTR][P1][False][False]} \\\\ \n\
-  LUBW&{m3}&{m3_d[m1_d][SNTR][P1][True][False]}&{m3_d[m2_d][SNTR][P1][True][False]}&{m3_d[m3_d][SNTR][P1][True][False]}&{m3_d[m1_d][SNTR][P1][False][False]}&{m3_d[m2_d][SNTR][P1][False][False]}&{m3_d[m3_d][SNTR][P1][False][False]} \\\\ \n\
+  PM10&{m1}&{m1_d[m1_d][SNTR][P1][True][False]}&{m1_d[m2_d][SNTR][P1][True][False]}&{m1_d[m3_d][SNTR][P1][True][False]}&{m1_d[m4_d][SNTR][P1][True][False]}&{m1_d[m1_d][SNTR][P1][False][False]}&{m1_d[m2_d][SNTR][P1][False][False]}&{m1_d[m3_d][SNTR][P1][False][False]}&{m1_d[m4_d][SNTR][P1][False][False]} \\\\ \n\
+  without&{m2}&{m2_d[m1_d][SNTR][P1][True][False]}&{m2_d[m2_d][SNTR][P1][True][False]}&{m2_d[m3_d][SNTR][P1][True][False]}&{m2_d[m4_d][SNTR][P1][True][False]}&{m2_d[m1_d][SNTR][P1][False][False]}&{m2_d[m2_d][SNTR][P1][False][False]}&{m2_d[m3_d][SNTR][P1][False][False]}&{m2_d[m4_d][SNTR][P1][False][False]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SNTR][P1][True][False]}&{m3_d[m2_d][SNTR][P1][True][False]}&{m3_d[m3_d][SNTR][P1][True][False]}&{m3_d[m4_d][SNTR][P1][True][False]}&{m3_d[m1_d][SNTR][P1][False][False]}&{m3_d[m2_d][SNTR][P1][False][False]}&{m3_d[m3_d][SNTR][P1][False][False]}&{m3_d[m4_d][SNTR][P1][False][False]} \\\\ \n\
+  &{m4}&{m4_d[m1_d][SNTR][P1][True][False]}&{m4_d[m2_d][SNTR][P1][True][False]}&{m4_d[m3_d][SNTR][P1][True][False]}&{m4_d[m4_d][SNTR][P1][True][False]}&{m4_d[m1_d][SNTR][P1][False][False]}&{m4_d[m2_d][SNTR][P1][False][False]}&{m4_d[m3_d][SNTR][P1][False][False]}&{m4_d[m4_d][SNTR][P1][False][False]} \\\\ \n\
   \\hline     \n\
   \\hline     \n\
 \\textbf{{SAKP}}&&&&&&& \\\\ \n\
-  P1&{m1}&{m1_d[m1_d][SAKP][P1][True][True]}&{m1_d[m2_d][SAKP][P1][True][True]}&{m1_d[m3_d][SAKP][P1][True][True]}&{m1_d[m1_d][SAKP][P1][False][True]}&{m1_d[m2_d][SAKP][P1][False][True]}&{m1_d[m3_d][SAKP][P1][False][True]} \\\\ \n\
-  with&{m2}&{m2_d[m1_d][SAKP][P1][True][True]}&{m2_d[m2_d][SAKP][P1][True][True]}&{m2_d[m3_d][SAKP][P1][True][True]}&{m2_d[m1_d][SAKP][P1][False][True]}&{m2_d[m2_d][SAKP][P1][False][True]}&{m2_d[m3_d][SAKP][P1][False][True]} \\\\ \n\
-  LUBW&{m3}&{m3_d[m1_d][SAKP][P1][True][True]}&{m3_d[m2_d][SAKP][P1][True][True]}&{m3_d[m3_d][SAKP][P1][True][True]}&{m3_d[m1_d][SAKP][P1][False][True]}&{m3_d[m2_d][SAKP][P1][False][True]}&{m3_d[m3_d][SAKP][P1][False][True]} \\\\ \n\
+  PM10&{m1}&{m1_d[m1_d][SAKP][P1][True][True]}&{m1_d[m2_d][SAKP][P1][True][True]}&{m1_d[m3_d][SAKP][P1][True][True]}&{m1_d[m4_d][SAKP][P1][True][True]}&{m1_d[m1_d][SAKP][P1][False][True]}&{m1_d[m2_d][SAKP][P1][False][True]}&{m1_d[m3_d][SAKP][P1][False][True]}&{m1_d[m4_d][SAKP][P1][False][True]} \\\\ \n\
+  with&{m2}&{m2_d[m1_d][SAKP][P1][True][True]}&{m2_d[m2_d][SAKP][P1][True][True]}&{m2_d[m3_d][SAKP][P1][True][True]}&{m2_d[m4_d][SAKP][P1][True][True]}&{m2_d[m1_d][SAKP][P1][False][True]}&{m2_d[m2_d][SAKP][P1][False][True]}&{m2_d[m3_d][SAKP][P1][False][True]}&{m2_d[m4_d][SAKP][P1][False][True]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SAKP][P1][True][True]}&{m3_d[m2_d][SAKP][P1][True][True]}&{m3_d[m3_d][SAKP][P1][True][True]}&{m3_d[m4_d][SAKP][P1][True][True]}&{m3_d[m1_d][SAKP][P1][False][True]}&{m3_d[m2_d][SAKP][P1][False][True]}&{m3_d[m3_d][SAKP][P1][False][True]}&{m3_d[m4_d][SAKP][P1][False][True]} \\\\ \n\
+  &{m4}&{m4_d[m1_d][SAKP][P1][True][True]}&{m4_d[m2_d][SAKP][P1][True][True]}&{m4_d[m3_d][SAKP][P1][True][True]}&{m4_d[m4_d][SAKP][P1][True][True]}&{m4_d[m1_d][SAKP][P1][False][True]}&{m3_d[m2_d][SAKP][P1][False][True]}&{m4_d[m3_d][SAKP][P1][False][True]}&{m4_d[m4_d][SAKP][P1][False][True]} \\\\ \n\
   \\hline     \n\
-  P1&{m1}&{m1_d[m1_d][SAKP][P1][True][False]}&{m1_d[m2_d][SAKP][P1][True][False]}&{m1_d[m3_d][SAKP][P1][True][False]}&{m1_d[m1_d][SAKP][P1][False][False]}&{m1_d[m2_d][SAKP][P1][False][False]}&{m1_d[m3_d][SAKP][P1][False][False]} \\\\ \n\
-  without&{m2}&{m2_d[m1_d][SAKP][P1][True][False]}&{m2_d[m2_d][SAKP][P1][True][False]}&{m2_d[m3_d][SAKP][P1][True][False]}&{m2_d[m1_d][SAKP][P1][False][False]}&{m2_d[m2_d][SAKP][P1][False][False]}&{m2_d[m3_d][SAKP][P1][False][False]} \\\\ \n\
-  LUBW&{m3}&{m3_d[m1_d][SAKP][P1][True][False]}&{m3_d[m2_d][SAKP][P1][True][False]}&{m3_d[m3_d][SAKP][P1][True][False]}&{m3_d[m1_d][SAKP][P1][False][False]}&{m3_d[m2_d][SAKP][P1][False][False]}&{m3_d[m3_d][SAKP][P1][False][False]} \\\\ \n\
+  PM10&{m1}&{m1_d[m1_d][SAKP][P1][True][False]}&{m1_d[m2_d][SAKP][P1][True][False]}&{m1_d[m3_d][SAKP][P1][True][False]}&{m1_d[m4_d][SAKP][P1][True][False]}&{m1_d[m1_d][SAKP][P1][False][False]}&{m1_d[m2_d][SAKP][P1][False][False]}&{m1_d[m3_d][SAKP][P1][False][False]}&{m1_d[m4_d][SAKP][P1][False][False]} \\\\ \n\
+  without&{m2}&{m2_d[m1_d][SAKP][P1][True][False]}&{m2_d[m2_d][SAKP][P1][True][False]}&{m2_d[m3_d][SAKP][P1][True][False]}&{m2_d[m4_d][SAKP][P1][True][False]}&{m2_d[m1_d][SAKP][P1][False][False]}&{m2_d[m2_d][SAKP][P1][False][False]}&{m2_d[m3_d][SAKP][P1][False][False]}&{m2_d[m4_d][SAKP][P1][False][False]} \\\\ \n\
+  LUBW&{m3}&{m3_d[m1_d][SAKP][P1][True][False]}&{m3_d[m2_d][SAKP][P1][True][False]}&{m3_d[m3_d][SAKP][P1][True][False]}&{m3_d[m4_d][SAKP][P1][True][False]}&{m3_d[m1_d][SAKP][P1][False][False]}&{m3_d[m2_d][SAKP][P1][False][False]}&{m3_d[m3_d][SAKP][P1][False][False]}&{m3_d[m4_d][SAKP][P1][False][False]} \\\\ \n\
+  &{m4}&{m4_d[m1_d][SAKP][P1][True][False]}&{m4_d[m2_d][SAKP][P1][True][False]}&{m4_d[m3_d][SAKP][P1][True][False]}&{m4_d[m4_d][SAKP][P1][True][False]}&{m4_d[m1_d][SAKP][P1][False][False]}&{m4_d[m2_d][SAKP][P1][False][False]}&{m4_d[m3_d][SAKP][P1][False][False]}&{m4_d[m4_d][SAKP][P1][False][False]} \\\\ \n\
+  \\hline     \n\
   \\hline     \n\
 \end{{tabular}} \n\
-\\captionof{{table}}{{{m1} : \\texttt{{{m1_n}}} \\\\ {m2} : \\texttt{{{m2_n}}} \\\\ {m3} : \\texttt{{{m3_n}}} }}"
+\\captionof{{table}}{{{m1} : \\texttt{{{m1_n}}} \\\\ {m2} : \\texttt{{{m2_n}}} \\\\ {m3} : \\texttt{{{m3_n}}}\\\\ {m4} : \\texttt{{{m4_n}}} }}"
     
     stations = ['SBC', 'SAKP', 'SNTR']
     values = ['P1']
@@ -438,13 +474,15 @@ def predictive_check(sec, dest):
     i=1
     mdn_i=1
     bnn_i=1
+    
     for rule in rules:
         for stat in stations:
             for val in values:
                 for lu_bw1 in lu_bws:
                     for lu_bw2 in lu_bws:
+                        
                         res1 = sec.query_l(stat, lu_bw1, val, rule)
-                        res2 = sec.query_l(stat, lu_bw2, val, rule)
+                        res2 = sec.query_l(stat, lu_bw2, val, rule)                        
                         for mod, value in res1.items():
                             if mod not in mod_names.keys():
                                 if "mdn" in mod:
@@ -455,13 +493,24 @@ def predictive_check(sec, dest):
                                     bnn_i = bnn_i + 1
                                 else:
                                     mod_names["m"+str(i)] = "Emp."
-                                mod_names[mod] = "m"+str(i)                            
+                                    
+                                mod_names[mod] = "m"+str(i)                         
                                 i = i + 1 
                                 mod_name = mod_names[mod]
-                                mod_names[mod_name+"_n"] = mod.replace("_","\\_")                        
+                                mod_names[mod_name+"_n"] = mod.replace("_","\\_")
+                                
                         for mod1, values1 in res1.items():
                             for mod2, values2 in res2.items():
                                 test = dm_test(values1, values2)
+                                if round(test[1],3) < 0.05:
+                                    test = (round(test[0],2), "$^*$")
+                                else:
+                                    # test = (round(test[0],2), round(test[1],2))
+                                    test = (round(test[0],2), "")
+                                    
+                                if lu_bw1 != lu_bw2:
+                                    test = (float("nan"), float("nan"))
+
                                 mod1_name = mod_names[mod1]
                                 mod2_name = mod_names[mod2]
                                 formater.setdefault(
@@ -470,14 +519,18 @@ def predictive_check(sec, dest):
                                             stat, {}).setdefault(
                                                 val, {}).setdefault(
                                                     str(lu_bw1), {}).setdefault(
-                                                        str(lu_bw2),str(round(test[0],3))+","+str(round(test[1],3)))
+                                                        str(lu_bw2),str(test[0])+""+str(test[1]))
 
     # [m1_d][m1_d][SBC][P1][True]
     # res = sec.query_l("SBC",True,"P1","CRPS")
     # print(mod_names)
     # print("---------")
     # print(formater)
-    print(latex_table.format_map({**formater, **mod_names}))
+    # print(latex_table.format_map({**formater, **mod_names}))
+    
+    with open(os.path.join(dest, "latex_pred_table.tex"),"w") as tex_file:
+        tex_file.write(latex_table.format_map({**formater, **mod_names}).replace("nannan","\\texttt{\\--}").replace("nan","\\texttt{\\--}"))
+    
     
     
 
@@ -490,8 +543,7 @@ def predictive_check(sec, dest):
 
 def main():
 
-    parser = argparse.ArgumentParser(description='Generate result plots')
-    
+    parser = argparse.ArgumentParser(description='Generate result plots')    
 
     parser.add_argument('folders', metavar='FOLDs',
                         help='The main folders to process', nargs='+')
