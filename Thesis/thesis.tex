@@ -128,6 +128,16 @@
 
 \renewcommand*{\refeq}[1]{\hyperref[#1]{Equation \ref*{#1}}}
 
+\renewcommand\theadalign{bc}
+\renewcommand\theadfont{\bfseries}
+\renewcommand\theadgape{\Gape[4pt]}
+\renewcommand\cellgape{\Gape[4pt]}
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+
 
 \newcounter{mypagecount}% create a new counter
 \setcounter{mypagecount}{0}% set it to something just in case
@@ -195,47 +205,46 @@
 
 
 %     \begin{tabular}{p{5.5cm}l}
-        %         First Reviewer: &Prof. Dr. Michael Beigl\\
-        %         Supervisors: &Dr. Johannes Riesterer\(^1\) \\
-        %                                   &Dr. Sebastian Lerch\(^{2,3}\)
-                                              %       \end{tabular}
+%       First Reviewer: &Prof. Dr. Michael Beigl\\
+%       Supervisors: &Dr. Johannes Riesterer\(^1\) \\
+%       &Dr. Sebastian Lerch\(^{2,3}\)
+%     \end{tabular}
 
-                                              %                                               \vspace*{8mm}
-
-
-                                              %                                               \(^1\)Chair for Pervasive Computing Systems / TECO, Institute of Telematics, Karlsruhe Institute of Technology\\
-        %         \(^2\)Institute for Stochastics, Karlsruhe Institute of Technology\\
-        %         \(^3\)Heidelberg Institute for Theoretical Studies
+%     \vspace*{8mm}
 
 
-        %         \end{center}
+%     \(^1\)Chair for Pervasive Computing Systems / TECO, Institute of Telematics, Karlsruhe Institute of Technology\\
+%     \(^2\)Institute for Stochastics, Karlsruhe Institute of Technology\\
+%     \(^3\)Heidelberg Institute for Theoretical Studies
 
-        %         \end{titlepage}
+
+%   \end{center}
+
+% \end{titlepage}
 \includepdf[pages=-]{Deckblatt_Arnaudov.pdf}
 
 
 
 \selectlanguage{english}
 
-        %         \centerline{\bf Statement of Authorship}
-        %         \vfill
+% \centerline{\bf Statement of Authorship}
+% \vfill
 
-        %         I hereby declare that I am the sole author of this bachelor thesis and that I have not used any sources other than those listed in the bibliography and identified as references. I further declare that I have not submitted this thesis at any other institution in order to obtain a degree.
+% I hereby declare that I am the sole author of this bachelor thesis and that I have not used any sources other than those listed in the bibliography and identified as references. I further declare that I have not submitted this thesis at any other institution in order to obtain a degree.
 
-        %         \vfill
-        %         \noindent
+% \vfill
+% \noindent
+
+% \selectlanguage{ngerman}
+% \vfill
+% Ich versichere wahrheitsgemäß, die Arbeit selbstständig angefertigt, keine anderen als die angegebenen Quellen und Hilfsmittel benutzt zu haben, die wörtlich oder inhaltlich übernommenen Stellen als solche kenntlich gemacht zu haben und die Satzung der Universität Karlsruhe (TH) zur Sicherung guter wissenschaftlicher Praxis beachtet zu haben.
+% \vfill
+% \noindent
+% Karlsruhe, 31.09.2018
+% \hrule
 
 
-        %         \selectlanguage{ngerman}
-        %         \vfill
-        %         Ich versichere wahrheitsgemäß, die Arbeit selbstständig angefertigt, keine anderen als die angegebenen Quellen und Hilfsmittel benutzt zu haben, die wörtlich oder inhaltlich übernommenen Stellen als solche kenntlich gemacht zu haben und die Satzung der Universität Karlsruhe (TH) zur Sicherung guter wissenschaftlicher Praxis beachtet zu haben.
-        %         \vfill
-        %         \noindent
-        %         Karlsruhe, 31.09.2018
-        %         \hrule
-
-
-        %         \vspace*{5cm}
+% \vspace*{5cm}
 
 \clearpage
 
@@ -258,7 +267,7 @@
 \pagestyle{plain}
 \pagenumbering{roman}
 
-        %         markiere sections im Seitenkopf links und subsections rechts
+% markiere sections im Seitenkopf links und subsections rechts
 \renewcommand\sectionmark[1]{\markboth{\thesection\quad\MakeUppercase{#1}}{\thesection\quad\MakeUppercase{#1}}}
 \renewcommand\subsectionmark[1]{\markright{\thesubsection\quad\MakeUppercase{#1}}}
 
@@ -270,7 +279,7 @@
 
 \pagestyle{normal}
 \pagenumbering{arabic}
-        %         here comes the text!
+% here comes the text!
 \section{Introduction}\label{sec:intoduction}
 \subsection{Motivation}\label{sec:motivation}
 There are a lot of cases where a network of sensors is used to measure a certain quantity over time in different places. Some of the measurements can have better \emph{quality} than other as not all sensors are manufactured equally. With quality we mean the reliability that the measured value indeed reflects the reality. The difference in the quality of the sensors makes the measured data \emph{heterogeneous} and brings certain difficulties in the modeling process. For a machine learning application only some of the data maybe relevant for building a reliable predictive model. One of our goals is to asses which part of the input is useful data and to what extend. From another point of view we can also set another goal. We consider the case where only a few of the sensors are known to produce reliable measurements. In this sense we try to expand a network of \emph{homogeneous} and high reliability sensors with sensors of unknown quality and thus making the network heterogeneous. In this case we increase the spatial resolution of the network and thus we bring the possibility to make more accurate predictions on the basis of data coming from the whole network. On the other hand, heterogeneity in quality of the different sources in the network introduces uncertainty in the measurements. It thus becomes necessary to build appropriate model that predicts the measured values from given sensor but also respects the inherent uncertainty in the data and also models it properly.
@@ -327,10 +336,10 @@ We look at the two properties in details in \refsec{sec:prob-modeling}.
 
 The statistical framework for inferring probability distributions is \emph{Bayesian Inference}. A good theoretical and practical overview of Bayesian inference can be found in \cite{tipping2004}. In Bayesian inference Bayes theorem (see \cite{bayes63}) plays a central role in determining the probability for a hypothesis given some evidence. Bayesian inference takes into consideration our prior beliefs about the nature of some data and then combines those beliefs with the actual observed data (denoted as \emph{evidence}) and generated \emph{posterior} probability about the values of the output. We discuss Bayesian reasoning in \refsec{sec:bayesian-inference}.
 \subsection{Data}\label{sec:data}
-As previously stated, the used data comes from two different types from sources.
+The air pollution data that we use was recorded by a network of sensors over one year period for the year of 2017. As previously stated, the data comes from two different types from sources.
 \begin{itemize}
 \item \href{https://www.lubw.baden-wuerttemberg.de/startseite}{LU-BW} (Landesanstalt für Umwelt, Messungen und Naturschutz Baden-Württemberg) -- Organisation whose activities include air measurements and high quality sensors deployment. LUBW has gathered data from three high quality sensors in Stuttgart for the year 2017. The data is to be used for research proposes only and is not publicly available.
-\item \href{https://luftdaten.info/}{luftdaten.info} -- a public network of sensors where everyone can provide data from sensor from certain type. There we can find air pollution data from \emph{sds011}-sensors (see \cite{sds011}  for specifications). Those are cheap DIY sensors and give no guarantees for the quality of the measured data. Measurements of wide networks of such sensors are publicly available under \cite{luftdaten}.
+\item \href{https://luftdaten.info/}{luftdaten.info} -- a public network of sensors where everyone can provide data from sensor from certain type. There we can find air pollution data from \emph{sds011}-sensors (see~\cite{sds011}  for specifications). Those are cheap DIY sensors and give no guarantees for the quality of the measured data. Measurements of wide networks of such sensors are publicly available under \cite{luftdaten}.
 \end{itemize}
 All of the sensors measure two types of air pollution data. The different naming of those values relates to the size of the measured particles. The two data types are:
 \begin{itemize}
@@ -353,18 +362,20 @@ BNNs are relatively new type of model proposed in the 1990s and studied in depth
 
 With MDNs we hope to construct a model similar to an infinite mixture of Gaussian experts, proposed in~\cite{rasmussen2002}. The mixture of Gaussian experts is a combination of several Gaussian process regression models and a gating network. Given an example data point the gating network assigns certain probabilities for each of the Gaussian process models. On their turn they generate several probability distributions which are weighted with the probabilities from the gating networks. The end result again is a probability distributions given by the sum of the individual ones. MDNs model this by creating a single network that not only outputs weights for the individual mixture components but also their parameters. MDNs are very similar to standard Neural Networks with the only difference being that final layer is mapped to a mixture of distributions. In our case the mixture model is a weighted sum of Gaussian distributions. MDNs produce especially good results when the input data is such that a single input can correspond to multiple output values. In those cases, the predicted distribution models the corresponding output values by giving some probability on each of them. We investigate what results one can get when this approach is used for simpler data. As MDNs are almost standard neural networks, they are trained with the standard \emph{backpropagation} method, described for example in~\cite{bertels2001}.
 
-In order to have a baseline with which we can compare the built models we also construct a simple empirical model. The empirical modeling is a technique for making predictions about the values of some process based purely on empirical observations of past values of the process. In this cases there is no consideration of the input of the data but rather a simple looking at the past values of the output value. The past values of the predicted measurement are treated as samples from a random variable. We describe how we infer a probability distribution for a prediction in \refsec{sec:impl-model}. Similar empirical models are commonly used for simple predictions of meteorological data. Examples of this approach can be found in~\cite{krueger2011} and~\cite{eden2015}.
+In order to have a baseline with which we can compare the built models we also construct a simple empirical model. The empirical modeling is a technique for making predictions about the values of some process based purely on empirical observations of past values of the process. In this cases there is no consideration of the input of the data but rather a simple looking at the past values of the output value. The past values of the predicted measurement are treated as samples from a random variable. We describe how we infer a probability distribution for a prediction in \refsec{sec:emp-impl}. Similar empirical models are commonly used for simple predictions of meteorological data. Examples of this approach can be found in~\cite{krueger2011} and~\cite{eden2015}.
+\clearpage
 \section{Related work}\label{sec:related-work}
 Heterogeneous sensor networks are present in a lot of cases.~\cite{wu2007} examines the deployment and the control of the topology of heterogeneous wireless sensor networks.~\cite{katiyar2010} surveys a variety of clustering algorithms aimed at increasing the network's scalability by recognizing the sensors with similar energy requirements.~\cite{uplap2014} investigates the kinds of security threats that arise with the use of heterogeneous sensor networks. In the context of machine learning,~\cite{liu2017} tries to use deep learning techniques and adapt them to the settings of heterogeneous sensor data.
 
-\cite{gneiting2014} has brought a lot of attention to probabilistic forecasting. When it comes to history, \cite{stigler1975} describes the transition from point estimates to distribution prediction. Nowadays the technique is widely used in variety of cases as it is further developed (\cite{ehm2012}). Common areas where probabilistic forecasts are employed are whether and climate prediction. The approach is outlined in \cite{collins2007}. There are also other diverse applications. \cite{krzysztofowic2001} looks how probabilistic models can be used for flood risk assessment, \cite{timmermann2001} describes probabilistic models within the context of economic and financial risk management, \cite{pinson2013} investigates the potential to make predictions about the availability of renewable energy resources. Distribution forecasting can be even used to make statements about the outcome of elections (\cite{montgomery2012}).
+\cite{gneiting2014} has brought a lot of attention to probabilistic forecasting. When it comes to history, \cite{stigler1975} describes the transition from point estimates to distribution prediction. Nowadays the technique is widely used in variety of cases as it is further developed (\cite{ehm2012}). Common areas where probabilistic forecasts are employed are whether and climate prediction. The approach is outlined in \cite{collins2007}. There are also other diverse applications.
+~\cite{krzysztofowic2001} looks how probabilistic models can be used for flood risk assessment, \cite{timmermann2001} describes probabilistic models within the context of economic and financial risk management, \cite{pinson2013} investigates the potential to make predictions about the availability of renewable energy resources. Distribution forecasting can be even used to make statements about the outcome of elections (\cite{montgomery2012}).
 
 The other focus of our work are BNNs. As models that tie Bayesian reasoning and neural networks together, they have also gained popularity. A good outline of neural networks and deep leaning can be found in \cite{schmidhuber2015}. \cite{vehtari2001} first gives a brief overview of the Bayesian approach to neural networks and then surveys different use cases assessing the performance. Fields like astrophysics \cite{bai2016} and particle physics \cite{bhat2015} also profit from the predictive capabilities of BNNs. As medicine is one of the fields that gets much of the attention of the machine learning research, \cite{kwon2017} applies BNNs in order to quantify the uncertainties and apply them in ischemic stroke lesion segmentation. BNNs are also continuing to be developed. \cite{fortunato2017} explores the Bayesian approach in Recurrent Neutral Networks developing \emph{Bayesian Recurrent Neural Networks}.
 
 MDNs have also found popularity as an another alternative to combine neural networks with distribution forecast models. \cite{schittenkopf1998} uses MDNs as a general framework for identifying stochastic processes and apply them in modeling stock exchange index data. \cite{zen2014} brings MDNs to use in order to improve deep neural networks for acoustic modeling. MDNs have their own variant of recurrent models as described in \cite{miazhynskaia2003}. We like to note that MDNs have similar structure to other models such as \emph{Adaptive mixture of local experts} -- proposed by \cite{jacobs1991}) -- and \emph{Infinite Mixtures of Gaussian Process Experts} -- proposed by \cite{rasmussen2002}. MDNs, however, model the data differently. We explain the approach in \refsec{sec:mdn}.
 
 The use of proper scoring rules is standard in probability forecast setting. \cite{jordan2017} discusses the \textbf{scoringRules} package for \emph{R}\footnote{programming language} and its usage details by presenting case studies where proper scoring rules find application. \cite{clements2004} uses probability integral transform in order to evaluate the UK Monetary Policy Committee's inflation density forecasts. We describe probability integral transform in \refsec{sec:disp-sharp}.
-        %         \cite{friederichs2012} deals specifically with verifying predicted probability distributions under the use of proper scoring rules.
+% \cite{friederichs2012} deals specifically with verifying predicted probability distributions under the use of proper scoring rules.
 \section{Probabilistic Modeling}\label{sec:prob-modeling}
 \subsection{Bayesian regression modeling}\label{sec:bayesian-inference}
 In a probabilistic modeling setting we aim to estimate the parameters of a given model by first defining some \emph{prior} on them. The prior distribution describes how likely values of the parameter are without considering any observed data. Then a \emph{conditional likelihood} for the output based on the parameters and the input data is defined. This probability distribution describes the probability of observing certain data given the parameters of the model. The assumption here is that that the model has generated the data. The two distributions are then combined in order to produce the final \emph{posterior} probability distribution on the parameters of the model. A good overview of Bayesian models can be found in \cite{mitchell97}. We can summarize:
@@ -467,7 +478,7 @@ This distribution describes the most likely parameters given the example data. D
 \end{equation}
 In the next section we describe a technique that aims to estimate the posterior distribution without actually having to approximate the above integral. Once we have the posterior distribution (or a sufficient estimate of it) we could use it to produce the predicted distribution for unseen data samples. This is done through \emph{inference} as described in \refsec{sec:bayesian-inference}.
 \subsubsection{Variational inference and Kullback-Leibler divergence}\label{sec:var-inference}
-As previously stated, it is impractical to compute the full posterior. In fact the true posterior is intractable and cannot be evaluated analytically. We therefore rely on an estimation technique that transforms the Bayesian inference into a optimization problem -- \emph{variational inference} (first proposed in \cite{jordan1999}, see an overview in \cite{blei2016}, a detailed look in \cite{fox2012}). We define a \emph{variational} distribution \(q_{\theta}(\omega)\), parameterized by \(\theta \). We assume that this distribution is easy to evaluate. Furthermore we would really like this distribution to be able to approximate other distributions based on the choice of parameters \(\theta\). If those assumptions are met, we then try to choose such parameters for \(q_{\theta}(\omega)\) that it maximally resembles the posterior \(p(\omega|Y,X)\). For that we also need some measure between two distributions that gives us how ``similar'' they are. This is slightly analogous to the choice of loss function that is to be minimized. In this case we use the \emph{Kullback–Leibler} (KL) divergence proposed by \cite{kullback1951}. KL is defined as
+As previously stated, it is impractical to compute the full posterior. In fact the true posterior is intractable and cannot be evaluated analytically. We therefore rely on an estimation technique that transforms the Bayesian inference into a optimization problem -- \emph{variational inference} (first proposed in \cite{jordan1999}, see an overview in \cite{blei2016}, a detailed look in~\cite{fox2012}). We define a \emph{variational} distribution \(q_{\theta}(\omega)\), parameterized by \(\theta \). We assume that this distribution is easy to evaluate. Furthermore we would really like this distribution to be able to approximate other distributions based on the choice of parameters \(\theta\). If those assumptions are met, we then try to choose such parameters for \(q_{\theta}(\omega)\) that it maximally resembles the posterior \(p(\omega|Y,X)\). For that we also need some measure between two distributions that gives us how ``similar'' they are. This is slightly analogous to the choice of loss function that is to be minimized. In this case we use the \emph{Kullback–Leibler} (KL) divergence proposed by \cite{kullback1951}. KL is defined as
 \begin{equation}
   KL(q_{\theta}(\omega), p(\omega | X, Y)) = \int q_{\theta}(\omega) \log \frac{q_{\theta}(\omega)}{p(\omega | X, Y)}d\omega 
 \end{equation}
@@ -575,6 +586,7 @@ where \(E^n\) is the contribution of the \(n^{th}\) data point and
   E^n = -\log(\sum_{m=1}^M \alpha_m(x_n)\mathcal{N}(y_n; \mu_m(x_n), \sigma_m^2(x_n)))
 \end{equation}
 This function \(E\) can be minimized with standard backpropagation technique (\cite{bertels2001}) as its derivatives are fully tractable. Exact expressions for the derivatives of \(E\) are derived and given in \cite{bishop1994} but we don't consider them here. Details on the implementation of the MDNs are given in \refsec{sec:impl-model}
+\clearpage
 \section{Model evaluation methods}\label{sec:criticism}
 \noindent\emph{In this section we give formal explanation to our approach in evaluating the models we build.}
 \subsection{Probabilistic Forecast}\label{sec:prob-forecast}
@@ -603,7 +615,7 @@ As explained in~\cite{gneiting2014} the sharpness of a given forecast describes 
 In next section we'll explain a certain class of scoring rules that can evaluate a predicted forecast against the observed value with respect to the dispersion and sharpness properties i.e.\ they assign ``better'' score to forecast with ``better'' dispersion and sharpness.
 \subsection{Proper Scoring rules}\label{sec:proper-scoring-rules}
 Proper scoring rules allow us to measure the predictive capability of a given probabilistic forecast. Those rules can consider the sharpness as well as the concentration of the distribution. The generated scores are measurement of differences between a desired and generated distributions and thus we strive to minimize those scores. Proper scoring rules are explained in details in~\cite{gneiting2007}.
-                                         %                                          We'll briefly look at the essence of the proper scoring rules.
+% We'll briefly look at the essence of the proper scoring rules.
 A scoring rule assigns a numerical score \(S(F, y)\) to each pair \((F, y)\) of probabilistic forecast F in a form of probability distribution and an observed value \(y \in \mathbb{R}\). In general a scoring rule is some function \(S:\mathcal{F} \times \mathbb{R} \rightarrow \mathbb{R}\) where \(\mathcal{F}\) is some class of probability distributions. A scoring rules generally evaluates a predicted distribution against an realized observation. Let the desired distribution be \(G\in\mathcal{F}\). Then we write
 \begin{equation}
   S(F,G) =\mathbb{E}_G[S(F,Y)]
@@ -614,7 +626,7 @@ The rule \(S: \mathcal{F} \times \mathbb{R} \rightarrow \mathbb{R}\) where \(\ma
   S(G,G) \leq S(F,G),\quad \forall G,F \in \mathcal{F}
 \end{equation}
 This means that a proper scoring rules yields a minimal score for the true distribution of the observation.
-                                         %                                          when the forecast and the true distribution are the same.
+% when the forecast and the true distribution are the same.
 We consider three proper scoring rules. The following section discuss those.
 \subsubsection{Logarithmic score (LS)}\label{sec:ls}
 The most straight forward scoring rule is probably the \emph{logarithmic score}. This scoring rule is well established (\cite{good1952}). For a given density function \(f^p(x)\) that belongs to a predicted forecast, the LS is given by
@@ -689,7 +701,7 @@ All of the examined model in the thesis can generate samples from their predicte
     \end{cases}
 \end{align}
 With this function we can also calculate the CRPS in straightforward manner following the definition in \refeq{eq:crps}.
-          %           With that we've covered all cases in the evaluation of our models.
+% With that we've covered all cases in the evaluation of our models.
 \subsection{Feature Importance}\label{sec:feature-importance}
 In order to asses the relative importance of the features used by the build models we use a method called \emph{permutation importance}. It is first described in~\cite{breiman2001} and it was applied to random forests. The techniques is also successfully applied in assessing the feature importance of ensemble forecasting\footnote{Ensemble forecasting is a method used in numerical weather prediction. Instead of making a single forecast of the most likely weather, a set (or an ensemble) of forecasts is produced~\cite{ensemble}.} methods for forecasting (\cite{lerch2018}). We closely follow the approach of \cite{lerch2018} by randomly shuffling each feature in the test and training sets and then look at the mean value of a given scoring rule. For each feature we examine the difference in the mean value of the scoring rules between the permuted and regular datasets.
 
@@ -758,6 +770,7 @@ where
 This approach is known as the Diebold–Mariano test and it is first introduced in~\cite{diebold95}. The method is a statistical test of equal forecast performance. The null hypothesis is that the two forecasting methods predict the data equally bad\textbackslash@good. If this is rejected, we can say which of the two is better than the other. Under the null hypothesis, the quantity \(t_n\) follows the standard normal distribution -- \(\mathcal{N}(0,1)\). This makes it particularly easy to calculate the \(p\)-value of the test. Given the \(p\)-value is small enough, the method \(F\) is preferred if \(t_n \) is negative, whereas \(G\) is preferred if \(t_n\) is positive (see~\cite{gneiting2014}).
 
 \noindent Detailed information on the Diebold–Mariano test can be found in~\cite{diebold2015}.
+\clearpage
 \section{Results}\label{sec:res}
 \subsection{Methodology and data}\label{sec:preprop-meth}
 \noindent
@@ -766,20 +779,23 @@ This approach is known as the Diebold–Mariano test and it is first introduced 
 As described in \refsec{sec:data} the data comes from different places and further more is in different formats. Therefore we are responsible for generating the final datasets on which we train the models. This allows us to be flexible in the used data and therefore be able to investigate how the different resolution of the data affects the performance of the models. We describe the generation process in details in \refsec{sec:prep-data}. We have generated three different datasets:
 \begin{itemize}
 \item Daily average -- For the whole considered period -- the year of 2017 -- we take the average pollution value (PM10 and PM2.5) of each sensor for each day. We treat the vector of those values as a single entry in the dataset. Naturally this means that we have 365 entries in this dataset.
-\item 12 hour average -- Analogous to the daily average but we take the average values over twelve hour periods over the entire year. 730 entries in the entire dataset.
+\item Twelve hourly average -- Analogous to the daily average but we take the average values over twelve hour periods over the entire year. 730 entries in the entire dataset.
 \item Hourly average -- We consider the average pollution value of each sensor over each hour in the year. The count of entries in this dataset is 8760.
 \end{itemize}
-We look at the performance of the models over each set in the respective sections. In \reffig{fig:sensor-plots} we show plots of the values coming from a single sensor. On the size of the value vectors for entries in each datasets -- after the data cleaning (described in sec) we are left with 16 sensors from luftdaten.info and we also have three LUBW sensors. This adds up to 19 sensors over all. For each of those we have PM10 and PM2.5 values. This means that for each day, 12 hours or one hour we have 38 values. We next describe how we choose subset of those to train models predicting a given another one of them.
+We look at the performance of the models over each set in the respective sections. In \reffig{fig:sensor-plots} we show plots of the values coming from a single sensor. On the size of the value vectors for entries in each datasets -- after the data cleaning (described in sec) we are left with 16 sensors from luftdaten.info and we also have three LUBW sensors. This adds up to 19 sensors over all. For each of those we have PM10 and PM2.5 values. This means that for each day, twelve hours or one hour we have 38 values. We next describe how we choose subset of those to train models predicting a given another one of them.
 
 As said, we want to investigate how different data affects the performance of the models. For that, we consider several types of orthogonal criteria.
 \begin{itemize}
 \item \emph{Predicted LUBW sensor} -- As mentioned, there are altogether three LUBW sensors\footnote{We use sensor and station interchangeably}. The names of those are \emph{SBC}, \emph{SNTR} and \emph{SAKP}. We want to see the predictive performance of the models based on which of these stations we are trying to predict. Plots of the data coming from these sensors can be seen in \reffig{fig:lubw-plots}.
-\item \emph{Pollution value type} -- The air pollution values that all of the sensors measure are PM2.5 and PM10. See \refsec{sec:data} for more information on the meaning of these values. In our implementation and considerations we call those P1 and P2 respectively (see impl). While preprocessing the data, we have found out that P1 and P2 are highly correlated. On average their correlation is about \(0.9 \). This means that they effectively measure the same thing and will only make the feature space overly complicated if both are considered as predictors. For this reason we either train on P1 or P2 values while predicting P1 or P2 respectively.
+\item \emph{Pollution value type} -- The air pollution values that all of the sensors measure are PM2.5 and PM10. See \refsec{sec:data} for more information on the meaning of these values. In our implementation and considerations we call those P1 and P2 respectively (see impl). While preprocessing the data, we have found out that P1 and P2 are highly correlated. On average their correlation is about \(0.9\). This means that they effectively measure the same thing and will only make the feature space overly complicated if both are considered as predictors. For this reason we either train on P1 or P2 values while predicting P1 or P2 respectively.
 \item \emph{Using the rest of the LUBW senors as predictor} -- We want to see the difference in predictive performance of the models based on including the rest of the LUBW stations as predictors. That it, how much better or worse become the models if we use values of the two other LUBW stations when we predict the values of the third one.
 \end{itemize}
+
 The final distinction about the models that we make is based on hyper-parameters of each of them. For the MDNs we can choose mixture components count and the definitions of the hidden layers. For the BNNs those hyper-parameters are again the definitions of the hidden layers as well as the drawn samples from the model while calculation the stochastic gradient descent. We consider two MDN-models -- one with one hidden layer with \(512\) neurons and three mixture components and one with one hidden layer but with \(1024\) neurons in it and again three mixture components. Both of the models were trained for maximum of six million and three thousand iterations so we give those models the names \texttt{mdn\_l[512]\_i6300000\_mc3}\footnote{The \texttt{l} signifies the layers, the \texttt{i} the iterations and \texttt{mc} the mixture components} and \texttt{mdn\_l[1024]\_i6300000\_mc3} respectively. When it comes to the BNNs, we only trained one model with one hidden layer and \(512\) neurons in it, where the drawn samples for the gradient calculation were \(800\). The BNNs were trained for maximum of \(3200\) iterations. The id of the BNNs is therefore \texttt{bnn\_l[512]\_i3200\_s800}.
 
-Each of these distinctions in the construction of the models can be made independently of the other ones. We consider all possible combinations and we compare the results in \refsec{sec:eval-model}.
+Each of these distinctions in the construction of the models can be made independently of the other ones. We consider all possible combinations and we compare the results in \refsec{sec:eval-model}. By the training of the models, we used 75\% of the available data for the and the rest was used for the evaluation. All of the considered results are over the test set. To note is that the test-train split is not random. With the built models we want to predict future values of the sensors. Therefore we always split the data while preserving the order of the values -- from the start of the year till the end. In this sense, we always take the ``first'' 75\% of the values in the corresponding dataset and we use them as train-set and we try to predict the values from the ``future'' of the year.
+
+We like to note that the training of the BNN models took significantly longer that than the training of the MDNs. All of the models were trained on a cluster of computers and overall 140 CPUs were used. The training of all of the MDNs took no longer than four days while the average paste of the BNNs was one trained model per day. 
 \begin{figure}[H]
   \centering
   \begin{subfigure}[t]{0.32\textwidth}
@@ -811,7 +827,7 @@ Each of these distinctions in the construction of the models can be made indepen
     \includegraphics[width=\textwidth,height=6cm]{figures/1H_140_rolling_plot_}%
     \subcaption{Senor-ID: 140, hourly average, moving average}
   \end{subfigure}      
-  \caption[Sensor Data Plots]{Different views of the data from a single sensor. The P1 value is displayed in red and P2 in blue. The plots on the top row show the actual values over the entire year depending on the averaging period -- daily averaged in (a), 12 hour average in (b) and hour average in (c). (d), (e) and (f) show a moving average of 100 values of the respective plot above.}\label{fig:sensor-plots}
+  \caption[Sensor Data Plots]{Different views of the data from a single sensor. The P1 value is displayed in red and P2 in blue. The plots on the top row show the actual values over the entire year depending on the averaging period -- daily averaged in (a), twelve hour average in (b) and hour average in (c). (d), (e) and (f) show a moving average of 100 values of the respective plot above.}\label{fig:sensor-plots}
 \end{figure}
 
 \begin{figure}[H]
@@ -847,6 +863,7 @@ Each of these distinctions in the construction of the models can be made indepen
   \end{subfigure}      
   \caption[LUBW Data Plots]{The plots here show data from the tree LUBW sensors -- SAKP, SBC and SNTR respectively -- but only for the daily averaging period. The top row again shows the values for each day while the bottom is a moving average of 100 values. For explanation on the values of SAKP, see the note at the end of the chapter.}\label{fig:lubw-plots}
 \end{figure}
+
 When it comes to evaluation of the models, we evaluate each one differently generated model with the three proper scoring rules described in \refsec{sec:proper-scoring-rules}. We apply the feature importance technique from \refsec{sec:feature-importance} only with respect to the CRPS as in~\cite{lerch2018}. We look at the rank histograms of only some of the models. For details on rank histograms see \refsec{sec:rank-hist}.
 
 \emph{Note:} During the data preprocessing process we have found out that one of the LUBW sensors -- SAKP -- has data only for the last three months of the year. We have tried to interpolate the data for the rest of the year. This, however, means that the data from the sensors is almost unusable. We have decided to continue considering the sensor as we would if this was not the fact. In the evaluation of the modes we hope to see results consistent with the made observation about the sensor. Namely:
@@ -856,33 +873,151 @@ When it comes to evaluation of the models, we evaluate each one differently gene
 \end{itemize}
 We reference back this considerations while discussing the observed results.
 \subsection{Evaluation of the models}\label{sec:eval-model}
-As described in the previous section, we consider three different datasets based on the averaging period of the values. We look at the results on each of them in separate sections
-\subsubsection{One day period}
+As described in the previous section, we consider three different datasets based on the averaging period of the values. We look at the results on each of them in separate sections.
+\subsubsection{One day period}\label{sec:res-1d}
+\begin{center}
+  \begin{figure}[htbp] \centering \includegraphics[height=1\textwidth,
+    width=1\textwidth]{figures/figs_1d/results_plot_CRPS}
+    \caption[CRPS results (daily average)]{CRPS values of the models
+      (lower is better).}\label{fig:crps-1d}
+  \end{figure}
+\end{center}
+\vspace{-1.3cm}
 
+\reffig{fig:crps-1d} illustrates the results of the models with respect to the CRPS-rule. The plots in the first column show the results models predicting the PM10 value of the corresponding LUBW-sensor whereas those in the second column predict the PM2.5 value. The distinction between the predicted LUBW-sensors is made rowwise.
 
+From the very first plot (predicting PM10 of station SBC) we see how the use of data from the LUBW-senors has effect on the performance of the models. Under the use of the LUBW-sensors the examined models outperform the set baseline by the Empirical model whereas this is not the case without it. This can also be observed while looking at the second plot (predicting PM2.5 of station SBC) where the performance of the BNN model drops significantly without the use of data from the LUBW-sensors. The change by the MNDs is, however, not that drastic and those models even manage to be better than the empirical model without the use of LUBW-data.
 
-\subsubsection{Twelve hour period}
+The results of predicting the values of SNTR are consistent with the first observations especially in the case of PM2.5. There we can also see the performance drop even though all of the models remain better than the Empirical one. We can again see that the sensibility to the use of LUBW-data is higher by the BNN model. It is interesting to note that in the case of the PM10 prediction, the performance of some of the MDNs is slightly higher without LUBW-data.
 
+As it comes to predicting the values of SAKP, the results are quite inconsistent. This is to be expected as we explained in the previous section. All of the models cannot reliably predict the PM10 value. It is interesting to see that the scores are ``good'' for the prediction of the PM2.5 value. We assume, however, that because the models were unable to extract any meaningful relationship between the features and the predicted value, the variance of the predicted distributions had become large in order to compensate. By examining the plots of the made by the models predictions, we see that this is indeed the case. See \reffig{fig:mdn-bad}
+\begin{center}
+  \begin{figure}[H]
+    \centering \includegraphics[height=0.55\textwidth,
+    width=0.7\textwidth]{figures/mdn-bad}
+    \caption[MDN plot on unreliable data ]{Plot of one of the MDN models where the predicted value is from SAKP. The plot on the top shows the results on the train set and the one on the bottom on the test set. We can clearly see that the variance of the predicted distributions is quite high most of the time. The plots of the other MDN models exhibit similar behavior.}\label{fig:mdn-bad}
+  \end{figure}
+\end{center}
 
-\subsubsection{One hour period}
+Upon investigating the rank histograms of the models, we have found out that all of them are \texttt{U}-shaped. Rank histograms that are representative of all built models can be found in \refapp{app:g}. Rank histograms like these suggest that the models often fail to include the actual observation their confidence region. The observation falls then outside of the predicted distribution. This can be seen in the plots of the predictions of the models in \refapp{app:f}. The plots there even suggest that the models are prone to overfit the data and have significantly lower variance on the test set than on the train set. For compression, plots with the predictions of the empirical models are to be found in \refapp{app:h}
 
-% \begin{center}
-%   \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[height=0.75\textwidth, width=0.9\textwidth]{figures/results_plot_CRPS_1h}
-%     \caption[CRPS one hour results]{}\label{fig:crps-1h}
-%   \end{figure}
-% \end{center}
+The results of the predictive performance checks are consistent with the observed CRPS values. Tables with results of the predictive performance checks are to be found in \refapp{app:e}. When predicting values of SBC or SNTR, both MDNs and the BNN reliably outperform the empirical model and the results supporting this are statistically significant with \(p\)-value lower than \(0.05\). According to the checks, the MDN with \(1024\) neurons in its hidden layer is the best model while predicting PM10 of SBC and BNN is the best while predicting PM10 of SNTR.
 
+Plots with the rest of the scoring rules can be found in \refapp{app:c}
+
+The results considered in this section can be found in tabular form with concrete numbers in \refapp{app:d}.
+\subsubsection{Twelve hour period}\label{sec:res-12h}
+\begin{center}
+  \begin{figure}[H] \centering \includegraphics[height=0.9\textwidth,
+    width=0.9\textwidth]{figures/figs_12h/results_plot_CRPS}
+    \caption[CRPS results (twelve hourly average)]{CRPS values of the models
+      (lower is better).}\label{fig:crps-12h}
+  \end{figure}
+\end{center}
+
+\reffig{fig:crps-12h} is analogous to \reffig{fig:crps-1d} but the shown results are from models trained with twelve hourly averaged data. The observed in \reffig{fig:crps-12h} scores are consistent with the results from the previous section. In the prediction of the air pollution values of SBC we can again see how the BNN is sensitive to the use LUBW-data as features and the performance of the model drops without it in both cases - PM10 and PM2.5. What is interesting is that the both MDN models manage to remain better than the empirical model even without using values from LUBW-sensors. This suggest that the increasing the spatial resolution of the measurements from daily average to twelve hour average does not seem to have notable negative effect on the performance of the MDN models. We can even say that the performance is better as both of the models were worse than the empirical without using LUBW-data when they were trained with daily averaged data.
+
+The tend is also noticeable in the prediction of SNTR values. There almost all of the models remain better than the empirical one regardless in all of the cases. To note is that one of the MDN models (the one given in red) has worse score than the empirical model in the case of predicting PM10 with the use of LUBW-data. We attribute that to poor starting training conditions of the model as its score is clearly not in the general trend of the results.
+
+We again consider the scores for the models predicting SAKP values as unreliable. We see that in this case the scores of the models hardly change. This is consistent with the part of the results in the previous section.
+
+Looking at the predictive performance checks (see \refapp{app:e}) of the models, we notice the suggested by the CRPS scores trend. The checks of the models trained with twelve hourly averaged data are statistically significant much more often than the ones trained with daily averaged data. This again leads us to believe that the increase of the time resolution of the averaged data has positive effect on the predictive performance of the models. The MDN with \(1024\) neurons in its hidden layer is the best model in the majority of the cases.
+
+The rank histograms(see \refapp{app:g}) of the models continue to be \texttt{U}-shaped. We can, however, see that in the case of MDNs there is also noticeable concentration of values in the middle of the histogram. This means the models often succeed in generating a distribution encompassing the actual observed value.
+
+The problem with overfitting the data is again suggested by the plot with the predictions of the BNN model in \refapp{app:fx}. We can clearly see how the train data is predicted quite well but the one in the test set is merely approximated. At the start of the thesis we assumed that the considered types of models are robust to overfitting but the observed results suggest otherwise.
+\subsubsection{One hour period}\label{sec:res-1h}
+\begin{figure}[H] \centering \includegraphics[height=0.9\textwidth,
+  width=0.9\textwidth]{figures/figs_1h/results_plot_CRPS}
+  \caption[CRPS results (hourly average)]{CRPS values of the models
+    (lower is better).}\label{fig:crps-1h}
+\end{figure}
+
+\reffig{fig:crps-1h} presents the plots of the scores of the models trained with hourly averaged data. In it almost all of the cases are consistent with the results and trends from the previous sections.2
+
+The scores of the models predicting SAKP again have little to no change and we consider them as unreliable. The sensitivity of the BNN models to the use of LUBW-data remains noticeable. We note however that the BNN models is better than the empirical in the case of predicting PM2.5 of SBC. This was not the case with the twelve hourly averaged data. This again suggests that increasing the time resolution does not make the models worse but rather it has positive effect on their CRPS scores relative to the empirical model.
+
+In the case of predicting PM2.5 of SNTR, the scores of all of the models remain better than the empirical. This is, however, not true for the PM10 value. Even though the PM2.5 and PM10 values are highly correlated (see \refapp{app:a}) the models seems to have difference performance while predicting them. We assume this is due to the fact that PM10 varies in bigger intervals than PM2.5. This can be seen in the STD\footnote{Standard deviation}-plots in \refapp{app:b}.
+
+The predictive performance checks for this averaging period are even more statistically significant than the ones for the twelve hour average. We can attribute this only to the use of data with higher time resolution. The MDN with \(1024\) neurons in its hidden layers is yet again the best model in almost all of the cases while looking at the statistically significant test metrics.
+
+The general look of the rank histograms of the models for this averaging period is again less than ideal. The histograms again show that the models often fail to include the actual observation in the generated distribution. The rank histograms of the MDNs are, however, slightly better than the ones of the models from the previous sections.
+
+As mentioned in \refsec{sec:res-1d}, plots with the rest of the scoring rules for each averaging period can be found in \refapp{app:c}. All of the considered scores can be found in tabular form with concrete numbers in \refapp{app:d}.
 \subsection{Feature importance}\label{sec:model-feature-imp}
-As seen in the previous section, only models trained a certain way achieve acceptable results. For this reason, we only looked at the feature importance results only of selected models. We again make the differentiation based on averaging period and we look at the results from each in three separate sections. We consider only the feature importance only with respect to the CRPS.
-
+As seen in the previous section, only models trained a certain way achieve acceptable results. For this reason, we only looked at the feature importance results only of selected models. We again make the differentiation based on averaging period and we look at the results from each in three separate sections. We consider the feature importance data only with respect to the CRPS and for models that predict the PM2.5 values of SBC and SNTR.
+\vfill
 \subsubsection{One day period}
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{0.49\textwidth}
+    \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_1d/feature_importance_CRPS_SBC_P2}%
+    \caption{Models predicting PM2.5 of the SBC LUBW-sensor.}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}[t]{0.49\textwidth}
+    \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_1d/feature_importance_CRPS_SNTR_P2}%
+    \caption{Models predicting PM2.5 of the SNTR LUBW-sensor.}
+  \end{subfigure}
+  \caption[Feature importance (daily average)]{The plots on the top show the feature importance results from models that use LUBW-data as features while those on the bottom are from models that do not.}\label{fig:feat-imp-1d}
+\end{figure}
+\reffig{fig:feat-imp-1d} illustrates the considered feature importance results. Looking at the plots we can make several notes about the importance of the different sensors.
 
+A key observation to be made is that the sensor with ID \texttt{146} is consistently regarded as irrelevant. For each of the models and in every context this sensors seems to carry no information that can be used for the prediction of the given observations. Another sensors that has little importance in the models that use LUBW-data as feature is \texttt{309}.
 
+If LUBW-data is used for the predictions, in both cases of predicting SBC and SNTR, the corresponding other LUBW-sensor\footnote{SNTR is case of predicting SBC and SBC in case of predicting SNTR} has maximum importance over the other sensors. This is to be expected as we consider the LUBW sensors as ground truth. It is interesting to note that the importance of the SAKP sensors is non-trivial and it is not much lower than the importance of the other sensors. We assume this is due to some random correlation between the interpolated data of SAKP and the predicted value. In this sense to think that this high importance of the SAKP sensor is accidental and does note represent reality.
+
+If we focus on models not using LUBW-data we see how the sensor \texttt{286} stands out and has consistently high importance for two of the models. This appears to be true for both case of predicting SBC and SNTR. If the importance of this sensors is also high for the other two averaging period we would be able to conclude that it carries some relevant for the prediction information.
+
+Another interesting point is how the BNN and one of the MDNs (the one shown in green) consistently have similar sensors with high or low importance. This can be seen as the green and the blue bars often go up and down together. This shows how two different models extract information from almost the same sensors in order to make their predictions. The MDN shown in orange exhibits slightly more irregular behavior but it also follows the general trend of which sensors are important and which are not. This is, however, not the case while predicting PM2.5 of SBC without the use of LUBW-data. There the MDN uses the sensor with id \texttt{286} almost exclusively. If we look at the performance of the MDN in \refsec{}, we see that in the corresponding case, it is better than the empirical model. This means that this MDN can be better than the baseline even when the majority of the information for the predictions comes from a single non-LUBW sensor.
 \subsubsection{Twelve hour period}
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{0.49\textwidth}
+    \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_12h/feature_importance_CRPS_SBC_P2}%
+    \caption{Models predicting PM2.5 of the SBC LUBW-sensor.}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{subfigure}[t]{0.49\textwidth}
+    \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_12h/feature_importance_CRPS_SNTR_P2}%
+    \caption{Models predicting PM2.5 of the SNTR LUBW-sensor.}
+  \end{subfigure}
+  \caption[Feature importance (twelve hourly average)]{The plots on the top show the feature importance results from models that use LUBW-data as features while those on the bottom are from models that do not.}\label{fig:feat-imp-12h}
+\end{figure}
+\reffig{fig:feat-imp-12h} presents plots with feature importance data from models trained with hourly averaged data. We can make almost the same observations s in the previous section but there are some differences.
 
+We notice again how the \texttt{146} sensor has very little importance for almost all of the models except one in the case of predicting PM2.5 of SNTR without using LUBW-data as feature. The importance of the sensor with ID \texttt{309} also consistent with the results from the previous section.
+
+If we look only at the feature importance plots of the models that use LUBW-data as feature, we see how the sensors tend to have similar importance for every model. This suggests that three different models extract similar connections between the predicted value and the predictors. In the previous section this was obvious only for two of the models. We assume that the increased time resolution of the averaged data allows the models to extract deeper relationships between the value to be predicted and the features.
+
+We no focus on the models on the bottom plots. Here we again observe how the sensor \texttt{286} has high importance for two of the models -- the ones shown in blue and green. This was also the case in the previous section.
+
+The MDN shown in orange has similar behavior where it almost uses a single sensor for its predictions. This time, however, this happens in the case of preciting PM2.5 of SNTR without the use LUBW-data. There we can see how the sensor with id \texttt{151} has very high importance while the other sensors have very low one. Based on this and on the observation from the previous section, we assume that this MDN model is prone to extract information from a single feature and use it for the predictions.
 \subsubsection{One hour period}
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{0.49\textwidth}
+    \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_1h/feature_importance_CRPS_SBC_P2}%
+    \caption{Models predicting PM2.5 of the SBC LUBW-sensor.}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \begin{subfigure}[t]{0.49\textwidth}
+    \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_1h/feature_importance_CRPS_SNTR_P2}%
+    \caption{Models predicting PM2.5 of the SNTR LUBW-sensor.}
+  \end{subfigure}
+  \caption[Feature importance (hourly average)]{The plots on the top show the feature importance results from models that use LUBW-data as features while those on the bottom are from models that do not.}\label{fig:feat-imp-1h}
+\end{figure}
+Lastly we look at the feature importance results from the models trained on hourly averaged data. Plots of these results are given in \reffig{fig:feat-imp-1h}. The observations that we can made here are essentially the same as the one in the previous sections.
+
+The SBC and SNTR sensors have again high importance. As seen in the previous results, the senor \texttt{146} caries no information for all of the models in all of the contexts and the sensor \texttt{309} has a relatively low importance when used together with LUBW-data as features.
+
+A surprising result to see is that for the MDN shown in green SAKP has highest importance over all features. This is again probably due to a accentual correlation between the interpolated data of SAKP and the predicted value.
+
+In the case of this  averaging period, the sensor \texttt{286} has high importance with respect to all of the models. In the previous sections this was true only with respect to the one of the MDNs and the BNN. With the averaging of maximal time resolution, however, it appears that every model can extract some meaningful information from this sensor.
+
+We have clearly seen how across all averaging periods the feature importance results are consistent with one another. Based on this we can conclude that we have successfully identified couple of weak sensors in the network -- those with ides \texttt{146} and \texttt{309} -- as well as sensors that appear to have higher value than the others -- obviously SNTR and SBC but also probably \texttt{151} and \texttt{286} given the fact that one of the MDNs can produce reliable predictions almost purely based on one of the sensors. We have also followed the importance of the sensor with id \texttt{286} and seen that it consistently has high importance. 
+\vfill
+\clearpage
 \section{Implementation}\label{sec:impl}
 In order to enforce separation between the code and all of the data that the code acts upon, we place all of the generated data in the \texttt{env} directory of the project. This directory is added to the \texttt{.gitignore} file and the implantation in no way relies on its contents. The contents of the folder are fully generated by the implemented scripts. In the next sections we explain exactly what the generated content is and how it is generated.
 \subsection{Used libraries}\label{sec:libs}
@@ -924,7 +1059,7 @@ The next step is to process the individual raw files and store their information
 \end{itemize}
 We do this for every relevant raw data file and at the end we have a CSV-file for each sensor with accumulated data from the DataFrames. The final step is to go over these files one more time and sort the data by time.
 \subsubsection{Description module}\label{sec:desc-module}
-The goal of this script is to provide some information about the generated data in from of plots and several DataFrames with statistics as well as to perform one final sanitation on the data. The script is implemented in the file \texttt{description\_module.py}. It iterates over the generated from the previous step DataFrames and counts the missing values. Its important to note that in this step the missing values are in the context of the whole year we are considering. Depending on the integration intervals there must be exactly certain amount of values in each DataFrame. For integration over a day the exact count is 356, for integration over 12 hours -- 730, for integration over each hour in the year -- 8760 (365 days time 24 hours per day). If the number of the missing values in the corresponding context are grater than the value of the \texttt{missing\_entries\_threshold} property then the name of the sensor is added to a list in the file specified by \texttt{reindexed\_frames\_file}. If, however, the amount of missing values is under this threshold, the missing values are filled with the average value of the rest of the data. This is done for both the \texttt{P1} and the \texttt{P2} column. As this is also a data description script, we generate a DataFrame with different statistics about the P1 and P2 values for each sensor. We wanted to know exactly how this last preprocessing step on the data changes it. The DataFrames with the statistics are therefore generated two times -- once before the filling of the missing values and one time after the fact. We can then compare exactly what has changed about the data. Compression plots can be found in \refapp{app:b}. At the end the scripts also generates plots of the P1 and P2 values of each sensor. Two kinds of plots are generated. One with the pure values as they appear in the final DataFrame. The other plot shows a moving average of 100 consecutive values. All of those description files are saved in the directory specified by the \texttt{description\_files\_dir} property in the configuration.
+The goal of this script is to provide some information about the generated data in from of plots and several DataFrames with statistics as well as to perform one final sanitation on the data. The script is implemented in the file \texttt{description\_module.py}. It iterates over the generated from the previous step DataFrames and counts the missing values. Its important to note that in this step the missing values are in the context of the whole year we are considering. Depending on the integration intervals there must be exactly certain amount of values in each DataFrame. For integration over a day the exact count is \(356 \), for integration over \(12 \) hours -- \(730 \), for integration over each hour in the year -- \(8760 \) (\(365\) days with \(24\) hours per day). If the number of the missing values in the corresponding context are grater than the value of the \texttt{missing\_entries\_threshold} property then the name of the sensor is added to a list in the file specified by \texttt{reindexed\_frames\_file}. If, however, the amount of missing values is under this threshold, the missing values are filled with the average value of the rest of the data. This is done for both the \texttt{P1} and the \texttt{P2} column. As this is also a data description script, we generate a DataFrame with different statistics about the P1 and P2 values for each sensor. We wanted to know exactly how this last preprocessing step on the data changes it. The DataFrames with the statistics are therefore generated two times -- once before the filling of the missing values and one time after the fact. We can then compare exactly what has changed about the data. Compression plots can be found in \refapp{app:b}. At the end the scripts also generates plots of the P1 and P2 values of each sensor. Two kinds of plots are generated. One with the pure values as they appear in the final DataFrame. The other plot shows a moving average of 100 consecutive values. All of those description files are saved in the directory specified by the \texttt{description\_files\_dir} property in the configuration.
 \subsubsection{Preprocess LU BW}\label{sec:preproc-lu-bw-module}
 Although the data provided from LU-BW is in much better form than the publicly available data, it also needs certain preprocessing. The LU-BW data comes in a form of several spreadsheets in a \emph{xlsx}-file. The script in \texttt{process\_lu\_bw.py} takes this file as an input and generates three DataFrames for each LU-BW station. The measurements in the spreadsheets are on half an hour basis so an integration in the desired intervals is required. The script performs this integration and fills all of the missing values with the mean of the rest of the data. Similar to the previous section, a description file with statistics about the data before and after the missing values filling is generated as well as plots with the integrated values and a moving average of them. The DataFrames are saved in CSV-files in a separate folder in the folder with the rest of the data files. The plots and the description file are saved in the directory with the description files.
 \subsubsection{Loader module}\label{sec:load-module}
@@ -978,7 +1113,9 @@ The training of the model happens in the \texttt{fit} method. In it the Bayesian
 
 With the \texttt{evaluate} methods we can evaluate data with a trained model. The method accepts the input data and number of samples to be drawn for each data point, feeds them to the right placeholders in the Tensorflow graph and evaluates the Tensorflow operation mentioned in one of the previous paragraphs.
 
-The \texttt{save} and \texttt{load} methods of the class are similar to the ones in the Mdn class. One key difference is that he22re we use the \texttt{Saver} object from Tensorflow and not from GPFlow. This means that by serialization we are saving the whole Tensorflow graph and the values of all variables in it. By the loading of the model later, we only need to load the graph and not build anything at all (i.e.\ not call the \texttt{build} method). 
+The \texttt{save} and \texttt{load} methods of the class are similar to the ones in the Mdn class. One key difference is that here we use the \texttt{Saver} object from Tensorflow and not from GPFlow. This means that by serialization we are saving the whole Tensorflow graph and the values of all variables in it. By the loading of the model later, we only need to load the graph and not build anything at all (i.e.\ not call the \texttt{build} method).
+\subsubsection{Empirical model}\label{sec:emp-impl}
+The implementation of the empirical model is the simplest one. The class implemented in \texttt{empirical\_model.py} is a simple wrapper of the Edward class \texttt{edward.models.Empirical}. This is a helper class in Edward representing a random variable that can be constructed with a given set of samples. One can then sample new examples from the defined random variable. The implemented by us class -- \texttt{Emp} -- does exactly this. In the \texttt{build} method we first construct the random variable and through the use of the \texttt{evaluate} method we can later sample certain amount of examples from it.
 \subsection{Model training}\label{sec:models-train}
 The code constructing and training the models is in \texttt{model\_evaluation.py}. The script takes various arguments that configure the type of data that gets used for training, the structure of the models themselves, which model gets trained and where are the results should stored. After training each models gets evaluated. The evaluation is explained in \refsec{sec:models-eval}. In this section we explain how the exactly we set up the configuration of the training. We first go over the command line arguments of the script. These are:
 \begin{itemize}
@@ -986,7 +1123,7 @@ The code constructing and training the models is in \texttt{model\_evaluation.py
 \item \texttt{-{}-config} -- configuration file for the both models. We explain the settings in it in a later paragraph.\@
 \item \texttt{-{}-station} -- the LUBW station whose values the trained model will try to predict.\@
 \item \texttt{-{}-predictor} -- the air pollution value(s) that should be used as predictor. Can be P1, P2 or P1P2. The last one specifies the using of P1 as well as of P2 as predictors.\@
-\item \texttt{-{}-period} -- the averaging period used to generate the dataset. Can be 1D (daily average), 12H (12 hour average) or 1H (1 hour average).\@
+\item \texttt{-{}-period} -- the averaging period used to generate the dataset. Can be 1D (daily average), 12H (twelve hour average) or 1H (1 hour average).\@
 \item \texttt{-{}-outvalue} -- predicted air pollution value of the model. Can be either P1 or P2.\@
 \item \texttt{-{}-take\_lubw} -- a boolean flag whether or the other two LUBW sensors should be used as predictors.\@
 \item \texttt{-{}-dest} -- a folder where the results of the training and from the models' evaluation should be stored.\@
@@ -1027,6 +1164,7 @@ The scripts deletes all files generated during the generation process except the
 \noindent\emph{Files:}\texttt{training\_mdn.sh} and \texttt{training\_bnn.sh}
 
 The two scripts execute \texttt{model\_training.py} for each model with all considered combinations of data types as described in \refsec{sec:preprop-meth}. If these two scripts are executed fully, all of the results discussed in this thesis will be generated.
+\clearpage
 \section{Conclusion}\label{sec:conclusion}
 \subsection{Summary}
 In this thesis, we have looked at a concrete use of two probability forecast models -- Mixture density networks and Bayesian neural networks. We have considered a heterogeneous network of air pollution sensors in the vicinity of Stuttgart. Through the use of considered models we have tried to predict the air pollution values of a height quality sensors while using data from the rest of the network as a predictor. We aimed to see how reliably can such prediction be made given the fact that the majority of the sensors in the network are low quality ones. We have also tried to find out which of the sensors from the network have a higher information value for the prediction. This was done through the use of feature importance technique.
@@ -1040,7 +1178,8 @@ As motioned in a previous paragraph, for the evaluation of the models we have us
 In \refsec{sec:res} we first gave a overview of our approach in the preprocessing of the data and how exactly the models were trained. Then, in \refsec{sec:eval-model} and \refsec{sec:eval-model}, we have looked at the results from the different evaluation methods for each differently trained model.
 
 All of the concrete implementations of the models, the data preprocessing scripts, and the training and evaluation scripts were gone over in \refsec{sec:impl}, where we also mentioned the used libraries.
-        %         The text ends here
+\subsection{Discussion}
+% The text ends here
 \clearpage
 
 
@@ -1048,25 +1187,23 @@ All of the concrete implementations of the models, the data preprocessing script
   
   \begin{appendices}
     \chapter{Correlation between PM2.5 and PM10}\label{app:a}
-    In this appendix we present plots outlining the strong correlation between the PM2.5 and PM10 values of all sensors. We give three separate plots for each averaging period of the data.
-    \begin{center}
+    In this appendix we present plots outlining the strong correlation between the PM2.5 and PM10 values of all sensors. We give three separate plots for each averaging period of the data. In the title of each plot we also give the average correlation between the PM2.5 and PM10 values over all the sensors.
 
+    \begin{center}
       \begin{figure}[H]
         \centerline{\includegraphics[width=1\textwidth]{figures/data_files_changes/1D_P1_P2_correlation}}
-        \caption[PM2.5-PM10 correlation (one day average)]{Daily average}
+        \caption[PM2.5-PM10 correlation (one day average)]{PM2.5-PM10 correlation in the daily averaged data}
       \end{figure}
-
       \begin{figure}[H]
         \centerline{\includegraphics[width=1\textwidth]{figures/data_files_changes/12H_P1_P2_correlation}}
-        \caption[PM2.5-PM10 correlation (twelve hour average)]{Twelve hour average}
+        \caption[PM2.5-PM10 correlation (twelve hour average)]{PM2.5-PM10 correlation in the twelve hourly averaged data}
       \end{figure}
-
       \begin{figure}[H]
         \centerline{\includegraphics[width=1\textwidth]{figures/data_files_changes/1H_P1_P2_correlation}}
-        \caption[PM2.5-PM10 correlation (one hour average)]{One hour average}
-      \end{figure}
-      
+        \caption[PM2.5-PM10 correlation (one hour average)]{PM2.5-PM10 correlation in the hourly averaged data}
+      \end{figure}  
     \end{center}
+    
     \clearpage
     \chapter{Data-metrics changes}\label{app:b}
     In this appendix we present plots outlining how the used data was changed during the preprocessing. We compare statistical metrics of the values of all sensors before and after the applied techniques for missing data filling. The techniques are described in \refsec{sec:desc-module}. We examine the data from different averaging periods in separate sets of plots. The considered metrics are minimum value, maximum value, mean value and standard deviation.
@@ -1087,21 +1224,58 @@ All of the concrete implementations of the models, the data preprocessing script
       
     \end{center}
     \clearpage
-    \chapter{Results tables}
+    \chapter{LS and DSS scores plots}\label{app:c}
+    In this appendix we present the summarizing plots of the LS- and DSS-scoring rules over the models. The plots here are analogous to the ones with the CRPS shown in \refsec{sec:res-1d}, \refsec{sec:res-12h} and \refsec{sec:res-1h}.
+    \begin{figure}[h!]
+      \centering
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_1d/results_plot_LS}%
+        \caption{Logarithmic scores}
+      \end{subfigure}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_1d/results_plot_DSS}%
+        \caption{Dawid–Sebastiani scores}
+      \end{subfigure}
+      \caption[DSS and LS of the models (daily averaged data)]{DSS and LS values of the models trained with daily averaged data.}
+    \end{figure}
+    \begin{figure}[h!]
+      \centering
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_12h/results_plot_LS}%
+        \caption{Logarithmic scores}
+      \end{subfigure}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_12h/results_plot_DSS}%
+        \caption{Dawid–Sebastiani scores}
+      \end{subfigure}
+      \caption[DSS and LS of the models (twelve hourly averaged data)]{DSS and LS values of the models trained with twelve hourly averaged data.}
+    \end{figure}
+    \begin{figure}[h!]
+      \centering
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_1h/results_plot_LS}%
+        \caption{Logarithmic scores}
+      \end{subfigure}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=1.2\textwidth]{figures/figs_1h/results_plot_DSS}%
+        \caption{Dawid–Sebastiani scores}
+      \end{subfigure}
+      \caption[DSS and LS of the models (hourly averaged data)]{DSS and LS values of the models trained with hourly averaged data.}
+    \end{figure}
+
+    
+
+    \clearpage
+    \chapter{Results tables}\label{app:d}
     In this appendix we summarize the results shown with the plots in \refsec{sec:eval-model} by giving them in tabular form. We give three tables, one for each averaging period of the data used. The respective tables are \reftab{tab:res-1d}, \reftab{tab:res-12h} and \reftab{tab:res-1h}.
 
-    The tables are split row-wise in three sections for each of the scoring rules - CRPS, DSS, LS. Each row in these sections is separate model. The type of the data that was used to train each models is given through the titles of the corresponding columns. The ``with LUBW'' we imply the corresponding model uses values of LUBW-senors as features while ``without LUBW'' implies the opposite.
-    
-    
-    \renewcommand\theadalign{bc}
-    \renewcommand\theadfont{\bfseries}
-    \renewcommand\theadgape{\Gape[4pt]}
-    \renewcommand\cellgape{\Gape[4pt]}
+    The tables are split rowwise in three sections for each of the scoring rules - CRPS, DSS, LS. Each row in these sections is separate model. The type of the data that was used to train each models is given through the titles of the corresponding columns. The ``with LUBW'' we imply the corresponding model uses values of LUBW-senors as features while ``without LUBW'' implies the opposite.
 
-    \newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
-    \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
-    \newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
-
+    All of the values are calculate based on the performance of the models on the test set of the used data.
+    
     \begin{sidewaystable}
       \centering
       \input{figures/figs_1d/latex_res_table.tex}\label{tab:res-1d}
@@ -1116,14 +1290,15 @@ All of the concrete implementations of the models, the data preprocessing script
       \centering
       \input{figures/figs_1h/latex_res_table.tex}\label{tab:res-1h}
     \end{sidewaystable}
-    
     \clearpage
+    \chapter{Predictive performance checks results tables}\label{app:e}
+    In this appendix we give tables with the results of the predictive performance checks over the models, as mentioned in \refsec{sec:preprop-meth}. We again give three separate tables for the three averaging periods. The tables are \reftab{tab:pred-1d}, \reftab{tab:pred-12h} and \reftab{tab:pred-1h}. The format compares every pair of models. We only consider models that predict the PM10 value of each LUBW sensor and the predictive performance check is calculated with respect to the CRPS.
     
-    \chapter{Predictive checks results tables}
-    In this appendix we give tables with the results of the predictive checks over the models, as mentioned in \refsec{sec:preprop-meth}. We again give three separate tables for the three averaging periods. The tables are \reftab{tab:pred-1d}, \reftab{tab:pred-12h} and \reftab{tab:pred-1h}. The format compares every pair of models. We only consider models that predict the PM10 value of each LUBW sensor and the predictive check is calculated with respect to the CRPS. 
-    The tables are split row-wise in three big sections for each LUBW-station - \textbf{SBC}, \textbf{SNTR}, \textbf{SAKP}. Each of this sections is further divided in two smaller ones in which we consider models trained either with or without the use of values from the other two LUBW-stations as features. The column-wise division is only based on the latter concentration. This defines grid of columns and rows where in each column and each row represents a model trained e certain way. At the cell where two models intersect, we give the value of the predictive check between them. It is important to note that the predicted station of each column model chages depending on the context in which it is compared. For example, the first column model predicts values of SBC when compared with models from the \textbf{SBC} section of the table but it predicts values of SNTR when compared with models from the \textbf{SNTR} section of the table. The names of the models are given through aliases that are explained in the caption of each table.
+    The tables are split rowwise in three big sections for each LUBW-station -- \textbf{SBC}, \textbf{SNTR}, \textbf{SAKP}. Each of this sections is further divided in two smaller ones in which we consider models trained either with or without the use of values from the other two LUBW-stations as features. The column-wise division is only based on the latter concentration. This defines grid of columns and rows where in each column and each row represents a model trained e certain way. At the cell where two models intersect, we give the value of the predictive performance check between them. It is important to note that the predicted station of each column model chages depending on the context in which it is compared. For example, the first column model predicts values of SBC when compared with models from the \textbf{SBC} section of the table but it predicts values of SNTR when compared with models from the \textbf{SNTR} section of the table. The names of the models are given through aliases that are explained in the caption of each table.
     
     The values given in the tables are the actual metric of the Diebold-Mariano test. The marked with start (\(^* \)) entries are the ones that we consider as statistically significant. For these entries the corresponding \(p\)-value is smaller than \(0.05\). If the given metric is negative, the model in the corresponding row is considered better in its predictive capabilities. If the metric is positive -- the model in the corresponding column is to be considered as the better one.
+
+    All of the values are calculate based on the performance of the models on the test set of the used data.
     \begin{sidewaystable}
       \centering
       \input{figures/figs_1d/latex_pred_table.tex}\label{tab:pred-1d}
@@ -1138,7 +1313,7 @@ All of the concrete implementations of the models, the data preprocessing script
     \end{sidewaystable}
 
     \clearpage
-    \chapter{Models plots}
+    \chapter{Models plots}\label{app:f}
     In this appendix we present plots that compare the predicted by the models values and the actual observations. We do not give plot for every single model. We have selected plots illustrating the predictive performance of the relatively good models. We have plotted the results of the predictions both on the training and on the test set fro each plot. As with previous result considerations, we distinguish between the averaging period of the data with which the models were trained. The first two plots -- \reffig{fig:mdn-plot-1d} and \reffig{fig:bnn-plot-1d} -- show plots of models trained on daily averaged data. The next two figures -- \reffig{fig:mdn-plot-12h} and \reffig{fig:bnn-plot-12h} -- show plots from models trained on twelve hourly averaged data and final two plots -- \reffig{fig:mdn-plot-1h} and \reffig{fig:bnn-plot-1h} -- models trained on one hourly averaged data.
     \begin{center}
       \begin{figure}[h!]
@@ -1182,68 +1357,82 @@ All of the concrete implementations of the models, the data preprocessing script
         \caption[BNN one hour plot]{A BNN model with good performance trained on one hourly averaged data. To note is, however, that even though this BNN is considered to have good performance, BNNs struggled to predict the data in the context of one hour average. This plot illustrates this.}\label{fig:bnn-plot-1h}
       \end{figure}
     \end{center}
+    \vfill
     \clearpage
+    \chapter{Models rank histograms}\label{app:g}
+    In this appendix we present the rank histograms of some of the models. As discussed in \refsec{sec:eval-model}, the rank histograms given here are representative of the rest and illustrate one of the problems of the built models. From all given rank histograms we can see that they are \texttt{U}-shaped which means that the models often miss the actual observation they are trying to predict.
     
-    \chapter{Models rank histograms}
-    In this appendix we present the rank histograms of some of the models. As discussed in \refsec{}, the rank histograms given here are representative of the rest and illustrate one of the problems of the built models. From all given rank histograms we can see that they are \texttt{U}-shaped which means that the models often miss the actual observation they are trying to predict.
+    We give one histogram for the BNNs and MDNs per averaging period. \reffig{fig:rank-1d} illustrates the rank histograms of models trained with daily averaged data, \reffig{fig:rank-12h} -- models trained with twelve hourly averaged data and finally \reffig{fig:rank-1h} -- models trained with hourly averaged data. All of the histograms are calculated on the test set.
     
-    We give one histogram for the BNNs and MDNs per averaging period. \reffig{fig:mdn-rank-1d} and \reffig{fig:bnn-rank-1d} illustrate the rank histograms of models trained with daily averaged data, \reffig{fig:mdn-rank-12h} and \reffig{fig:bnn-rank-12h} -- models trained with twelve hourly averaged data and finally \reffig{fig:mdn-rank-1h} and \reffig{fig:bnn-rank-1h} -- models trained with hourly averaged data.
-    \begin{center}
-      \begin{figure}[htpb]
-        \centering
-        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/mdn-rank-1d}
-        \caption[BNN one day rank histogram]{}\label{fig:mdn-rank-1d}
-      \end{figure}
-    \end{center}
-    \begin{center}
-      \begin{figure}[htpb]
-        \centering
-        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/bnn-rank-1d}
-        \caption[BNN one day rank histogram]{}\label{fig:bnn-rank-1d}
-      \end{figure}
-    \end{center}
-    \begin{center}
-      \begin{figure}[htpb]
-        \centering
-        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/mdn-rank-12h}
-        \caption[BNN one day rank histogram]{}\label{fig:mdn-rank-12h}
-      \end{figure}
-    \end{center}
-    \begin{center}
-      \begin{figure}[htpb]
-        \centering
-        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/bnn-rank-12h}
-        \caption[BNN one day rank histogram]{}\label{fig:bnn-rank-12h}
-      \end{figure}
-    \end{center}
-    \begin{center}
-      \begin{figure}[htpb]
-        \centering
-        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/mdn-rank-1h}
-        \caption[BNN one day rank histogram]{}\label{fig:mdn-rank-1h}
-      \end{figure}
-    \end{center}
-    \begin{center}
-      \begin{figure}[htpb]
-        \centering
-        \includegraphics[height=0.6\textwidth, width=0.9\textwidth]{figures/model_plots/bnn-rank-1h}
-        \caption[BNN one day rank histogram]{}\label{fig:bnn-rank-1h}
-      \end{figure}
-    \end{center}
-
+    \begin{figure}[h!]
+      \centering
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=0.7\textwidth]{figures/model_plots/mdn-rank-1d}%
+        \caption{A rank histogram of a MDN model trained with daily averaged data.}
+      \end{subfigure}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=0.7\textwidth]{figures/model_plots/bnn-rank-1d}%
+        \caption{A rank histogram of a BNN model trained with daily averaged data.}
+      \end{subfigure}
+      \caption[Rank histograms (daily averaged data)]{}\label{fig:rank-1d}
+    \end{figure}
+    \begin{figure}[h!]
+      \centering
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=0.7\textwidth]{figures/model_plots/mdn-rank-12h}%
+        \caption{A rank histogram of a MDN model trained with daily averaged data.}
+      \end{subfigure}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=0.7\textwidth]{figures/model_plots/bnn-rank-12h}%
+        \caption{A rank histogram of a BNN model trained with twelve hourly averaged data.}
+      \end{subfigure}
+      \caption[Rank histograms (twelve hourly averaged data)]{}\label{fig:rank-12h}
+    \end{figure}
+    \begin{figure}[H]
+      \centering
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=0.7\textwidth]{figures/model_plots/mdn-rank-1h}%
+        \caption{A rank histogram of a MDN model trained with averaged data.}
+      \end{subfigure}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+      \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth,height=0.7\textwidth]{figures/model_plots/bnn-rank-1h}%
+        \caption{A rank histogram of a BNN model trained with hourly averaged data.}
+      \end{subfigure}
+      \caption[Rank histograms (hourly averaged data)]{}\label{fig:rank-1h}
+    \end{figure}
+    \vfill
     \clearpage
+    \chapter{Empirical models plots}\label{app:h}
+    In this appendix we give plots of the predictions made by the empirical models. As these models do not make difference between test and train set, we have evaluated them only on the part of the data that would have been used as a test set for a MDN or a BNN.
 
+    \begin{center}
+      \begin{figure}[h!]
+        \centering
+        \includegraphics[height=0.5\textwidth, width=0.9\textwidth]{figures/model_plots/emp-1d}
+        \caption[Empirical one day plot]{An empirical model predicting daily averaged data.}\label{fig:emp-1d}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[h!]
+        \centering
+        \includegraphics[height=0.5\textwidth, width=0.9\textwidth]{figures/model_plots/emp-12h}
+        \caption[Empirical twelve hour plot]{An empirical model predicting twelve hourly averaged data.}\label{fig:emp-12h}
+      \end{figure}
+    \end{center}
+    \begin{center}
+      \begin{figure}[H]
+        \centering
+        \includegraphics[height=0.5\textwidth, width=0.9\textwidth]{figures/model_plots/emp-12h}
+        \caption[Empirical one hour plot]{An empirical model predicting hourly averaged data.}\label{fig:emp-1h}
+      \end{figure}
+    \end{center}
   \end{appendices}
-  
+  \clearpage
   \addcontentsline{toc}{section}{References}
   \bibliographystyle{alpha}
   \bibliography{references}
-  
 \end{interlude}
-
 \end{document}
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: "late"
-%%% End:

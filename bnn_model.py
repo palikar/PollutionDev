@@ -19,7 +19,6 @@ class Bnn:
 
     def __init__(self, model_id):
         self.model_id = model_id
-
         
 
     def build(self, input_dim, output_dim, layers_defs=[3,3], examples=50):

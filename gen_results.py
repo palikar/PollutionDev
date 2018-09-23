@@ -297,9 +297,11 @@ def feat_importance(sec, dest):
                     # for vla in data.values():
                     #     print(vla)
 
-                    
+
+                    labs = next(iter(data.values()))["feature"]
+                    labs = list(map(lambda l: l.replace("P1", "PM10").replace("P2", "PM2.5") , labs))
                     plt.xticks(rotation=45)
-                    plt.xticks(index + bar_width, next(iter(data.values()))["feature"])
+                    plt.xticks(index + bar_width, labs)
                     plt.legend()
                     val_t = "PM10" if val is "P1" else "PM2.5"
                     if lu_bw:
@@ -325,7 +327,7 @@ def feat_importance(sec, dest):
                     plt.grid(which='minor', alpha=0.5)
                     ax.axhline(y=0, color='k', linewidth=0.7)
                     
-                    
+                plt.tight_layout()
                 plt.savefig(os.path.join(dest, "feature_importance_"+rule+"_"+stat+"_"+val+".png"))
 
 

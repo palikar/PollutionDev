@@ -223,7 +223,6 @@ def change_plot(folds, dest):
 def corr_plot(folds, dest):
     reg = "Description after[\s\S]*P1_(\w*)\s*1\.0+\s*(\d\.\d*)"
 
-
     for folder in folds:
 
         sens_descs = [os.path.join(folder + "/env/desc_files/", f) for f in os.listdir(folder+"/env/desc_files/")
@@ -260,7 +259,7 @@ def corr_plot(folds, dest):
         
         plt.ylabel("Correlation between PM2.5 and PM10")
         plt.xlabel('Sensor ID', fontsize=10)
-        plt.title("Correlation between PM2.5 and PM10. Mean over all values: " + str(mean))
+        plt.title("Correlation between PM2.5 and PM10. Mean over all sensors: " + str(mean))
         plt.xlim(min(index)-bar_width*2, max(index)+bar_width*2)
         plt.ylim([0, max(res.values())*1.2])
         # plt.legend()
