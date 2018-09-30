@@ -545,7 +545,7 @@ def predictive_check(sec, dest):
 
 def main():
 
-    parser = argparse.ArgumentParser(description='Generate result plots')    
+    parser = argparse.ArgumentParser(description='Generate result plots, feature importance plots, resuls table and predictive perfomance check table')
 
     parser.add_argument('folders', metavar='FOLDs',
                         help='The main folders to process', nargs='+')
