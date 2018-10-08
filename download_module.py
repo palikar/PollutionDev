@@ -129,7 +129,7 @@ def _download_files():
     
     
 
-def _main():
+def main():
     #Basic Setup
     print("Starting downlaod module from command line")
     config_data = ut.get_config_data(sys.argv[1]) 
@@ -141,4 +141,4 @@ def _main():
 
 
 if __name__ == '__main__':
-    _main()
+    main()

@@ -14,7 +14,7 @@ import os
 
 class Bnn:
     """
-    A class for abstracting the structure of Bayesian Neural Network
+    A class that represents the structure of Bayesian Neural Network
     """
 
     def __init__(self, model_id):

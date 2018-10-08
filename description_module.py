@@ -61,7 +61,7 @@ def generate_info_dict(id,col, df):
     } 
 
     
-def _main():
+def main():
     print("Starting the proprocess module from the command line")
     config_data = ut.get_config_data(sys.argv[1]) 
     print("Configuration file loaded")
@@ -162,7 +162,7 @@ def _main():
 
     
 if __name__ == '__main__':
-    _main()
+    main()
 
 
 

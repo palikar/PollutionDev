@@ -22,8 +22,21 @@ from matplotlib import pyplot as plt
 float_type = gpflow.settings.float_type
 
 class Mdn(Model):
+    """The class represent a MDN object. The class provides abstraction
+    methods for building, training and evaluating a MDN model.
+
+    """
     
     def __init__(self,model_id, X, Y, inner_dims=[10, 10,], activation=tf.nn.tanh, num_mixtures=5, model_file=None ):
+        """Initilizes the model with the given parameters.
+        model_id: Name of the model
+        X: the input data that should be later learned
+        Y: the output of the data that should be learned
+        inner_dims: an array that shows how many neurons there should be in the inner layers of the network
+        activation: the non-liner function that should be used in the neurons
+        num_mixtures: the number of mixture components that the MDN should model
+        model_file: if given, the model will be loaded from this file
+        """
         Model.__init__(self)
         self.model_id = model_id
 
@@ -40,7 +53,7 @@ class Mdn(Model):
         if model_file is None:
             self._create_network()
         else:
-            self.load(model_file)
+            self._load(model_file)
 
 
         
@@ -78,11 +91,16 @@ class Mdn(Model):
     
     @autoflow((float_type, [None, None]))
     def eval_network(self, X):
+        """Evaluates the model with the given input X
+        """
         pis, mus, sigmas = self._eval_network(X)
         return pis, mus, sigmas
 
 
     def save(self, directory):
+        """Saves the model in a file. The file can later be used to load the
+        file.
+        """
         directory_exp = os.path.expanduser(directory)
         if not os.path.isdir(directory_exp):
             os.makedirs(directory_exp)            
@@ -90,7 +108,7 @@ class Mdn(Model):
         self.saver.save(directory_exp+"/"+"model", [self.Ws, self.bs])
             
 
-    def load(self, path):
+    def _load(self, path):
         data = self.saver.load(path)
         self.Ws = data[0]
         self.bs = data[1]
@@ -99,6 +117,9 @@ class Mdn(Model):
 
 
     def fit(self, num_iter=10000, callback=None):
+        """Traines the model. The maximum number of interations over the data
+        is goven in num_iter.
+        """
         self.compile()
         opt = ScipyOptimizer()
 

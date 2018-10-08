@@ -8,8 +8,6 @@ import subprocess
 import pandas as pd
 from math import cos, sin, atan2, sqrt
 
-
-
 def get_config_data(config_file_name):
     """Reads the configuration file and returns dictionary with its contents
     """

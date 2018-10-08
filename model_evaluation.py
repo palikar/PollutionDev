@@ -18,18 +18,24 @@ import properscoring as ps
 
 
 class Evaluator:
-
-
+    """This class exposes three methods for evaluating the built
+    model. The evaluation consists of generating plots with the
+    resulting evaluation of the model over the data, calculating the
+    proper scoring ruls, calculating the feature importance data and
+    generating the rank verfication histograms.
+    """
 
     def __init__(self, directory, description, out_val):
+        """Initializes the evaluator. All of the results will be stored in the
+        given directory. The given description will e loged in a
+        log-file.
+        out_val: a string to be used as y-lable for the plots
+        """
         if not os.path.isdir(directory):
-            os.mkdir(directory)
-            
+            os.mkdir(directory)    
         self.directory = directory
         self.desc = directory + "/desc_file.txt"
         self.out_val = out_val
-
-
 
         with open(self.desc, "w") as desc_f:
             desc_f.write(description+"\n")
@@ -37,12 +43,19 @@ class Evaluator:
             
 
 
-    def set_names(self, col_name, res_name):
-        self.col_name = col_name
+    def set_names(self, col_names, res_name):
+        """Sets the names of the column of the input data(col_name) as well as
+        the name of the output value.
+        """
+        self.col_name = col_names
         self.res_name = res_name
 
 
     def set_test_train_split(self, X_train, X_test, y_train, y_test ):
+        """Loads the data in form of a test train split that should be used
+        for the evaluation of the models.
+
+        """
         self.X_train = X_train
         self.X_test  = X_test 
         self.y_train = y_train
@@ -215,6 +228,8 @@ class Evaluator:
 
 
     def evaluate_mdn(self, model, model_id, samples=10000):
+        """Evaluates a Mdn object with all of the mentioned techniques.
+        """
         print("Evaluating MDN model")
 
         pis_train, mus_train, sigmas_train = model.eval_network(self.X_train)
@@ -225,15 +240,6 @@ class Evaluator:
         res_test_mu = np.sum(pis_test.T*mus_test.T, axis=0)
         sampled_test = np.array([ self.sample_mixed(pis_test, mus_test, sigmas_test, j, size=samples) for j in range(self.y_test.shape[0])])
         
-        print("Log results to file")
-        # np.savetxt(self.directory +'/mdn_test_samples.out', sampled_test, delimiter=',')
-        # np.savetxt(self.directory +'/mdn_train_samples.out', sampled_train, delimiter=',')
-        # np.savetxt(self.directory +'/mdn_train_pis.out', pis_train, delimiter=',')
-        # np.savetxt(self.directory +'/mdn_test_pis.out', pis_test, delimiter=',')
-        # np.savetxt(self.directory +'/X_train.out', self.X_train, delimiter=',')
-        # np.savetxt(self.directory +'/X_test.out', self.X_test, delimiter=',')
-        # np.savetxt(self.directory +'/y_train.out', self.y_train, delimiter=',')
-        # np.savetxt(self.directory +'/y_test.out', self.y_test, delimiter=',')
 
         print("Generating plots")
         plt.figure(figsize=(15,13), dpi=100)
@@ -315,20 +321,13 @@ class Evaluator:
 
 
     def evaluate_bnn(self, model, model_id, samples=10000):
-
+        """Evaluates a Bnn object with all of the mentioned techniques.
+        """
         res_train = model.evaluate(self.X_train, samples)
         res_train = res_train.reshape(samples, self.X_train.shape[0])
 
         res_test = model.evaluate(self.X_test, samples)
         res_test = res_test.reshape(samples, self.X_test.shape[0])
-
-        print("Log results to file")
-        np.savetxt(self.directory + '/bnn_test_samples.out', res_test, delimiter=',')
-        np.savetxt(self.directory + '/bnn_train_samples.out', res_train, delimiter=',')
-        np.savetxt(self.directory + '/X_train.out', self.X_train, delimiter=',')
-        np.savetxt(self.directory + '/X_test.out', self.X_test, delimiter=',')
-        np.savetxt(self.directory + '/y_train.out', self.y_train, delimiter=',')
-        np.savetxt(self.directory + '/y_test.out', self.y_test, delimiter=',')
         
         print("Generating plots")
         plt.figure(figsize=(15,13), dpi=100)
@@ -384,8 +383,8 @@ class Evaluator:
 
 
     def evaluate_empirical(self,samples=10000):
-
-
+        """Evaluates a Empirical object with all of the mentioned techniques.
+        """
         print("Evaluating empirical model")
         empirical_model = Emp("Empirical model")
 
@@ -401,7 +400,6 @@ class Evaluator:
         mus = res.mean(axis=1)        
         sigmas = res.std(axis=1)        
 
-        # np.savetxt(self.directory+"/empirical_result.txt", res)
 
         print("Generating plot")
         #generate plot
@@ -418,7 +416,7 @@ class Evaluator:
         
         print("Calculating scoring rules")
         log_scores = -np.log(np.array([norm.pdf(y, loc=mus[j], scale=sigmas[j]) for j, y in enumerate(self.y_test)]))
-        crps_scores = np.array([ ps.crps_gaussian(y, mu=mus[j], sig=sigmas[j]) for j, y in enumerate(self.y_test)])
+        crps_scores = np.array([ps.crps_gaussian(y, mu=mus[j], sig=sigmas[j]) for j, y in enumerate(self.y_test)])
         dss_scores = np.array([sc.dss_norm(y, loc=mus[j], scale=sigmas[j]) for j, y in enumerate(self.y_test)])
 
         scores = dict()
@@ -436,6 +434,6 @@ class Evaluator:
 
         
         self.generate_rank_hist(self.y_test, res, self.directory+"/empirical_rank_hist_test.png" , "Empirical model rank histogram on test set")
-                        
+
             
     

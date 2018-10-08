@@ -17,12 +17,20 @@ import collections
 
 
 class ResSelector:
+    """This class can perform different queries on the evaluation results
+    of the models. The class must only know the folders where each of
+    the generated model is. 
 
+    """
+
+    
     def __init__(self, main_folders):
         self.folders = main_folders
         
 
     def isStation(self,folder, station ):
+        """Checks if the model in the given folder predicts values of the given LUBW station(SBC, SAKP or SNTR)
+        """
         desc_file_name = os.path.join(folder, "desc_file.txt")
         data = None
         with open(desc_file_name,'r') as desc_file:
@@ -36,6 +44,8 @@ class ResSelector:
             
 
     def isValue(self,folder, value):
+        """Checks if the model in the given folder predicts the given value type (P1 of P2)
+        """
         desc_file_name = os.path.join(folder, "desc_file.txt")
         data = None
         with open(desc_file_name,'r') as desc_file:
@@ -50,6 +60,8 @@ class ResSelector:
 
 
     def isLUBW(self,folder):
+        """Checks if the model in the given folder uses LUBW stations as features
+        """
         desc_file_name = os.path.join(folder, "desc_file.txt")
         data = None
         with open(desc_file_name,'r') as desc_file:
@@ -64,6 +76,8 @@ class ResSelector:
 
 
     def importance(self, station, lu_bw, value, rule, test=True, limit=10):
+        """Retrieves the feature importance values of the models with the given criteria.
+        """
         res = dict()
         for main_folder in self.folders:
             sub_folders = [os.path.join(main_folder, f) for f in os.listdir(main_folder)
@@ -101,6 +115,9 @@ class ResSelector:
         
 
     def query(self,station, lu_bw, value, rule, test=True):
+        """Retrieves the scores in averaged from(i.e. averaged over the all
+        observations) of all models with the given criteria.
+        """
         res = dict()
         for main_folder in self.folders:
             sub_folders = [os.path.join(main_folder, f) for f in os.listdir(main_folder)
@@ -141,7 +158,10 @@ class ResSelector:
 
 
     def query_l(self,station, lu_bw, value, rule, test=True):
+        """Retrieves the scores in list form(i.e. for every single
+        observation) of all models with the given criteria.
 
+        """
         res = dict()
         for main_folder in self.folders:
             sub_folders = [os.path.join(main_folder, f) for f in os.listdir(main_folder)
@@ -241,7 +261,7 @@ def basic_res(sec, dest):
 
 
 
-def translate(value, leftMin, leftMax, rightMin, rightMax):
+def _translate(value, leftMin, leftMax, rightMin, rightMax):
     leftSpan = leftMax - leftMin
     rightSpan = rightMax - rightMin
  
@@ -250,6 +270,7 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
     # Convert the 0-1 range into a value in the right range.
     return rightMin + (valueScaled * rightSpan)
         
+
 def feat_importance(sec, dest):
     stations = ['SBC', 'SAKP', 'SNTR']
     values = ['P1', 'P2']
@@ -285,7 +306,7 @@ def feat_importance(sec, dest):
                         map_l = 0
                         map_u = 100
 
-                        vals = list(map(lambda x: translate(x,min_d,max_d,map_l,map_u), data[mod]["diff_value"]))
+                        vals = list(map(lambda x: _translate(x,min_d,max_d,map_l,map_u), data[mod]["diff_value"]))
                         data[mod]["diff_value"] = vals
                         plt.bar(index + j*bar_width, 
                                 vals,

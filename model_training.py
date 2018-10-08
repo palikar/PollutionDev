@@ -22,9 +22,6 @@ import json
 
 
 
-#rm -rf test_eval/ && ./model_training.py --config ./model_config.json --model mdn --station SBC --predictor P1P2 --period 1D --outvalue P1  --dest "/home/arnaud/code/pollution/test_eval" --base-dir "./env/data_frames"
-# ./model_training.py --config ./model_config.json --model both --station SBC --predictor P1 --period 1D --outvalue P1 --take_lubw  --dest "/home/arnaud/code/pollution/test_eval_1" --base-dir "./env/data_frames" --load-mdn ./test_eval/mdn_model/model --load-bnn ./test_eval/bnn_model/
-
 
 
 def plot_bnn(X_train, X_test, y_train, y_test, directory,  model, i):
@@ -285,6 +282,7 @@ def main():
     else:
         print("Fitting the MDN")
         mdn_model = get_mdn()
+
         ev.evaluate_mdn(mdn_model, mdn_id, samples=ev_samples_cnt)
 
         tf.reset_default_graph()

@@ -13,9 +13,9 @@ from collections import defaultdict
 
 
 def change_plot(folds, dest):
-
-
-
+    """Generates plots from the DataFrames with the statistical matrics of
+    the data before and after the last preprocessing step
+    """
     for folder in folds:
 
         plt.figure(figsize=(10,12), dpi=100)
@@ -221,6 +221,8 @@ def change_plot(folds, dest):
 
 
 def corr_plot(folds, dest):
+    """Generates plots for the correlation between the PM10 and PM2.5 values of each sessor
+    """
     reg = "Description after[\s\S]*P1_(\w*)\s*1\.0+\s*(\d\.\d*)"
 
     for folder in folds:

@@ -35,7 +35,7 @@ def _read_config(config_data):
 
     
     
-def _main():
+def main():
     print("Loading LU-BW sensorts data")
     config_data = ut.get_config_data(sys.argv[1]) 
     print("Configuration file loaded")
@@ -72,11 +72,7 @@ def _main():
         id = res.group(1)
         if str(id) not in ignored_sens:
             df = pd.read_csv(f,sep=';',parse_dates=True, index_col="timestamp")
-            df_end = pd.concat([df_end , df], axis=1)
-        
-
-        
-                
+            df_end = pd.concat([df_end , df], axis=1)                
 
 
 
@@ -98,8 +94,6 @@ def _main():
     df_end.to_csv(folder + "/" + final_df_name, sep=";",index_label="timestamp")
 
 
-def execute(config_data):
-    _read_config(config_data)
 
 
 
@@ -107,4 +101,4 @@ def execute(config_data):
 
     
 if __name__ == '__main__':
-    _main()
+    main()

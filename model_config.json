@@ -1,15 +1,15 @@
 {
     "mdn":
     {
-        "mdn_iter" : 3000,
-        "mdn_layers" : [10],
-        "mdn_mixture_cnt" : 2
+        "mdn_iter" : 6300000,
+        "mdn_layers" : [512],
+        "mdn_mixture_cnt" : 3
     },
     "bnn":
     {
-        "bnn_samples" : 1,
-        "bnn_iter" : 10,
-        "bnn_layers" : [5]
+        "bnn_samples" : 700,
+        "bnn_iter" : 5000,
+        "bnn_layers" : [512]
     },
-    "ev_samples_cnt" : 55000
+    "ev_samples_cnt" : 75000
 }

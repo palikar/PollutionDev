@@ -165,7 +165,6 @@ def draw_distribution_for_observation():
 
 
 
-
 def draw_rank_hist():
     plt.figure(figsize=(10,9), dpi=100)
 
@@ -381,6 +380,8 @@ def draw_point_vs_dens():
     
 
 def main():
+    """The script generates some of the graphics used in the thesis.
+    """
     draw_crps_intuition()
     draw_stochastic_regression()
     draw_distribution_for_observation()

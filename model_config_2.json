@@ -1,0 +1,15 @@
+{
+    "mdn":
+    {
+        "mdn_iter" : 630000000,
+        "mdn_layers" : [1024],
+        "mdn_mixture_cnt" : 3
+    },
+    "bnn":
+    {
+        "bnn_samples" : 700,
+        "bnn_iter" : 5000,
+        "bnn_layers" : [1024]
+    },
+    "ev_samples_cnt" : 75000
+}
