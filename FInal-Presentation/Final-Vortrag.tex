@@ -132,9 +132,11 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Continuous Rank Probability Score}
+  \frametitle{Proper Scoring Rules}
+
+  Continuous Rank Probability Score
   \begin{itemize}
-  \item CRPS a distribution with the observation, where both are represented as cumulative distribution functions.
+  \item CRPS compares a distribution with the observation, where both are represented as cumulative distribution functions.
     $$  CRPS(F,y)  = \int_{-\infty}^{\infty}(F(x) - \mathbbm{1}\{y \leq x \})^2dx $$
   \end{itemize}
   \includegraphics[scale=0.35]{images/crps}
@@ -147,6 +149,85 @@
   \end{center}
 \end{frame}
 
+
+\begin{frame}
+  \frametitle{Training}
+  \begin{itemize}
+  \item Approach \\
+    Based on the data and the examined types of models there were several orthogonal considerations to make when it came to training:
+    \begin{itemize}
+    \item Target LUBW-Station -- SAKP, SBC, SNTR
+    \item Integration period -- one day, twelve hours, one hour
+    \item Use of the other two LUBW station -- yes or no
+    \item Predicted air pollution value -- PM10 or PM2.5
+    \item Used model - BNN or MDN (two types of MDS)
+    \end{itemize}
+    We wanted to investigate every possible variation.
+  \item Challenges
+    \begin{itemize}
+    \item BNNs were very hard to train.
+    \item Lots of possible ways to train several different models.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Results}
+
+  Empirical Mode, twelve hour averaged data
+  \begin{center}
+    \includegraphics[scale=0.25]{images/12h/emp-12h}
+  \end{center}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Results}
+
+  MDN, twelve hour averaged data
+  \begin{center}
+    \includegraphics[scale=0.25]{images/12h/mdn_12h}
+  \end{center}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Results}
+  
+  BNN, twelve hour averaged data
+  \begin{center}
+    \includegraphics[scale=0.25]{images/12h/bnn_12h}
+  \end{center}
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Results}
+  \begin{center}
+    \vspace*{-0.2in}
+    \includegraphics[height=0.65\textwidth, width=0.8\textwidth ]{images/1h/results_plot_CRPS}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Results}
+  \begin{center}
+    \vspace*{-0.2in}
+    \includegraphics[height=0.65\textwidth, width=0.8\textwidth ]{images/1h/results_plot_CRPS}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Results}
+  BNN (one day average) and MDN (one hour average), Rank Histograms
+  
+  \begin{center}
+      \includegraphics[height=0.45\textwidth, width=0.45\textwidth ]{images/ver/bnn-rank-1d}
+      \includegraphics[height=0.45\textwidth, width=0.45\textwidth ]{images/ver/mdn-rank-1h}
+  \end{center}
+  
+\end{frame}
 
 \end{document}
 
