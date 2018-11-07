@@ -1,0 +1,45 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:t title:t toc:nil todo:t |:t
+#+TITLE: What should be said
+#+DATE: <2018-05-29 Tue>
+#+AUTHOR: Stanislav Arnaudov
+#+EMAIL: arnaud@localhost
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: nocexport
+#+CREATOR: Emacs 25.2.2 (Org mode 9.1.13)
+
+
+
+* Hallo
+Hallo, mein Name ist Stanislav Arnaudov und heute präsentiere ich euch das Thema meiner Bachelor-Arbeit. In der Arbeit handelt sich hauptsächlich um Stochastische Regressionsmodelle für Vorhersage von Daten, ihre Evaluierung und welche Aussage über die verwendeten Daten gemacht werden können anhand der generierten Modellen.
+* Zur Motivation
+Kurz zur Motivation - was möchte ich eigentlich gern mit meiner Arbeit erreichen und was für Probleme lösen wir. 
+- In vielen Anwendungen beschäftigt sich man mit Netzwerken von Sensoren, die irgendwas messen. Nehmen wir an, dass wir haben ein solches Netz, das sehr wenig Sensoren besitzt. Die Sensoren sind aber von hoher Qualität und die liefern möglichst präzisen Werte.
+- Die Frage ist jetzt, können wir das Netz so mit anderen Sensoren erweitern, so dass sich die Präzision erhöht.
+- Die interessante Bedingung im unseren Fall - die neuen Sensoren können(und sind) von unbekannten Qualität und bringen gewisse Unsicherheit in der Messungen.
+- Dass heißt, mit den neuen Sensoren ist die räumliche Belegung des Netzes vergrößert und die Unsicherheit . Die Frage ist, können wir unsere Modelle für Vorhersagen so aufbauen, sodass Präzision mit großer Wahrscheinlichkeit verbessert ist.
+* Daten
+Um das Thema ein bisschen zu Konkretisieren - unsere Daten kommen aus einem heterogenen (spricht Sensoren mit verschiedenen Qualitäten) Netz von Feinstaubsensoren in der Nähe von Stuttgart. 
+- Drei von diesen Sensoren sind von LU-BW und liefern sehr genaue und vertrauliche Messungen.
+- Die anderen sind DIY-Sensoren und bei ihnen kommt die Unsicherheit ins Spiel - wir wissen nicht ob die Sensoren gut sind oder nicht
+- Das betrachtete Zeitraum ist von 2017 bis jetzt.
+* Regressionsmodelle
+Die Modelle, die wir im Rahmen der Arbeit untersuchen werden.
+- Baysian Neural Networks - die Gewichten von den einzelnen Neuronen sind nach bestimmter Wahrscheinlichkeitsverteilung generiert und das Output ist wieder eine Verteilung.
+- Mixture of Gaussian Process Experts - hier haben wir einige Gaussian Process Regressionsmodelle und deren Outputs sind in bestimmter Wiese durch ein Gating Network gewichten damit ein besseres kombiniertes Modell aufgebaut ist.
+* Trainieren
+Mit den Modellen versuchen wir eine Vorhersage für die Feinstaub Werte in der Zukunft zu machen.
+- Wir trainieren die Modellen mit Zeitreihen aus allen Sensoren und im Endeffekt machen wir eine Vorhersage für eine bestimmte Station. Am besten das ist ein von den drei besseren Sensoren, weil wir da mit größer Sicherheit wissen, was die tatsächlichen Werte sind.
+- Wichtige Bemerkung - die Ausgaben der Modelle sind Wahrscheinlichkeitsverteilungen. Das heßst man kann die siogenante Porper scoring rules bei Trainieren als Loss Functions anwenden. Diese berücksichtigen nicht nur die Punktschätzung aber auch die Unsicherheit bei der Ausgabe.
+* Evaluierung.
+Wie gesagt, im Endeffekt haben wir keine Punktschätzungen, sonder Wahrscheinlichkeitsverteilungen. Deswegen können wir sie sehr präzis evaluieren und Aussagen machen, wie "Welche Modell ist bessert relativ zu ein anderes Modell" oder "Wie viel zu vertrauen sind die generierten Verteilung des Modells"
+- Hier kommen wieder die Proper Scoring Rules ins Spiel. Anhand von der Evaluierung und den verwendeten Daten von bestimmten Sensoren können wir dadurch
+
+* Gliederung
+
+#+TOC: headlines 2
+

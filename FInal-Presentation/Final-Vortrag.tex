@@ -1,3 +1,4 @@
+
 \documentclass[18pt]{beamer}
 \usepackage{templates/beamerthemekit}
 \usepackage[export]{adjustbox}
@@ -17,9 +18,10 @@
 \titlelogo{myimage}
 
 
-\title[Short title]{Creating and Evaluating Stochastic Regression Models on the Basis of Heterogeneous Sensor Networks}
-\subtitle{Bachelor Arbeit, Betreuer - Dr. Johannes Riesterer, Dr. Sebastian Lerch}
+\title[Bachelor's Thesis]{Creating and Evaluating \\Stochastic Regression Models \\on the Basis of Heterogeneous Sensor Networks}
+\subtitle{Bachelors Thesis, Supervisors  - Dr. Johannes Riesterer, Dr. Sebastian Lerch}
 \author{Stanislav Arnaudov}
+\date{7. November 2018}
 
 \institute{TECO - Das Telecooperation Office}
 \usepackage[citestyle=authoryear,bibstyle=numeric,hyperref,backend=biber]{biblatex}
@@ -39,6 +41,10 @@
 \begin{frame}
   \frametitle{Motivation}  
   Given is a heterogeneous network of sensors -- the network contains ``good'' \textbf{and} ``bad'' sensors.\\
+  \begin{itemize}
+  \item good -- calibrated and high precision of the measurements 
+  \item bad -- uncalibrated and low precision of the measurements
+  \end{itemize}
   Interesting Questions:
   \begin{itemize}
   \item Can we use the bad sensors in order to predict the values of the good ones?
@@ -47,8 +53,8 @@
   Our approach to the problems:
   \begin{itemize}
   \item Use of stochastic regression models.
-  \item Formal evaluation of models through the use of proper scoring rules, rank verification histograms and predictive performance checks.
-  \item Analyzing the relevancy of each predictor for the final prediction through the use of a feature importance technique.
+  \item Formal evaluation of the models through the use of proper scoring rules, verification rank histograms and predictive performance checks.
+  \item Analyzing the relevance of each predictor for the final prediction through the use of a feature importance technique.
   \end{itemize}
 \end{frame}
 
@@ -57,7 +63,7 @@
   \begin{itemize}
   \item Heterogeneous Network of air pollution sensors in Stuttgart.\\
     \begin{itemize}
-    \item LU-BW (\textit{Landesanstalt für Umwelt, Messungen und Naturschutz Baden-Württemberg}) - \textbf{3 Sensors} of high Quality.
+    \item LU-BW (\textit{Landesanstalt für Umwelt, Messungen und Naturschutz Baden-Württemberg}) - \textbf{3 Sensors} of high quality.
       \begin{itemize}
       \item Station names: SBC, SNTR, \textcolor{red}{SAKP}
       \end{itemize}
@@ -69,13 +75,15 @@
     \item Noisy data.
     \item Holes in the data.
     \item Station SAKP provides air pollution values only for the last four months of the considered year.
-    \item The DIY sensors provide values for each minute of the day, the LUBW sensors -- for each thirty minutes.
+    \item The DIY sensors provide values for each minute of the day, the LUBW sensors - for thirty-minute
+intervals
     \end{itemize}
   \end{itemize}
 \end{frame}
 
 \begin{frame}
   \frametitle{General View}
+  \vspace{-0.2in}
   \begin{center}
     \includegraphics[scale=0.10]{images/general_system}
   \end{center}
@@ -134,7 +142,7 @@
   \item Past observations are treated as values of a random variable. From that a distribution for a predicted future value is implied.
   \item We use this model as a baseline.
   \end{itemize}
-  We hope to achieve better than the empirical model results with the other two models.
+  We hope to achieve better results than the empirical model with the other two models.
 
 \end{frame}
 
@@ -160,11 +168,11 @@
 \end{frame}
 
 \begin{frame}[t]
-  \frametitle{Rank Verification Histograms}
+  \frametitle{Verification Rank  Histograms}
   \begin{columns}
     \begin{column}[b]{0.3\textwidth}
       \begin{itemize}
-      \item Does the observation behave like the made predictions?
+      \item Does the observation behave like a random sample from the forecast distribution?
       \end{itemize}
     \end{column}
     \begin{column}{0.7\textwidth}
@@ -182,7 +190,7 @@
     \begin{itemize}
     \item \textcolor{red}{Important}: Importance is relative only to the model itself.
     \end{itemize}
-    \item Random shuffling of each predictor/feature in the test set one at a time and observing the increase/decrease in mean CRPS value compared to the unpermuted features.
+    \item Random shuffling of each predictor/feature in the test set one at a time and observing the increase/decrease in mean the CRPS value compared to the unpermuted features.
   \end{itemize}
 \end{frame}
 
@@ -202,7 +210,7 @@
   \item Challenges:
     \begin{itemize}
     \item BNNs are very hard to train.
-    \item A Lot of possible ways to train several different models.
+    \item A lot of possible ways to train several different models.
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -213,13 +221,13 @@
   Results presented here: representative sample of all results.
   \pause
   \begin{itemize}
-  \item Plots of the models modeling their respective test and train sets.
+  \item Plots showing how exactly the built models predict the values of their train and test sets.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[t]
   \frametitle{Results}
-  Empirical Mode, twelve hour averaged data
+  Empirical Model, twelve hour averaged data
   \begin{center}
     \includegraphics[scale=0.25]{images/12h/emp-12h}
   \end{center}  
@@ -252,10 +260,19 @@
 \end{frame}
 
 \begin{frame}[t]
+  % \frametitle{Results}
+  \begin{center}
+    \vspace*{-0.2in}
+    \includegraphics[height=0.75\textwidth, width=0.8\textwidth ]{images/1h/results_plot_CRPS}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}[t]
   \frametitle{Results}
   \begin{center}
     \vspace*{-0.2in}
-    \includegraphics[height=0.65\textwidth, width=0.8\textwidth ]{images/1h/results_plot_CRPS}
+    \includegraphics[height=0.65\textwidth, width=0.8\textwidth ]{images/mdn-bad}
   \end{center}
 \end{frame}
 
@@ -303,8 +320,8 @@
 
 
 \begin{frame}[t]
-  \frametitle{Conclusion}
-  With the considered results we've shown:
+  \frametitle[Short]{Conclusion}
+  The results show:
   \begin{itemize}
   \item Stochastic regression models are a viable approach for predicting values in the investigated sensor network.
   \item Few sensors have consistently low feature importance for the built models.
